@@ -1,0 +1,10 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./nextjs" },
+    { "path": "./src/ui" },
+    { "path": "./src/ui-hooks" },
+    { "path": "./src/logic" },
+    { "path": "./src/state-management" }
+  ]
+}

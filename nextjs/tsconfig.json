@@ -1,0 +1,56 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": false,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "baseUrl": ".",
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "types": ["vitest/globals", "@testing-library/jest-dom"],
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./src/*"],
+      "@ui/*": ["../src/ui/*"],
+      "@ui-hooks/*": ["../src/ui-hooks/*"],
+      "@logic/*": ["../src/logic/*"],
+      "@state-management/*": ["../src/state-management/*"]
+    },
+    "rootDirs": [
+      "./",
+      "../src/ui",
+      "../src/ui-hooks",
+      "../src/logic",
+      "../src/state-management"
+    ]
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts",
+    "**/*.mts",
+    "../src/ui/**/*.ts",
+    "../src/ui/**/*.tsx",
+    "../src/ui-hooks/**/*.ts",
+    "../src/ui-hooks/**/*.tsx",
+    "../src/logic/**/*.ts",
+    "../src/logic/**/*.tsx",
+    "../src/state-management/**/*.ts",
+    "../src/state-management/**/*.tsx"
+  ],
+  "exclude": ["node_modules"]
+}
