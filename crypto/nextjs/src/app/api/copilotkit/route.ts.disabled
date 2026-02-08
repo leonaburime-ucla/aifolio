@@ -1,0 +1,21 @@
+import { CopilotRuntime, copilotRuntimeHandler } from "@copilotkit/runtime/nextjs";
+import { CustomHttpAgent } from "@copilotkit/runtime";
+
+const aguiBaseUrl =
+  process.env.AG_UI_BASE_URL ||
+  process.env.NEXT_PUBLIC_AI_API_URL ||
+  "http://127.0.0.1:8000";
+
+const runtime = new CopilotRuntime({
+  agents: [
+    {
+      name: "agentic-research",
+      description: "AIfolio AG-UI agent",
+      agent: new CustomHttpAgent({
+        url: `${aguiBaseUrl}/agui`,
+      }),
+    },
+  ],
+});
+
+export const POST = copilotRuntimeHandler(runtime);

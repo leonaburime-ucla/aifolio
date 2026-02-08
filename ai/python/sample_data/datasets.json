@@ -1,0 +1,66 @@
+[
+  {
+    "id": "wine-quality-red",
+    "label": "winequality-red.csv",
+    "description": "Physicochemical tests of vinho verde red wines; target is quality score.",
+    "task": "regression",
+    "targetColumn": "quality",
+    "source": "UCI Wine Quality",
+    "files": {
+      "data": "wine+quality/winequality-red.csv",
+      "names": "wine+quality/winequality.names"
+    },
+    "metadata": {
+      "context": "Vinho verde red wine chemistry measurements with quality score ratings.",
+      "files": {
+        "names": "wine+quality/winequality.names"
+      }
+    }
+  },
+  {
+    "id": "wine-quality-white",
+    "label": "winequality-white.csv",
+    "description": "Physicochemical tests of vinho verde white wines; target is quality score.",
+    "task": "regression",
+    "targetColumn": "quality",
+    "source": "UCI Wine Quality",
+    "files": {
+      "data": "wine+quality/winequality-white.csv",
+      "names": "wine+quality/winequality.names"
+    },
+    "metadata": {
+      "context": "Vinho verde white wine chemistry measurements with quality score ratings.",
+      "files": {
+        "names": "wine+quality/winequality.names"
+      }
+    }
+  },
+  {
+    "id": "toxicity-13f",
+    "label": "Toxicity-13F.csv",
+    "description": "Molecular descriptors with toxicity labels for QSAR-style modeling.",
+    "task": "classification",
+    "targetColumn": "Class",
+    "source": "QSAR toxicity benchmark",
+    "files": {
+      "data": "toxicity-2/Toxicity-13F.csv"
+    },
+    "metadata": {
+      "context": "Molecular descriptors with toxicity outcomes for QSAR modeling."
+    }
+  },
+  {
+    "id": "toxicity-171",
+    "label": "data-171-molecules for CRY1.csv",
+    "description": "Molecular descriptors for 171 molecules with toxicity outcomes.",
+    "task": "classification",
+    "targetColumn": "Class",
+    "source": "QSAR toxicity benchmark",
+    "files": {
+      "data": "toxicity-2/data-171-molecules for CRY1.csv"
+    },
+    "metadata": {
+      "context": "Descriptor set for 171 molecules, used for toxicity prediction."
+    }
+  }
+]

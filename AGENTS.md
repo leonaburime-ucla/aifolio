@@ -1,12 +1,12 @@
-# Agent Specification (SDD + Orc-BASH)
+# Agent Specification (SDD + Orc-BASH + DDD)
 
-This document translates the latest `project-specification.md` into an Orc-BASH-aligned plan for every AI agent in AIfolio. We combine **Spec-Driven Development (SDD)** and the **Orc-BASH** paradigm (Orchestration, Business Logic, API, State, Hooks) so that each feature ships with deterministic contracts, maximal hook reusability, and predictable error bubbling all the way to the UI. For the Python agent workspace (FastAPI + LangGraph + ML tooling), see `ai-python/AGENT.md`.
+This document translates the latest `project-specification.md` into an Orc-BASH-aligned, Domain-Driven plan for every AI agent in AIfolio. We combine **Spec-Driven Development (SDD)**, the **Orc-BASH** paradigm (Orchestration, Business Logic, API, State, Hooks), and Bounded Contexts so that each feature ships with deterministic contracts, maximal hook reusability, and predictable error bubbling all the way to the UI. For the Python agent workspace (FastAPI + LangGraph + ML tooling), see `ai-python/AGENT.md`. Reference: [The Orc-BASH Pattern](https://medium.com/@leonaburime/the-orc-bash-pattern-orchestrated-architecture-for-maximum-reusability-5d6b4734c9f6).
 
 ## 1. Working Principles
 
 1. **Start with specs.** Every route, workflow, and feature listed in `project-specification.md` maps to an explicit agent capability and data contract before any code exists.
 2. **Model layers per Orc-BASH.** Orchestrators know about Business Logic, APIs, State, and Hooks; those four layers never depend on each other—only on shared types.
-3. **Codify contracts.** Define TypeScript types (`types/agent.ts`) for inputs, outputs, events, and error classes. Back contracts with SHARP tests for complex workflows and SUIF tests for lightweight presenters.
+3. **Codify ubiquitous language.** Define TypeScript types (`types/agent.ts`) for inputs, outputs, events, and error classes so each bounded context (Crypto, Real Estate, etc.) speaks the same language across runtimes.
 4. **Instrument everything.** All orchestrators emit diagnostics for LangSmith, Sentry, and PostHog so we can trace failures through layers.
 
 ## 2. Orc-BASH for Agents
@@ -51,6 +51,12 @@ UI ↔ Hooks ↔ State ↔ (Orchestrator → Business Logic → APIs)
   - Hooks receive orchestrator functions/state through dependency injection.
   - They map `AgentEnvelope` streams into component-ready slices (loading flags, error arrays, navigation commands).
   - Hooks subscribe to Zustand selectors but never instantiate stores themselves.
+
+### 2.6 Domain-Driven Mapping (DDD)
+- **Bounded Contexts:** Each domain agent (crypto, real estate, etc.) is its own context with vocabulary mirrored across orchestrators, LangGraph nodes, stores, and UI hooks.
+- **Aggregates:** Business Logic implements aggregate operations (e.g., `CryptoPortfolio`, `NeighborhoodProfile`) and never leaks persistence concerns uphill.
+- **Repositories:** API layer adapters behave like repositories per context; orchestrators orchestrate them but do not mutate their state directly.
+- **Context Maps:** Shared types plus `logic/agents/specs.ts` act as the context map so new agents can register their schema, allowed tools, and navigation side-effects.
 
 ## 3. Agent Contracts & Shared Types
 
@@ -132,4 +138,11 @@ interface AgentError {
 7. **Orchestrator wiring:** Update LangGraph nodes + `/api/chat` to include the new agent, ensuring diagnostics/errors bubble correctly.
 8. **UI reminders:** Document rendering expectations, fallback copy, and toast messages tied to `error.code`.
 
+## Local Python (FastAPI + LangGraph) reminder
+
+Activate the shared venv before running Python servers or installs:
+
+```bash
+source ai/.venv/bin/activate
+```
 Following this SDD + Orc-BASH spec keeps modules decoupled, agents testable, and error signals consistent from deepest tool call to the final UI interaction.

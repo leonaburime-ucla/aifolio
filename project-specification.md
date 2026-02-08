@@ -2,7 +2,16 @@
 
 ## Project Overview
 
-Intelligent dashboard with AI agents that analyze data, make decisions, and dynamically route users through interfaces based on conversational input. Modular architecture - features added incrementally via sidebar navigation.
+Intelligent dashboard with AI agents that analyze data, make decisions, and dynamically route users through interfaces based on conversational input. The entire roadmap is treated as an Orc-BASH + Domain-Driven Design (DDD) exercise so every feature can be traced back to explicit contracts, orchestrated workflows, and bounded contexts.
+
+## Architecture Approach (Orc-BASH + DDD)
+
+- **Reference:** [The Orc-BASH Pattern – Orchestrated Architecture for Maximum Reusability](https://medium.com/@leonaburime/the-orc-bash-pattern-orchestrated-architecture-for-maximum-reusability-5d6b4734c9f6)
+- **Spec-Driven Development:** Each capability originates in `project-specification.md`, then lands in shared types before any code exists.
+- **Orc-BASH Layers:** Orchestrators → Business Logic → APIs with State + Hooks on the UI side. Contracts ensure one-way dependencies.
+- **Bounded Contexts:** Every module (Crypto, Real Estate, etc.) is a distinct domain with its own ubiquitous language, aggregates, repositories, and event vocabulary. Cross-domain interactions go through orchestrators only.
+- **Domain Contracts:** `DomainAgentSpec`, aggregate schemas, and view models document ubiquitous concepts so the UI, LangGraph, and FastAPI runtimes stay consistent.
+- **Testing Story:** SHARP tests validate business rules per bounded context; SUIF guards the presentation boundary and hook orchestration.
 
 ---
 
@@ -85,6 +94,12 @@ Intelligent dashboard with AI agents that analyze data, make decisions, and dyna
 - Price alerts
 - AI-generated investment insights
 
+**Bounded Context Notes**
+- Aggregate roots: `CryptoPortfolio`, `Holding`, `MarketInsight`.
+- Repositories: `crypto_portfolios`, caches, embeddings.
+- Ubiquitous language: holdings, deltas, market regimes, alerts.
+- Domain services map directly to Orc-BASH Business Logic (`calculatePortfolioDelta`, `scoreMarketRegime`).
+
 ### Data Sources
 - CoinGecko API (prices, market data, historical)
 - CoinCap API (backup data source)
@@ -129,6 +144,12 @@ Intelligent dashboard with AI agents that analyze data, make decisions, and dyna
 - Investment calculator (ROI, cash flow, cap rate)
 - Commute analysis
 - Property comparison
+
+**Bounded Context Notes**
+- Aggregate roots: `PropertySearch`, `NeighborhoodProfile`, `InvestmentScenario`.
+- Repositories: property cache, neighborhood cache, embeddings, saved searches.
+- Ubiquitous language: comp set, cash flow, walkability, cap rate.
+- Domain services power Orc-BASH Business Logic (`scoreNeighborhood`, `calculateInvestmentReturn`).
 
 ### Data Sources
 - Realtor.com API (listings, prices)
