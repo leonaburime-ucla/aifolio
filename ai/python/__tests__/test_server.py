@@ -39,3 +39,23 @@ def test_chat_route_uses_mock_llm(monkeypatch):
     response = client.post("/chat", json=payload)
     assert response.status_code == 200
     assert response.json()["message"] == "Hello from mock Gemini"
+
+
+def test_ml_data_list_returns_datasets():
+    response = client.get("/ml-data")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "ok"
+    assert isinstance(data["datasets"], list)
+    assert any(item.get("id") == "customer_churn_telco.csv" for item in data["datasets"])
+
+
+def test_ml_data_detail_returns_rows():
+    response = client.get("/ml-data/customer_churn_telco.csv?row_limit=5")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "ok"
+    assert data["dataset"]["id"] == "customer_churn_telco.csv"
+    assert isinstance(data["columns"], list)
+    assert isinstance(data["rows"], list)
+    assert data["rowCount"] <= 5

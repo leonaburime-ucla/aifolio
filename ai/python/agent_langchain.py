@@ -31,6 +31,40 @@ class ChatPayload(TypedDict, total=False):
     attachments: list
     model: str
     messages: list
+    tools: list
+    context: list
+
+
+def _format_tools_for_prompt(payload: ChatPayload) -> str:
+    tools = payload.get("tools") or []
+    if not isinstance(tools, list) or not tools:
+        return "No frontend tools were provided for this run."
+    lines: list[str] = []
+    for tool in tools:
+        if not isinstance(tool, dict):
+            continue
+        name = str(tool.get("name", "")).strip()
+        if not name:
+            continue
+        description = str(tool.get("description", "")).strip()
+        lines.append(f"- {name}: {description}")
+    return "\n".join(lines) if lines else "No frontend tools were provided for this run."
+
+
+def _format_context_for_prompt(payload: ChatPayload) -> str:
+    context_items = payload.get("context") or []
+    if not isinstance(context_items, list) or not context_items:
+        return "No additional app context."
+    lines: list[str] = []
+    for item in context_items:
+        if not isinstance(item, dict):
+            continue
+        description = str(item.get("description", "")).strip()
+        value = str(item.get("value", "")).strip()
+        if not description and not value:
+            continue
+        lines.append(f"- {description}: {value}".strip(": "))
+    return "\n".join(lines) if lines else "No additional app context."
 
 
 def formatMessage(payload: ChatPayload) -> ChatState:
@@ -75,15 +109,28 @@ def run_chat(payload: ChatPayload) -> str:
     Minimal chat call for server usage.
     """
     state = formatMessage(payload)
+    tools_text = _format_tools_for_prompt(payload)
+    context_text = _format_context_for_prompt(payload)
     system_msg = SystemMessage(
         content=(
-            "You are a helpful assistant. Reply ONLY in valid JSON with this shape:\n"
-            '{ "message": string, "chartSpec": ChartSpec | ChartSpec[] | null }\n'
-            "Do not wrap the JSON in markdown or code fences.\n"
-            "If the user asks for a chart, set chartSpec with these fields:\n"
-            "{ id, title, type ('line'|'area'|'bar'|'scatter'|'heatmap'|'box'|'dendrogram'), xKey, yKeys, data, unit?, currency?, timeframe?, source? }\n"
-            "If multiple charts are needed, return an array of chartSpec entries.\n"
-            "If no chart is needed, set chartSpec to null."
+            "You are a helpful assistant. Reply ONLY in valid JSON with this exact shape:\n"
+            '{ "message": string, "chartSpec": ChartSpec | ChartSpec[] | null, "actions": { "name": string, "args": object }[] }\n'
+            "Do not wrap JSON in markdown or code fences.\n"
+            "Do not include any extra keys at the top level.\n"
+            "If the user asks for charting, populate chartSpec with one or more entries.\n"
+            "ChartSpec fields: { id, title, description?, type, xKey, yKeys, xLabel?, yLabel?, zKey?, colorKey?, errorKeys?, data, unit?, currency?, timeframe?, source?, meta? }.\n"
+            "Allowed chart types: 'line'|'area'|'bar'|'scatter'|'histogram'|'density'|'roc'|'pr'|'errorbar'|'heatmap'|'box'|'biplot'|'dendrogram'.\n"
+            "Prefer those chart types and avoid unsupported UI types.\n"
+            "If multiple charts are needed, return chartSpec as an array.\n"
+            "If no chart is needed, set chartSpec to null.\n"
+            "Use `actions` for frontend tools when appropriate.\n"
+            "If the user asks to navigate/open/go to a page and `navigate_to_page` is available, add an action like:\n"
+            '{"name":"navigate_to_page","args":{"route":"/agentic-research"}}\n'
+            "If no tool action is needed, return actions as an empty array.\n"
+            "\nAvailable frontend tools:\n"
+            f"{tools_text}\n"
+            "\nAdditional app context:\n"
+            f"{context_text}"
         )
     )
     messages = [system_msg] + state["messages"]

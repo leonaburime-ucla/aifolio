@@ -1,9 +1,17 @@
 from fastapi import FastAPI
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
-import uuid
-from agent_langchain import DEFAULT_MODEL_ID, run_chat, run_chat_response as langchain_chat_response
+import sys
+from pathlib import Path
+
+# Allow importing sibling package: ai/ml/*
+AI_ROOT = Path(__file__).resolve().parents[1]
+if str(AI_ROOT) not in sys.path:
+    sys.path.append(str(AI_ROOT))
+
+from agent_langchain import DEFAULT_MODEL_ID, run_chat_response as langchain_chat_response
+from agui import create_agui_stream_response
 from google_gemini import list_gemini_models, resolve_default_model_id
 from langgraph_agents.data_scientist import (
     list_sample_datasets,
@@ -14,19 +22,40 @@ from langgraph_agents.data_scientist import (
 )
 from tools import sklearn_tools
 from langgraph_agents.coordinator import coordinator_agent
+from langgraph_agents.langsmith import get_trace_report
 from langgraph_agents.status import get_status
 from crypto_data import list_datasets, load_dataset
-from ag_ui.core import (
-    EventType,
-    RunAgentInput,
-    RunErrorEvent,
-    RunFinishedEvent,
-    RunStartedEvent,
-    TextMessageContentEvent,
-    TextMessageEndEvent,
-    TextMessageStartEvent,
-)
-from ag_ui.encoder import EventEncoder
+from ml_data import list_ml_datasets, load_ml_dataset, resolve_ml_dataset_path
+
+PYTORCH_IMPORT_ERROR: str | None = None
+try:
+    from ml.pytorch import (  # noqa: E402
+        handle_distill_request as handle_pytorch_distill_request,
+        handle_train_request as handle_pytorch_train_request,
+        load_bundle as load_pytorch_bundle,
+        predict_rows as predict_pytorch_rows,
+    )
+except ModuleNotFoundError as exc:  # pragma: no cover
+    PYTORCH_IMPORT_ERROR = str(exc)
+    handle_pytorch_distill_request = None  # type: ignore[assignment]
+    handle_pytorch_train_request = None  # type: ignore[assignment]
+    load_pytorch_bundle = None  # type: ignore[assignment]
+    predict_pytorch_rows = None  # type: ignore[assignment]
+
+TENSORFLOW_IMPORT_ERROR: str | None = None
+try:
+    from ml.tensorflow import (  # noqa: E402
+        handle_distill_request as handle_tensorflow_distill_request,
+        handle_train_request as handle_tensorflow_train_request,
+        load_bundle as load_tensorflow_bundle,
+        predict_rows as predict_tensorflow_rows,
+    )
+except ModuleNotFoundError as exc:  # pragma: no cover
+    TENSORFLOW_IMPORT_ERROR = str(exc)
+    handle_tensorflow_distill_request = None  # type: ignore[assignment]
+    handle_tensorflow_train_request = None  # type: ignore[assignment]
+    load_tensorflow_bundle = None  # type: ignore[assignment]
+    predict_tensorflow_rows = None  # type: ignore[assignment]
 
 app = FastAPI(title="AI Orchestrator", version="0.1.0")
 app.add_middleware(
@@ -36,6 +65,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+PYTORCH_ARTIFACTS_DIR = AI_ROOT / "ml" / "artifacts"
+TENSORFLOW_ARTIFACTS_DIR = AI_ROOT / "ml" / "tensorflow_artifacts"
 
 
 
@@ -63,99 +95,9 @@ def chat_get(message: str = "tell me a joke"):
     return langchain_chat_response({"message": message, "attachments": [], "model": DEFAULT_MODEL_ID})
 
 
-def _extract_text(content):
-    if content is None:
-        return ""
-    if isinstance(content, list):
-        parts = []
-        for item in content:
-            if isinstance(item, dict):
-                text = item.get("text") or item.get("content") or ""
-                parts.append(str(text))
-            else:
-                parts.append(str(item))
-        return "\n".join(parts)
-    return str(content)
-
-
-def _build_chat_payload(input: RunAgentInput):
-    messages = []
-    for message in input.messages:
-        role = message.role
-        messages.append(
-            {
-                "role": role,
-                "content": _extract_text(message.content),
-                "attachments": message.attachments or [],
-            }
-        )
-    return {
-        "messages": messages,
-        "model": input.model or DEFAULT_MODEL_ID,
-    }
-
-
 @app.post("/agui")
 async def agui_stream(payload: dict):
-    input_data = RunAgentInput.model_validate(payload)
-    run_id = input_data.run_id or str(uuid.uuid4())
-    thread_id = input_data.thread_id or str(uuid.uuid4())
-    input_data = input_data.model_copy(update={"run_id": run_id, "thread_id": thread_id})
-    encoder = EventEncoder()
-
-    async def event_stream():
-        try:
-            yield encoder.encode(
-                RunStartedEvent(
-                    type=EventType.RUN_STARTED,
-                    run_id=run_id,
-                    thread_id=thread_id,
-                    input=input_data,
-                )
-            )
-            message_id = f"msg_{run_id}"
-            yield encoder.encode(
-                TextMessageStartEvent(
-                    type=EventType.TEXT_MESSAGE_START,
-                    message_id=message_id,
-                    role="assistant",
-                )
-            )
-
-            chat_payload = _build_chat_payload(input_data)
-            result_text = run_chat(chat_payload)
-            yield encoder.encode(
-                TextMessageContentEvent(
-                    type=EventType.TEXT_MESSAGE_CONTENT,
-                    message_id=message_id,
-                    delta=result_text,
-                )
-            )
-            yield encoder.encode(
-                TextMessageEndEvent(
-                    type=EventType.TEXT_MESSAGE_END,
-                    message_id=message_id,
-                )
-            )
-            yield encoder.encode(
-                RunFinishedEvent(
-                    type=EventType.RUN_FINISHED,
-                    run_id=run_id,
-                    thread_id=thread_id,
-                )
-            )
-        except Exception as exc:
-            error_message = str(exc)
-            yield encoder.encode(
-                RunErrorEvent(
-                    type=EventType.RUN_ERROR,
-                    run_id=run_id,
-                    thread_id=thread_id,
-                    message=error_message,
-                )
-            )
-
-    return StreamingResponse(event_stream(), media_type="text/event-stream")
+    return create_agui_stream_response(payload)
 
 @app.get("/health")
 def health_check():
@@ -217,6 +159,25 @@ def agent_status():
     return {"status": "ok", "data": get_status()}
 
 
+@app.get("/llm/langsmith/trace/{trace_id}")
+def get_langsmith_trace_report(trace_id: str, project: str | None = None, include_raw: bool = True):
+    try:
+        report = get_trace_report(trace_id=trace_id, project_name=project, include_raw=include_raw)
+    except Exception as exc:
+        return JSONResponse(
+            status_code=500,
+            content={
+                "status": "error",
+                "error": "Failed to fetch LangSmith trace.",
+                "detail": str(exc),
+            },
+        )
+
+    if report.get("status") == "error":
+        return JSONResponse(status_code=404, content=report)
+    return report
+
+
 @app.get("/crypto-data")
 def list_crypto_data():
     return {"status": "ok", "datasets": list_datasets()}
@@ -249,12 +210,233 @@ def get_sample_data(dataset_id: str):
     return result
 
 
+@app.get("/ml-data")
+def list_ml_data():
+    return {"status": "ok", "datasets": list_ml_datasets()}
+
+
+@app.get("/ml-data/{dataset_id}")
+def get_ml_data(dataset_id: str, row_limit: int | None = None, sheet_name: str | None = None):
+    result = load_ml_dataset(dataset_id, row_limit=row_limit, sheet_name=sheet_name)
+    if result.get("status") == "error":
+        return JSONResponse(
+            status_code=404,
+            content={"status": "error", "error": result.get("error")},
+        )
+    return result
+
+
 @app.get("/sklearn-tools")
 def list_sklearn_tools():
     return {
         "status": "ok",
         "tools": sklearn_tools.list_available_tools(),
         "schemas": sklearn_tools.get_tools_schema(),
+    }
+
+@app.post("/ml/pytorch/train")
+def pytorch_train(payload: dict):
+    if handle_pytorch_train_request is None:
+        return JSONResponse(
+            status_code=503,
+            content={
+                "status": "error",
+                "error": "PyTorch runtime is unavailable in this Python environment.",
+                "details": PYTORCH_IMPORT_ERROR,
+                "hint": "Activate ai/.venv or install torch in the interpreter running the server.",
+            },
+        )
+    status_code, response = handle_pytorch_train_request(
+        payload=payload,
+        resolve_dataset_path=resolve_ml_dataset_path,
+        artifacts_dir=PYTORCH_ARTIFACTS_DIR,
+    )
+    if status_code != 200:
+        return JSONResponse(status_code=status_code, content=response)
+    return response
+
+
+@app.post("/ml/pytorch/distill")
+def pytorch_distill(payload: dict):
+    if handle_pytorch_distill_request is None:
+        return JSONResponse(
+            status_code=503,
+            content={
+                "status": "error",
+                "error": "PyTorch runtime is unavailable in this Python environment.",
+                "details": PYTORCH_IMPORT_ERROR,
+                "hint": "Activate ai/.venv or install torch in the interpreter running the server.",
+            },
+        )
+    status_code, response = handle_pytorch_distill_request(
+        payload=payload,
+        resolve_dataset_path=resolve_ml_dataset_path,
+        artifacts_dir=PYTORCH_ARTIFACTS_DIR,
+    )
+    if status_code != 200:
+        return JSONResponse(status_code=status_code, content=response)
+    return response
+
+
+@app.post("/ml/pytorch/predict")
+def pytorch_predict(payload: dict):
+    if load_pytorch_bundle is None or predict_pytorch_rows is None:
+        return JSONResponse(
+            status_code=503,
+            content={
+                "status": "error",
+                "error": "PyTorch runtime is unavailable in this Python environment.",
+                "details": PYTORCH_IMPORT_ERROR,
+                "hint": "Activate ai/.venv or install torch in the interpreter running the server.",
+            },
+        )
+
+    rows = payload.get("rows")
+    if not isinstance(rows, list):
+        return JSONResponse(
+            status_code=400,
+            content={"status": "error", "error": "rows must be an array of objects."},
+        )
+
+    model_path = payload.get("model_path")
+    model_id = payload.get("model_id")
+    if not model_path:
+        if not model_id:
+            return JSONResponse(
+                status_code=400,
+                content={"status": "error", "error": "model_path or model_id is required."},
+            )
+        model_path = str(PYTORCH_ARTIFACTS_DIR / model_id / "model_bundle.pt")
+
+    try:
+        bundle = load_pytorch_bundle(model_path)
+        predictions = predict_pytorch_rows(bundle, rows, device=payload.get("device"))
+        return {
+            "status": "ok",
+            "model_path": model_path,
+            "count": len(predictions),
+            "predictions": predictions,
+        }
+    except Exception as exc:
+        return JSONResponse(
+            status_code=400,
+            content={"status": "error", "error": str(exc)},
+        )
+
+
+@app.get("/ml/pytorch/status")
+def pytorch_status():
+    available = PYTORCH_IMPORT_ERROR is None
+    return {
+        "status": "ok",
+        "available": available,
+        "error": PYTORCH_IMPORT_ERROR,
+        "hint": None
+        if available
+        else "Activate ai/.venv or install torch in the interpreter running the server.",
+    }
+
+
+@app.post("/ml/tensorflow/train")
+def tensorflow_train(payload: dict):
+    if handle_tensorflow_train_request is None:
+        return JSONResponse(
+            status_code=503,
+            content={
+                "status": "error",
+                "error": "TensorFlow runtime is unavailable in this Python environment.",
+                "details": TENSORFLOW_IMPORT_ERROR,
+                "hint": "Activate ai/.venv or install tensorflow in the interpreter running the server.",
+            },
+        )
+    status_code, response = handle_tensorflow_train_request(
+        payload=payload,
+        resolve_dataset_path=resolve_ml_dataset_path,
+        artifacts_dir=TENSORFLOW_ARTIFACTS_DIR,
+    )
+    if status_code != 200:
+        return JSONResponse(status_code=status_code, content=response)
+    return response
+
+
+@app.post("/ml/tensorflow/distill")
+def tensorflow_distill(payload: dict):
+    if handle_tensorflow_distill_request is None:
+        return JSONResponse(
+            status_code=503,
+            content={
+                "status": "error",
+                "error": "TensorFlow runtime is unavailable in this Python environment.",
+                "details": TENSORFLOW_IMPORT_ERROR,
+                "hint": "Activate ai/.venv or install tensorflow in the interpreter running the server.",
+            },
+        )
+    status_code, response = handle_tensorflow_distill_request(
+        payload=payload,
+        resolve_dataset_path=resolve_ml_dataset_path,
+        artifacts_dir=TENSORFLOW_ARTIFACTS_DIR,
+    )
+    if status_code != 200:
+        return JSONResponse(status_code=status_code, content=response)
+    return response
+
+
+@app.post("/ml/tensorflow/predict")
+def tensorflow_predict(payload: dict):
+    if load_tensorflow_bundle is None or predict_tensorflow_rows is None:
+        return JSONResponse(
+            status_code=503,
+            content={
+                "status": "error",
+                "error": "TensorFlow runtime is unavailable in this Python environment.",
+                "details": TENSORFLOW_IMPORT_ERROR,
+                "hint": "Activate ai/.venv or install tensorflow in the interpreter running the server.",
+            },
+        )
+
+    rows = payload.get("rows")
+    if not isinstance(rows, list):
+        return JSONResponse(
+            status_code=400,
+            content={"status": "error", "error": "rows must be an array of objects."},
+        )
+
+    model_path = payload.get("model_path")
+    model_id = payload.get("model_id")
+    if not model_path:
+        if not model_id:
+            return JSONResponse(
+                status_code=400,
+                content={"status": "error", "error": "model_path or model_id is required."},
+            )
+        model_path = str(TENSORFLOW_ARTIFACTS_DIR / model_id / "model_bundle.keras")
+
+    try:
+        bundle = load_tensorflow_bundle(model_path)
+        predictions = predict_tensorflow_rows(bundle, rows, device=payload.get("device"))
+        return {
+            "status": "ok",
+            "model_path": model_path,
+            "count": len(predictions),
+            "predictions": predictions,
+        }
+    except Exception as exc:
+        return JSONResponse(
+            status_code=400,
+            content={"status": "error", "error": str(exc)},
+        )
+
+
+@app.get("/ml/tensorflow/status")
+def tensorflow_status():
+    available = TENSORFLOW_IMPORT_ERROR is None
+    return {
+        "status": "ok",
+        "available": available,
+        "error": TENSORFLOW_IMPORT_ERROR,
+        "hint": None
+        if available
+        else "Activate ai/.venv or install tensorflow in the interpreter running the server.",
     }
 
 

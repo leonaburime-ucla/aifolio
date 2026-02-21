@@ -24,3 +24,11 @@ The shared virtual environment lives at `ai/.venv` so both `ai/machine-learning`
 ```bash
 source ai/.venv/bin/activate
 ```
+
+## Run FastAPI server (exact commands)
+
+```bash
+source ai/.venv/bin/activate
+cd ai/python
+uvicorn server:app --reload
+```

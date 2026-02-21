@@ -72,6 +72,8 @@ class CoordinatorState(TypedDict, total=False):
     data_scientist_result: Dict[str, Any]
     # Raw Researcher output (interpretation + findings).
     researcher_result: Dict[str, Any]
+    # LangSmith observability payload (trace/run identifiers).
+    langsmith: Dict[str, Any]
     # Final payload returned to FastAPI route.
     response: Dict[str, Any]
 
@@ -151,11 +153,19 @@ def _format_response_node(state: CoordinatorState) -> CoordinatorState:
         charts = [charts]
     # Pull researcher findings list.
     findings = researcher.get("findings", [])
+    chart_count = len(charts) if isinstance(charts, list) else 0
+    findings_count = len(findings) if isinstance(findings, list) else 0
+    # Pull LangSmith observability metadata.
+    langsmith = {
+        "enabled": False,
+        "note": "Temporarily disabled for performance during Agentic UI iteration.",
+    }
+    langsmith_line = "[LangSmith] disabled (temporarily for performance)."
     # Build chat text with explicit role sections for readability.
     response_message = (
         f"[Data Scientist] {ds_result.get('message', '')}\n\n"
         f"[Researcher] {researcher.get('researcher_summary', '')}\n\n"
-        "[LangSmith] TBD"
+        f"{langsmith_line}"
     )
     # Build structured response contract consumed by frontend.
     response = {
@@ -164,11 +174,27 @@ def _format_response_node(state: CoordinatorState) -> CoordinatorState:
         "data": {
             "dataset": state.get("dataset_label", state.get("dataset_id")),
             "tool_summary": ds_result.get("message", ""),
+            "langsmith": langsmith,
         },
         "findings": findings,
+        "observability": {"langsmith": langsmith},
     }
     # Return state with final response.
     return {**state, "response": response}
+
+
+def _coordinator_pipeline(initial_state: CoordinatorState) -> CoordinatorState:
+    # Execute deterministic node sequence (LangGraph-style orchestration).
+    state_after_ds = _data_scientist_node(initial_state)
+    state_after_researcher = _researcher_node(state_after_ds)
+    state_with_observability: CoordinatorState = {
+        **state_after_researcher,
+        "langsmith": {
+            "enabled": False,
+            "note": "Temporarily disabled for performance during Agentic UI iteration.",
+        },
+    }
+    return _format_response_node(state_with_observability)
 
 
 def coordinator_agent(payload: Dict[str, Any]) -> Dict[str, Any]:
@@ -198,9 +224,6 @@ def coordinator_agent(payload: Dict[str, Any]) -> Dict[str, Any]:
         "model_id": payload.get("model") or DEFAULT_MODEL_ID,
         "conversation_history": conversation_history,
     }
-    # Execute deterministic node sequence (LangGraph-style orchestration).
-    state_after_ds = _data_scientist_node(initial_state)
-    state_after_researcher = _researcher_node(state_after_ds)
-    final_state = _format_response_node(state_after_researcher)
+    final_state = _coordinator_pipeline(initial_state)
     # Return only final response payload.
     return final_state.get("response", {})
