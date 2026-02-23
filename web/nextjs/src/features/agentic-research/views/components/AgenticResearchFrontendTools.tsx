@@ -1,28 +1,19 @@
 "use client";
 
 import { useCopilotAction } from "@copilotkit/react-core";
-import { useAgenticResearchChartStore } from "@/features/agentic-research/state/zustand/agenticResearchChartStore";
+import { useAgenticResearchFrontendToolsOrchestrator } from "@/features/agentic-research/orchestrators/agenticResearchFrontendTools.orchestrator";
 import {
-  useAgenticResearchActions,
-  useAgenticResearchState,
-} from "@/features/agentic-research/state/zustand/agenticResearchStore";
-import { handleAddChartSpec } from "@/features/copilot-chat/orchestrators/frontendTools.orchestrator";
-
-const AR_ADD_CHART_SPEC_TOOL = "ar-add_chart_spec";
-const AR_CLEAR_CHARTS_TOOL = "ar-clear_charts";
-const AR_REMOVE_CHART_SPEC_TOOL = "ar-remove_chart_spec";
-const AR_REORDER_CHART_SPECS_TOOL = "ar-reorder_chart_specs";
-const AR_SET_ACTIVE_DATASET_TOOL = "ar-set_active_dataset";
-const ADD_CHART_SPEC_TOOL_ALIAS = "add_chart_spec";
-const CLEAR_CHARTS_TOOL_ALIAS = "clear_charts";
+  AR_ADD_CHART_SPEC_TOOL,
+  AR_CLEAR_CHARTS_TOOL,
+  AR_REMOVE_CHART_SPEC_TOOL,
+  AR_REORDER_CHART_SPECS_TOOL,
+  AR_SET_ACTIVE_DATASET_TOOL,
+  ADD_CHART_SPEC_TOOL_ALIAS,
+  CLEAR_CHARTS_TOOL_ALIAS,
+} from "@/features/agentic-research/config/frontendTools.config";
 
 export default function AgenticResearchFrontendTools() {
-  const addChartSpec = useAgenticResearchChartStore((state) => state.addChartSpec);
-  const clearChartSpecs = useAgenticResearchChartStore((state) => state.clearChartSpecs);
-  const removeChartSpec = useAgenticResearchChartStore((state) => state.removeChartSpec);
-  const reorderChartSpecs = useAgenticResearchChartStore((state) => state.reorderChartSpecs);
-  const { datasetManifest } = useAgenticResearchState();
-  const { setSelectedDatasetId } = useAgenticResearchActions();
+  const { handlers, datasetManifest } = useAgenticResearchFrontendToolsOrchestrator();
 
   useCopilotAction(
     {
@@ -44,10 +35,10 @@ export default function AgenticResearchFrontendTools() {
         },
       ],
       handler: ({ chartSpec, chartSpecs }: { chartSpec?: unknown; chartSpecs?: unknown[] }) => {
-        return handleAddChartSpec({ chartSpec, chartSpecs }, addChartSpec);
+        return handlers.addChartSpec({ chartSpec, chartSpecs });
       },
     },
-    [addChartSpec]
+    [handlers.addChartSpec]
   );
 
   useCopilotAction(
@@ -70,10 +61,10 @@ export default function AgenticResearchFrontendTools() {
         },
       ],
       handler: ({ chartSpec, chartSpecs }: { chartSpec?: unknown; chartSpecs?: unknown[] }) => {
-        return handleAddChartSpec({ chartSpec, chartSpecs }, addChartSpec);
+        return handlers.addChartSpec({ chartSpec, chartSpecs });
       },
     },
-    [addChartSpec]
+    [handlers.addChartSpec]
   );
 
   useCopilotAction(
@@ -81,12 +72,9 @@ export default function AgenticResearchFrontendTools() {
       name: AR_CLEAR_CHARTS_TOOL,
       description: "Agentic Research only: clear all currently rendered charts.",
       parameters: [],
-      handler: () => {
-        clearChartSpecs();
-        return { status: "ok", cleared: true };
-      },
+      handler: () => handlers.clearCharts(),
     },
-    [clearChartSpecs]
+    [handlers.clearCharts]
   );
 
   useCopilotAction(
@@ -94,12 +82,9 @@ export default function AgenticResearchFrontendTools() {
       name: CLEAR_CHARTS_TOOL_ALIAS,
       description: "Alias for ar-clear_charts on /agentic-research. Clear all charts.",
       parameters: [],
-      handler: () => {
-        clearChartSpecs();
-        return { status: "ok", cleared: true };
-      },
+      handler: () => handlers.clearCharts(),
     },
-    [clearChartSpecs]
+    [handlers.clearCharts]
   );
 
   useCopilotAction(
@@ -115,25 +100,10 @@ export default function AgenticResearchFrontendTools() {
         },
       ],
       handler: ({ chart_id }: { chart_id: string }) => {
-        const current = useAgenticResearchChartStore.getState().chartSpecs;
-        const exists = current.some((spec) => spec.id === chart_id);
-        if (!exists) {
-          return {
-            status: "error",
-            code: "CHART_NOT_FOUND",
-            chart_id,
-            available_chart_ids: current.map((spec) => spec.id),
-          };
-        }
-        removeChartSpec(chart_id);
-        return {
-          status: "ok",
-          removed_chart_id: chart_id,
-          remaining_count: useAgenticResearchChartStore.getState().chartSpecs.length,
-        };
+        return handlers.removeChartSpec(chart_id);
       },
     },
-    [removeChartSpec]
+    [handlers.removeChartSpec]
   );
 
   useCopilotAction(
@@ -171,55 +141,10 @@ export default function AgenticResearchFrontendTools() {
         from_index?: number;
         to_index?: number;
       }) => {
-        const current = useAgenticResearchChartStore.getState().chartSpecs;
-        if (Array.isArray(ordered_ids) && ordered_ids.length > 0) {
-          reorderChartSpecs(ordered_ids);
-          return {
-            status: "ok",
-            mode: "ordered_ids",
-            chart_ids: useAgenticResearchChartStore.getState().chartSpecs.map((spec) => spec.id),
-          };
-        }
-
-        if (
-          typeof from_index === "number" &&
-          typeof to_index === "number" &&
-          Number.isInteger(from_index) &&
-          Number.isInteger(to_index)
-        ) {
-          if (
-            from_index < 0 ||
-            from_index >= current.length ||
-            to_index < 0 ||
-            to_index >= current.length
-          ) {
-            return {
-              status: "error",
-              code: "INDEX_OUT_OF_RANGE",
-              from_index,
-              to_index,
-              chart_count: current.length,
-            };
-          }
-          const ids = current.map((spec) => spec.id);
-          const [moved] = ids.splice(from_index, 1);
-          ids.splice(to_index, 0, moved);
-          reorderChartSpecs(ids);
-          return {
-            status: "ok",
-            mode: "index_move",
-            chart_ids: useAgenticResearchChartStore.getState().chartSpecs.map((spec) => spec.id),
-          };
-        }
-
-        return {
-          status: "error",
-          code: "INVALID_REORDER_PAYLOAD",
-          hint: "Provide ordered_ids or both from_index and to_index.",
-        };
+        return handlers.reorderChartSpecs({ ordered_ids, from_index, to_index });
       },
     },
-    [reorderChartSpecs]
+    [handlers.reorderChartSpecs]
   );
 
   useCopilotAction(
@@ -236,24 +161,10 @@ export default function AgenticResearchFrontendTools() {
         },
       ],
       handler: ({ dataset_id }: { dataset_id: string }) => {
-        const allowedIds = datasetManifest.map((entry) => entry.id);
-        if (!allowedIds.includes(dataset_id)) {
-          return {
-            status: "error",
-            code: "INVALID_DATASET_ID",
-            dataset_id,
-            allowed_dataset_ids: allowedIds,
-          };
-        }
-        useAgenticResearchChartStore.getState().clearChartSpecs();
-        setSelectedDatasetId(dataset_id);
-        return {
-          status: "ok",
-          active_dataset_id: dataset_id,
-        };
+        return handlers.setActiveDataset(dataset_id);
       },
     },
-    [datasetManifest, setSelectedDatasetId]
+    [datasetManifest, handlers.setActiveDataset]
   );
 
   return null;

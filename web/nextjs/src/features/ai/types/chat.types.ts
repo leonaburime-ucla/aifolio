@@ -72,6 +72,24 @@ export type ChatStateActions = {
   onMessageReceived: (payload: ChatAssistantPayload) => void;
 };
 
+export type ChatCoreStateActions = Omit<
+  ChatStateActions,
+  "addChartSpec" | "onMessageReceived"
+>;
+
+export type ChatStatePort = {
+  state: Omit<ChatState, "activeDatasetId">;
+  actions: ChatCoreStateActions;
+};
+
+export type UseChatStatePort = () => ChatStatePort;
+
+export type ChatChartActionsPort = {
+  addChartSpec: (spec: ChartSpec) => void;
+};
+
+export type UseChatChartActionsPort = () => ChatChartActionsPort;
+
 /**
  * API dependencies injected into chat logic.
  */

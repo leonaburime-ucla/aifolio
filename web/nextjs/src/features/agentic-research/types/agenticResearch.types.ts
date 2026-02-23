@@ -54,6 +54,12 @@ export type AgenticResearchActions = {
 };
 
 export type AgenticResearchApiDeps = {
+  fetchDatasetManifest: () => Promise<DatasetManifestEntry[]>;
+  fetchSklearnTools: () => Promise<string[]>;
+  fetchDatasetRows: (datasetId: string) => Promise<{
+    rows?: Array<Record<string, string | number | null>>;
+    columns?: string[];
+  }>;
   fetchPcaChartSpec: (payload: {
     data: number[][];
     feature_names?: string[];
@@ -94,3 +100,17 @@ export type AgenticResearchChartStatePort = {
 };
 
 export type UseAgenticResearchChartStatePort = () => AgenticResearchChartStatePort;
+
+export type AgenticResearchChartStateSnapshot = {
+  chartSpecs: ChartSpec[];
+};
+
+export type AgenticResearchChartActionsPort = {
+  addChartSpec: (spec: ChartSpec) => void;
+  clearChartSpecs: () => void;
+  removeChartSpec: (id: string) => void;
+  reorderChartSpecs: (orderedIds: string[]) => void;
+  getChartStateSnapshot: () => AgenticResearchChartStateSnapshot;
+};
+
+export type UseAgenticResearchChartActionsPort = () => AgenticResearchChartActionsPort;

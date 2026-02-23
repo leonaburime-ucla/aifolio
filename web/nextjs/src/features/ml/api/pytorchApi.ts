@@ -1,3 +1,5 @@
+import { getAiApiBaseUrl } from "@/core/config/aiApi";
+
 export type PytorchTrainRequest = {
   dataset_id: string;
   target_column: string;
@@ -47,8 +49,7 @@ export type PytorchDistillRequest = {
   student_dropout?: number;
 };
 
-const AI_API_BASE_URL =
-  process.env.NEXT_PUBLIC_AI_API_URL || "http://127.0.0.1:8000";
+const AI_API_BASE_URL = getAiApiBaseUrl();
 
 export async function trainPytorchModel(
   payload: PytorchTrainRequest

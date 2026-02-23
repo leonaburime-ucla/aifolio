@@ -9,7 +9,7 @@ export type ChartStatePort = {
  * Adapter hook that exposes chart state through a neutral chart-state port.
  * @returns Chart state port model for orchestrators/hooks.
  */
-export function useChartStateAdapter(): ChartStatePort {
+export function useRechartsChartStateAdapter(): ChartStatePort {
   const chartSpecs = useChartStore((state) => state.chartSpecs);
   return { chartSpecs };
 }

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { TrainingRunRow } from "@/app/ml/util/trainingRuns.util";
+import type { TrainingRunRow } from "@/features/ml/utils/trainingRuns.util";
 
 type MlTrainingRunsState = {
   trainingRuns: TrainingRunRow[];

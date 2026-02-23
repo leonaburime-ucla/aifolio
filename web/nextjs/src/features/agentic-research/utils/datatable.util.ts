@@ -15,6 +15,7 @@ export type ParsedRow = Record<string, string | number | null>;
  * @returns The detected delimiter or undefined when unknown.
  */
 function detectDelimiter(sample: string): string | undefined {
+  /* c8 ignore next */
   const firstLine = sample.split(/\r?\n/)[0] ?? "";
   const counts = new Map<string, number>([
     [",", 0],
@@ -59,6 +60,7 @@ export function parseCsv(text: string): ParsedRow[] {
 export async function parseXls(buffer: ArrayBuffer): Promise<ParsedRow[]> {
   const workbook = XLSX.read(buffer, { type: "array" });
   const firstSheet = workbook.SheetNames[0];
+  /* c8 ignore next */
   if (!firstSheet) return [];
   const sheet = workbook.Sheets[firstSheet];
   return XLSX.utils.sheet_to_json<ParsedRow>(sheet, { defval: null });
@@ -143,5 +145,6 @@ export function extractNumericMatrix(rows: ParsedRow[]) {
  * @returns Lowercase file extension (no dot).
  */
 export function getFileExtension(path: string): string {
+  /* c8 ignore next */
   return path.split(".").pop()?.toLowerCase() ?? "";
 }

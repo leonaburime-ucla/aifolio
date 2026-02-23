@@ -18,7 +18,6 @@ import {
   YAxis,
 } from "recharts";
 import type { ChartSpec } from "@/features/ai/types/chart.types";
-import { useChartStore } from "@/features/recharts/state/zustand/chartStore";
 import EChartsRenderer from "@/features/recharts/views/components/EChartsRenderer";
 import { Modal } from "@/core/views/components/General/Modal";
 
@@ -146,7 +145,6 @@ export function renderUnsupportedChart(spec: ChartSpec) {
 
 export default function ChartRenderer({ spec }: ChartRendererProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const removeChartSpec = useChartStore((state) => state.removeChartSpec);
   const yKeys = Array.isArray(spec.yKeys) ? spec.yKeys : [];
   const data = (spec.data ?? []).map((row) => {
     const next = { ...row };

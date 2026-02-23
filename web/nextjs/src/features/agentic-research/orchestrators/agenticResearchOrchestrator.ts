@@ -1,6 +1,11 @@
-import { fetchPcaChartSpec } from "@/features/agentic-research/api/agenticResearchApi";
+import {
+  fetchDatasetManifest,
+  fetchDatasetRows,
+  fetchPcaChartSpec,
+  fetchSklearnTools,
+} from "@/features/agentic-research/api/agenticResearchApi";
 import { useAgenticResearchIntegration } from "@/features/agentic-research/hooks/useAgenticResearch.hooks";
-import { useChartStateAdapter } from "@/features/agentic-research/state/adapters/chartState.adapter";
+import { useAgenticResearchChartStateAdapter } from "@/features/agentic-research/state/adapters/chartState.adapter";
 import { useAgenticResearchStateAdapter } from "@/features/agentic-research/state/adapters/agenticResearchState.adapter";
 import type {
   AgenticResearchApiDeps,
@@ -54,13 +59,16 @@ export function useAgenticResearchOrchestrator(
 ): AgenticResearchOrchestratorModel {
   const {
     useStatePort = useAgenticResearchStateAdapter,
-    useChartStatePort = useChartStateAdapter,
+    useChartStatePort = useAgenticResearchChartStateAdapter,
   } = options;
   const { state, actions } = useStatePort();
   const { chartSpecs } = useChartStatePort();
 
   const api = useMemo<AgenticResearchApiDeps>(
     () => ({
+      fetchDatasetManifest,
+      fetchSklearnTools,
+      fetchDatasetRows,
       fetchPcaChartSpec,
     }),
     []

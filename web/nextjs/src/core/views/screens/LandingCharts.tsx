@@ -1,20 +1,16 @@
 "use client";
 
-import { useEffect } from "react";
 import ChartRenderer from "@/features/recharts/views/components/ChartRenderer";
-import { useChartStore } from "@/features/recharts/state/zustand/chartStore";
+import { useChartOrchestrator } from "@/features/recharts/orchestrators/chartOrchestrator";
 
-export default function LandingCharts() {
-  const chartSpecs = useChartStore((state) => state.chartSpecs);
-  const removeChartSpec = useChartStore((state) => state.removeChartSpec);
+type LandingChartsProps = {
+  orchestrator?: typeof useChartOrchestrator;
+};
 
-  useEffect(() => {
-    console.log("[landing-charts] render", {
-      count: chartSpecs.length,
-      ids: chartSpecs.map((spec) => spec.id),
-      types: chartSpecs.map((spec) => spec.type),
-    });
-  }, [chartSpecs]);
+export default function LandingCharts({
+  orchestrator = useChartOrchestrator,
+}: LandingChartsProps) {
+  const { chartSpecs, removeChartSpec } = orchestrator();
 
   return (
     <div className="flex flex-col gap-8">

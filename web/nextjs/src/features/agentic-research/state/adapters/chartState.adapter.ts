@@ -5,7 +5,7 @@ import { useAgenticResearchChartStore } from "@/features/agentic-research/state/
  * Adapter hook that exposes chart state through the Agentic Research chart-state port.
  * @returns Chart state port model for orchestrators.
  */
-export function useChartStateAdapter(): AgenticResearchChartStatePort {
+export function useAgenticResearchChartStateAdapter(): AgenticResearchChartStatePort {
   const chartSpecs = useAgenticResearchChartStore((state) => state.chartSpecs);
   return { chartSpecs };
 }

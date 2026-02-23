@@ -1,703 +1,100 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import CsvDatasetCombobox from "@/core/views/patterns/CsvDatasetCombobox";
 import DataTable from "@/core/views/components/Datatable/DataTable";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/core/views/components/General/popover";
-import { useMlDatasetOrchestrator } from "@/features/ml/orchestrators/mlDatasetOrchestrator";
-import { distillPytorchModel, trainPytorchModel } from "@/features/ml/api/pytorchApi";
-import { getTrainingDefaults } from "@/features/ml/config/datasetTrainingDefaults";
-import { useMlTrainingRunsStore } from "@/features/ml/state/zustand/mlTrainingRunsStore";
+  usePytorchTrainingIntegration,
+  type PytorchIntegrationArgs,
+} from "@/features/ml/hooks/usePytorchTraining.hooks";
+import { FieldHelp } from "@/features/ml/views/components/FieldHelp";
+import { TrainingRunsSection } from "@/features/ml/views/components/TrainingRunsSection";
 import {
-  findOptimalParamsFromRuns,
-  type HyperParams,
-} from "@/app/ml/util/bayesianOptimizer.util";
-import { Modal } from "@/core/views/components/General/Modal";
+  DistillMetricsModal,
+  OptimalParamsModal,
+} from "@/features/ml/views/components/MlTrainingModals";
 import {
-  buildSweepCombinations,
-  validateBatchSizes,
-  validateDropouts,
-  validateEpochValues,
-  validateHiddenDims,
-  validateLearningRates,
-  validateNumHiddenLayers,
-  validateTestSizes,
-} from "@/app/ml/trainingSweep.validators";
-import {
-  calcTrainingTableHeight,
-  formatCompletedAt,
-  formatMetricNumber,
-  TRAINING_RUN_COLUMNS,
-  type TrainingMetrics,
-  type TrainingRunRow,
-} from "@/app/ml/util/trainingRuns.util";
+  runPytorchDistillation,
+  runPytorchTraining,
+} from "@/features/ml/orchestrators/pytorchTraining.orchestrator";
 
-function FieldHelp({ text }: { text: string }) {
-  return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          title={text}
-          aria-label="Field help"
-          className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-zinc-300 text-[10px] font-bold text-zinc-500 hover:bg-zinc-100"
-        >
-          i
-        </button>
-      </PopoverTrigger>
-      <PopoverContent align="start" className="text-xs leading-relaxed text-zinc-700">
-        {text}
-      </PopoverContent>
-    </Popover>
-  );
-}
-
-type NumericInputSnapshot = {
-  epochValuesInput: string;
-  batchSizesInput: string;
-  learningRatesInput: string;
-  testSizesInput: string;
-  hiddenDimsInput: string;
-  numHiddenLayersInput: string;
-  dropoutsInput: string;
+type PyTorchPageProps = {
+  orchestrator?: (args?: PytorchIntegrationArgs) => ReturnType<typeof usePytorchTrainingIntegration>;
 };
 
-function randomInt(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function randomFloat(min: number, max: number, decimals = 4): number {
-  const value = Math.random() * (max - min) + min;
-  return Number(value.toFixed(decimals));
-}
-
-function buildRandomSweepInputs(): NumericInputSnapshot {
-  const randomEpochs = [randomInt(40, 180), randomInt(181, 500)]
-    .sort((a, b) => a - b)
-    .join(",");
-  const randomBatchSizes = [randomInt(8, 96), randomInt(97, 200)]
-    .sort((a, b) => a - b)
-    .join(",");
-  const randomLearningRates = [randomFloat(0.0002, 0.003, 4), randomFloat(0.0031, 0.03, 4)]
-    .sort((a, b) => a - b)
-    .join(",");
-  const randomTestSizes = [randomFloat(0.1, 0.3, 2), randomFloat(0.31, 0.45, 2)]
-    .sort((a, b) => a - b)
-    .join(",");
-  const randomHiddenDims = [randomInt(32, 220), randomInt(221, 500)]
-    .sort((a, b) => a - b)
-    .join(",");
-  const randomHiddenLayers = [randomInt(1, 6), randomInt(7, 15)]
-    .sort((a, b) => a - b)
-    .join(",");
-  const randomDropouts = [randomFloat(0.05, 0.2, 2), randomFloat(0.21, 0.45, 2)]
-    .sort((a, b) => a - b)
-    .join(",");
-
-  return {
-    epochValuesInput: randomEpochs,
-    batchSizesInput: randomBatchSizes,
-    learningRatesInput: randomLearningRates,
-    testSizesInput: randomTestSizes,
-    hiddenDimsInput: randomHiddenDims,
-    numHiddenLayersInput: randomHiddenLayers,
-    dropoutsInput: randomDropouts,
-  };
-}
-
-function applyNumericInputs(
-  snapshot: NumericInputSnapshot,
-  setters: {
-    setEpochValuesInput: (value: string) => void;
-    setBatchSizesInput: (value: string) => void;
-    setLearningRatesInput: (value: string) => void;
-    setTestSizesInput: (value: string) => void;
-    setHiddenDimsInput: (value: string) => void;
-    setNumHiddenLayersInput: (value: string) => void;
-    setDropoutsInput: (value: string) => void;
-  }
-) {
-  setters.setEpochValuesInput(snapshot.epochValuesInput);
-  setters.setBatchSizesInput(snapshot.batchSizesInput);
-  setters.setLearningRatesInput(snapshot.learningRatesInput);
-  setters.setTestSizesInput(snapshot.testSizesInput);
-  setters.setHiddenDimsInput(snapshot.hiddenDimsInput);
-  setters.setNumHiddenLayersInput(snapshot.numHiddenLayersInput);
-  setters.setDropoutsInput(snapshot.dropoutsInput);
-}
-
-function parseNumericValue(value: unknown): number | null {
-  if (typeof value === "number" && Number.isFinite(value)) return value;
-  if (typeof value !== "string") return null;
-  const trimmed = value.trim();
-  if (!trimmed) return null;
-  const normalized = trimmed.replace("x10^", "e");
-  const parsed = Number(normalized);
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
-function metricHigherIsBetter(metricName: string): boolean {
-  const normalized = metricName.toLowerCase();
-  return (
-    normalized.includes("accuracy") ||
-    normalized.includes("f1") ||
-    normalized.includes("auc") ||
-    normalized.includes("precision") ||
-    normalized.includes("recall") ||
-    normalized.includes("r2")
-  );
-}
-
-export default function PyTorchPage() {
+/** PyTorch training page wired through the Orc-BASH integration hook. */
+export default function PyTorchPage({
+  orchestrator = usePytorchTrainingIntegration,
+}: PyTorchPageProps) {
   const {
     datasetOptions,
     selectedDatasetId,
-    setSelectedDatasetId,
     isLoading,
     error,
     tableRows,
     tableColumns,
     rowCount,
     totalRowCount,
-  } = useMlDatasetOrchestrator();
-  const [targetColumn, setTargetColumn] = useState("");
-  const [excludeColumnsInput, setExcludeColumnsInput] = useState<string | null>(null);
-  const [dateColumnsInput, setDateColumnsInput] = useState<string | null>(null);
-  const [task, setTask] = useState<"classification" | "regression" | "auto">("auto");
-  const [epochValuesInput, setEpochValuesInput] = useState("60");
-  const [testSizesInput, setTestSizesInput] = useState("0.2");
-  const [learningRatesInput, setLearningRatesInput] = useState("0.001");
-  const [batchSizesInput, setBatchSizesInput] = useState("64");
-  const [hiddenDimsInput, setHiddenDimsInput] = useState("128");
-  const [numHiddenLayersInput, setNumHiddenLayersInput] = useState("2");
-  const [dropoutsInput, setDropoutsInput] = useState("0.1");
-  const [runSweepEnabled, setRunSweepEnabled] = useState(false);
-  const [savedNumericInputs, setSavedNumericInputs] = useState<NumericInputSnapshot | null>(null);
-  const [savedSweepInputs, setSavedSweepInputs] = useState<NumericInputSnapshot | null>(null);
-  const [isTraining, setIsTraining] = useState(false);
-  const [isDistilling, setIsDistilling] = useState(false);
-  const [trainingProgress, setTrainingProgress] = useState<{ current: number; total: number }>({
-    current: 0,
-    total: 0,
-  });
-  const [trainingError, setTrainingError] = useState<string | null>(null);
-  const trainingRuns = useMlTrainingRunsStore((state) => state.trainingRuns);
-  const prependTrainingRun = useMlTrainingRunsStore((state) => state.prependTrainingRun);
-  const clearTrainingRuns = useMlTrainingRunsStore((state) => state.clearTrainingRuns);
-  const [copyRunsStatus, setCopyRunsStatus] = useState<string | null>(null);
-  const [optimizerStatus, setOptimizerStatus] = useState<string | null>(null);
-  const [distillStatus, setDistillStatus] = useState<string | null>(null);
-  const [saveDistilledModel, setSaveDistilledModel] = useState(false);
-  const [isOptimalModalOpen, setIsOptimalModalOpen] = useState(false);
-  const [pendingOptimalParams, setPendingOptimalParams] = useState<HyperParams | null>(null);
-  const [pendingOptimalPrediction, setPendingOptimalPrediction] = useState<{
-    metricName: string;
-    metricValue: number;
-  } | null>(null);
-  const [isDistillMetricsModalOpen, setIsDistillMetricsModalOpen] = useState(false);
-  const [distillMetrics, setDistillMetrics] = useState<TrainingMetrics | null>(null);
-  const [distillModelId, setDistillModelId] = useState<string | null>(null);
-  const [distillModelPath, setDistillModelPath] = useState<string | null>(null);
-  const defaults = getTrainingDefaults(selectedDatasetId);
-  const resolvedExcludeColumnsInput =
-    excludeColumnsInput === null
-      ? defaults.excludeColumns.join(",")
-      : excludeColumnsInput;
-  const resolvedDateColumnsInput =
-    dateColumnsInput === null ? defaults.dateColumns.join(",") : dateColumnsInput;
-  const epochsValidation = useMemo(
-    () => validateEpochValues(epochValuesInput),
-    [epochValuesInput]
-  );
-  const testSizesValidation = useMemo(
-    () => validateTestSizes(testSizesInput),
-    [testSizesInput]
-  );
-  const learningRatesValidation = useMemo(
-    () => validateLearningRates(learningRatesInput),
-    [learningRatesInput]
-  );
-  const batchSizesValidation = useMemo(
-    () => validateBatchSizes(batchSizesInput),
-    [batchSizesInput]
-  );
-  const hiddenDimsValidation = useMemo(
-    () => validateHiddenDims(hiddenDimsInput),
-    [hiddenDimsInput]
-  );
-  const numHiddenLayersValidation = useMemo(
-    () => validateNumHiddenLayers(numHiddenLayersInput),
-    [numHiddenLayersInput]
-  );
-  const dropoutsValidation = useMemo(
-    () => validateDropouts(dropoutsInput),
-    [dropoutsInput]
-  );
-
-  const plannedRunCount = useMemo(() => {
-    if (
-      !epochsValidation.ok ||
-      !testSizesValidation.ok ||
-      !learningRatesValidation.ok ||
-      !batchSizesValidation.ok ||
-      !hiddenDimsValidation.ok ||
-      !numHiddenLayersValidation.ok ||
-      !dropoutsValidation.ok
-    ) {
-      return 0;
-    }
-    return (
-      epochsValidation.values.length *
-      testSizesValidation.values.length *
-      learningRatesValidation.values.length *
-      batchSizesValidation.values.length *
-      hiddenDimsValidation.values.length *
-      numHiddenLayersValidation.values.length *
-      dropoutsValidation.values.length
-    );
-  }, [
-    batchSizesValidation,
-    dropoutsValidation,
+    targetColumn,
+    setTargetColumn,
+    resolvedExcludeColumnsInput,
+    setExcludeColumnsInput,
+    resolvedDateColumnsInput,
+    setDateColumnsInput,
+    task,
+    setTask,
+    epochValuesInput,
+    setEpochValuesInput,
+    testSizesInput,
+    setTestSizesInput,
+    learningRatesInput,
+    setLearningRatesInput,
+    batchSizesInput,
+    setBatchSizesInput,
+    hiddenDimsInput,
+    setHiddenDimsInput,
+    numHiddenLayersInput,
+    setNumHiddenLayersInput,
+    dropoutsInput,
+    setDropoutsInput,
+    runSweepEnabled,
+    toggleRunSweep,
+    reloadSweepValues,
+    isTraining,
+    isDistilling,
+    trainingProgress,
+    trainingError,
+    plannedRunCount,
     epochsValidation,
-    hiddenDimsValidation,
-    learningRatesValidation,
-    numHiddenLayersValidation,
     testSizesValidation,
-  ]);
-
-  const trainingTableHeight = useMemo(() => {
-    return calcTrainingTableHeight(trainingRuns.length);
-  }, [trainingRuns.length]);
-
-  const completedRuns = useMemo(() => {
-    return trainingRuns.filter((run) => {
-      if (String(run.result ?? "") !== "completed") return false;
-      const metric = String(run.metric_name ?? "").toLowerCase();
-      return metric !== "n/a" && parseNumericValue(run.metric_score) !== null;
-    });
-  }, [trainingRuns]);
-
-  function onDatasetChange(nextDatasetId: string | null) {
-    setSelectedDatasetId(nextDatasetId);
-    const nextDefaults = getTrainingDefaults(nextDatasetId);
-    setTargetColumn(nextDefaults.targetColumn);
-    setExcludeColumnsInput(null);
-    setTask(nextDefaults.task);
-    setEpochValuesInput(String(nextDefaults.epochs));
-    setTestSizesInput("0.2");
-    setLearningRatesInput("0.001");
-    setBatchSizesInput("64");
-    setHiddenDimsInput("128");
-    setNumHiddenLayersInput("2");
-    setDropoutsInput("0.1");
-    setRunSweepEnabled(false);
-    setSavedNumericInputs(null);
-    setSavedSweepInputs(null);
-    setTrainingError(null);
-    setDateColumnsInput(null);
-  }
-
-  function toggleRunSweep(checked: boolean) {
-    if (checked) {
-      setSavedNumericInputs({
-        epochValuesInput,
-        batchSizesInput,
-        learningRatesInput,
-        testSizesInput,
-        hiddenDimsInput,
-        numHiddenLayersInput,
-        dropoutsInput,
-      });
-      const nextSweep = savedSweepInputs ?? buildRandomSweepInputs();
-      setSavedSweepInputs(nextSweep);
-      applyNumericInputs(nextSweep, {
-        setEpochValuesInput,
-        setBatchSizesInput,
-        setLearningRatesInput,
-        setTestSizesInput,
-        setHiddenDimsInput,
-        setNumHiddenLayersInput,
-        setDropoutsInput,
-      });
-      setRunSweepEnabled(true);
-      return;
-    }
-
-    setSavedSweepInputs({
-      epochValuesInput,
-      batchSizesInput,
-      learningRatesInput,
-      testSizesInput,
-      hiddenDimsInput,
-      numHiddenLayersInput,
-      dropoutsInput,
-    });
-
-    if (savedNumericInputs) {
-      applyNumericInputs(savedNumericInputs, {
-        setEpochValuesInput,
-        setBatchSizesInput,
-        setLearningRatesInput,
-        setTestSizesInput,
-        setHiddenDimsInput,
-        setNumHiddenLayersInput,
-        setDropoutsInput,
-      });
-    } else {
-      applyNumericInputs(
-        {
-          epochValuesInput: String(defaults.epochs),
-          batchSizesInput: "64",
-          learningRatesInput: "0.001",
-          testSizesInput: "0.2",
-          hiddenDimsInput: "128",
-          numHiddenLayersInput: "2",
-          dropoutsInput: "0.1",
-        },
-        {
-          setEpochValuesInput,
-          setBatchSizesInput,
-          setLearningRatesInput,
-          setTestSizesInput,
-          setHiddenDimsInput,
-          setNumHiddenLayersInput,
-          setDropoutsInput,
-        }
-      );
-    }
-    setRunSweepEnabled(false);
-  }
-
-  function reloadSweepValues() {
-    const nextSweep = buildRandomSweepInputs();
-    setSavedSweepInputs(nextSweep);
-    applyNumericInputs(nextSweep, {
-      setEpochValuesInput,
-      setBatchSizesInput,
-      setLearningRatesInput,
-      setTestSizesInput,
-      setHiddenDimsInput,
-      setNumHiddenLayersInput,
-      setDropoutsInput,
-    });
-  }
-
-  async function onTrainClick() {
-    if (!selectedDatasetId) {
-      setTrainingError("Please select a dataset first.");
-      return;
-    }
-    const resolvedTargetColumn =
-      targetColumn.trim() || defaults.targetColumn || tableColumns[0] || "";
-    const excludeColumns = resolvedExcludeColumnsInput
-      .split(",")
-      .map((item) => item.trim())
-      .filter(Boolean);
-    const dateColumns = resolvedDateColumnsInput
-      .split(",")
-      .map((item) => item.trim())
-      .filter(Boolean);
-    if (excludeColumns.includes(resolvedTargetColumn.trim())) {
-      setTrainingError("Target column cannot also be in excluded columns.");
-      return;
-    }
-    if (dateColumns.includes(resolvedTargetColumn.trim())) {
-      setTrainingError("Target column cannot also be in date columns.");
-      return;
-    }
-    const overlap = dateColumns.find((col) => excludeColumns.includes(col));
-    if (overlap) {
-      setTrainingError(`Column '${overlap}' cannot be in both excluded and date columns.`);
-      return;
-    }
-    if (!resolvedTargetColumn.trim()) {
-      setTrainingError("Please provide a target column.");
-      return;
-    }
-    if (!epochsValidation.ok) {
-      setTrainingError(epochsValidation.error);
-      return;
-    }
-    if (!testSizesValidation.ok) {
-      setTrainingError(testSizesValidation.error);
-      return;
-    }
-    if (!learningRatesValidation.ok) {
-      setTrainingError(learningRatesValidation.error);
-      return;
-    }
-    if (!batchSizesValidation.ok) {
-      setTrainingError(batchSizesValidation.error);
-      return;
-    }
-    if (!hiddenDimsValidation.ok) {
-      setTrainingError(hiddenDimsValidation.error);
-      return;
-    }
-    if (!numHiddenLayersValidation.ok) {
-      setTrainingError(numHiddenLayersValidation.error);
-      return;
-    }
-    if (!dropoutsValidation.ok) {
-      setTrainingError(dropoutsValidation.error);
-      return;
-    }
-
-    setIsTraining(true);
-    setTrainingError(null);
-    const combinations = buildSweepCombinations({
-      epochs: epochsValidation.values,
-      testSizes: testSizesValidation.values,
-      learningRates: learningRatesValidation.values,
-      batchSizes: batchSizesValidation.values,
-      hiddenDims: hiddenDimsValidation.values,
-      numHiddenLayers: numHiddenLayersValidation.values,
-      dropouts: dropoutsValidation.values,
-    });
-    setTrainingProgress({ current: 0, total: combinations.length });
-
-    for (let i = 0; i < combinations.length; i += 1) {
-      const combo = combinations[i];
-      const result = await trainPytorchModel({
-        dataset_id: selectedDatasetId,
-        target_column: resolvedTargetColumn.trim(),
-        save_model: false,
-        exclude_columns: excludeColumns,
-        date_columns: dateColumns,
-        task,
-        epochs: combo.epochs,
-        batch_size: combo.batchSize,
-        learning_rate: combo.learningRate,
-        test_size: combo.testSize,
-        hidden_dim: combo.hiddenDim,
-        num_hidden_layers: combo.numHiddenLayers,
-        dropout: combo.dropout,
-      });
-      setTrainingProgress({ current: i + 1, total: combinations.length });
-
-      if (result.status === "error") {
-        const failedRow: TrainingRunRow = {
-          result: "failed",
-          completed_at: formatCompletedAt(),
-          epochs: combo.epochs,
-          learning_rate: formatMetricNumber(combo.learningRate),
-          test_size: formatMetricNumber(combo.testSize),
-          batch_size: combo.batchSize,
-          hidden_dim: combo.hiddenDim,
-          num_hidden_layers: combo.numHiddenLayers,
-          dropout: formatMetricNumber(combo.dropout),
-          task,
-          target_column: resolvedTargetColumn.trim(),
-          dataset_id: selectedDatasetId,
-          metric_name: "n/a",
-          metric_score: "n/a",
-          train_loss: "n/a",
-          test_loss: "n/a",
-          model_id: "n/a",
-          model_path: "n/a",
-          error: result.error,
-        };
-        prependTrainingRun(failedRow);
-        continue;
-      }
-
-      const metrics = (result.metrics ?? {}) as TrainingMetrics;
-      const runRow: TrainingRunRow = {
-        result: "completed",
-        completed_at: formatCompletedAt(),
-        epochs: combo.epochs,
-        learning_rate: formatMetricNumber(combo.learningRate),
-        test_size: formatMetricNumber(combo.testSize),
-        batch_size: combo.batchSize,
-        hidden_dim: combo.hiddenDim,
-        num_hidden_layers: combo.numHiddenLayers,
-        dropout: formatMetricNumber(combo.dropout),
-        task,
-        target_column: resolvedTargetColumn.trim(),
-        dataset_id: selectedDatasetId,
-        metric_name: metrics.test_metric_name ?? "n/a",
-        metric_score: formatMetricNumber(metrics.test_metric_value),
-        train_loss: formatMetricNumber(metrics.train_loss),
-        test_loss: formatMetricNumber(metrics.test_loss),
-        model_id: result.model_id ?? "n/a",
-        model_path: result.model_path ?? "n/a",
-      };
-      prependTrainingRun(runRow);
-    }
-    setTrainingError(null);
-    setIsTraining(false);
-    setTrainingProgress({ current: 0, total: 0 });
-  }
-
-  function onFindOptimalParamsClick() {
-    const optimized = findOptimalParamsFromRuns(trainingRuns);
-    if (!optimized) {
-      setOptimizerStatus("Need at least 5 completed runs.");
-      setTimeout(() => setOptimizerStatus(null), 2500);
-      return;
-    }
-    setPendingOptimalParams(optimized.suggestion);
-    setPendingOptimalPrediction({
-      metricName: optimized.predictedMetricName,
-      metricValue: optimized.predictedMetricValue,
-    });
-    setIsOptimalModalOpen(true);
-    setOptimizerStatus(`Suggestion generated from ${optimized.basedOnRuns} runs.`);
-    setTimeout(() => setOptimizerStatus(null), 2500);
-  }
-
-  function onApplyOptimalParams() {
-    if (!pendingOptimalParams) return;
-    setEpochValuesInput(String(pendingOptimalParams.epochs));
-    setLearningRatesInput(String(Number(pendingOptimalParams.learning_rate.toPrecision(6))));
-    setTestSizesInput(String(Number(pendingOptimalParams.test_size.toPrecision(4))));
-    setBatchSizesInput(String(pendingOptimalParams.batch_size));
-    setHiddenDimsInput(String(pendingOptimalParams.hidden_dim));
-    setNumHiddenLayersInput(String(pendingOptimalParams.num_hidden_layers));
-    setDropoutsInput(String(Number(pendingOptimalParams.dropout.toPrecision(4))));
-    setRunSweepEnabled(false);
-    setIsOptimalModalOpen(false);
-    setPendingOptimalPrediction(null);
-    setOptimizerStatus("Updated table with suggested values.");
-    setTimeout(() => setOptimizerStatus(null), 2500);
-  }
-
-  async function onDistillClick() {
-    if (!selectedDatasetId) {
-      setTrainingError("Please select a dataset first.");
-      return;
-    }
-
-    const resolvedTargetColumn =
-      targetColumn.trim() || defaults.targetColumn || tableColumns[0] || "";
-    if (!resolvedTargetColumn.trim()) {
-      setTrainingError("Please provide a target column.");
-      return;
-    }
-
-    const eligibleTeacherRuns = completedRuns.filter((run) => {
-      const modelId = String(run.model_id ?? "");
-      const modelPath = String(run.model_path ?? "");
-      const datasetMatch = String(run.dataset_id ?? "") === selectedDatasetId;
-      return datasetMatch && (modelId && modelId !== "n/a" || modelPath && modelPath !== "n/a");
-    });
-
-    if (eligibleTeacherRuns.length === 0) {
-      setTrainingError("Need at least one completed run with a teacher model for this dataset.");
-      return;
-    }
-
-    const bestTeacher = [...eligibleTeacherRuns].sort((a, b) => {
-      const aMetric = parseNumericValue(a.metric_score) ?? Number.NEGATIVE_INFINITY;
-      const bMetric = parseNumericValue(b.metric_score) ?? Number.NEGATIVE_INFINITY;
-      const metricName = String(a.metric_name ?? b.metric_name ?? "accuracy");
-      const higherIsBetter = metricHigherIsBetter(metricName);
-      return higherIsBetter ? bMetric - aMetric : aMetric - bMetric;
-    })[0];
-
-    const teacherHidden = parseNumericValue(bestTeacher.hidden_dim) ?? 128;
-    const teacherLayers = parseNumericValue(bestTeacher.num_hidden_layers) ?? 2;
-    const teacherDropout = parseNumericValue(bestTeacher.dropout) ?? 0.1;
-    const teacherEpochs = parseNumericValue(bestTeacher.epochs) ?? 60;
-    const teacherBatch = parseNumericValue(bestTeacher.batch_size) ?? 64;
-    const teacherLr = parseNumericValue(bestTeacher.learning_rate) ?? 1e-3;
-    const teacherTestSize = parseNumericValue(bestTeacher.test_size) ?? 0.2;
-    const teacherModelId = String(bestTeacher.model_id ?? "");
-    const teacherModelPath = String(bestTeacher.model_path ?? "");
-
-    const excludeColumns = resolvedExcludeColumnsInput
-      .split(",")
-      .map((item) => item.trim())
-      .filter(Boolean);
-    const dateColumns = resolvedDateColumnsInput
-      .split(",")
-      .map((item) => item.trim())
-      .filter(Boolean);
-
-    setIsDistilling(true);
-    setTrainingError(null);
-    setDistillStatus("Running distillation...");
-
-    const result = await distillPytorchModel({
-      dataset_id: selectedDatasetId,
-      target_column: resolvedTargetColumn.trim(),
-      save_model: saveDistilledModel,
-      teacher_model_id: teacherModelId && teacherModelId !== "n/a" ? teacherModelId : undefined,
-      teacher_model_path: teacherModelPath && teacherModelPath !== "n/a" ? teacherModelPath : undefined,
-      exclude_columns: excludeColumns,
-      date_columns: dateColumns,
-      task,
-      epochs: Math.max(30, Math.round(teacherEpochs)),
-      batch_size: Math.max(1, Math.round(teacherBatch)),
-      learning_rate: teacherLr,
-      test_size: teacherTestSize,
-      temperature: 2.5,
-      alpha: 0.5,
-      student_hidden_dim: Math.max(16, Math.round(teacherHidden / 2)),
-      student_num_hidden_layers: Math.max(1, Math.min(15, Math.round(teacherLayers - 1))),
-      student_dropout: Math.min(0.5, teacherDropout + 0.05),
-    });
-
-    if (result.status === "error") {
-      setTrainingError(result.error);
-      setDistillStatus("Distillation failed.");
-      setIsDistilling(false);
-      return;
-    }
-
-    const metrics = (result.metrics ?? {}) as TrainingMetrics;
-    setDistillMetrics(metrics);
-    setDistillModelId(result.model_id ?? null);
-    setDistillModelPath(result.model_path ?? null);
-    setIsDistillMetricsModalOpen(true);
-    const distilledRun: TrainingRunRow = {
-      result: "distilled",
-      completed_at: formatCompletedAt(),
-      epochs: Math.max(30, Math.round(teacherEpochs)),
-      learning_rate: formatMetricNumber(teacherLr),
-      test_size: formatMetricNumber(teacherTestSize),
-      batch_size: Math.max(1, Math.round(teacherBatch)),
-      hidden_dim: Math.max(16, Math.round(teacherHidden / 2)),
-      num_hidden_layers: Math.max(1, Math.min(15, Math.round(teacherLayers - 1))),
-      dropout: formatMetricNumber(Math.min(0.5, teacherDropout + 0.05)),
-      task,
-      target_column: resolvedTargetColumn.trim(),
-      dataset_id: selectedDatasetId,
-      metric_name: metrics.test_metric_name ?? "n/a",
-      metric_score: formatMetricNumber(metrics.test_metric_value),
-      train_loss: formatMetricNumber(metrics.train_loss),
-      test_loss: formatMetricNumber(metrics.test_loss),
-      model_id: result.model_id ?? "n/a",
-      model_path: result.model_path ?? "n/a",
-      error: "",
-    };
-    prependTrainingRun(distilledRun);
-    setDistillStatus("Distilled student model created.");
-    setTimeout(() => setDistillStatus(null), 2500);
-    setIsDistilling(false);
-  }
-
-  async function onCopyTrainingRuns() {
-    if (trainingRuns.length === 0) return;
-
-    const rowsAsTsv = trainingRuns.map((row) =>
-      TRAINING_RUN_COLUMNS.map((column) => String(row[column] ?? "")).join("\t")
-    );
-    const tsv = [TRAINING_RUN_COLUMNS.join("\t"), ...rowsAsTsv].join("\n");
-
-    try {
-      await navigator.clipboard.writeText(tsv);
-      setCopyRunsStatus("Copied");
-      setTimeout(() => setCopyRunsStatus(null), 1500);
-    } catch {
-      setCopyRunsStatus("Copy failed");
-      setTimeout(() => setCopyRunsStatus(null), 2000);
-    }
-  }
+    learningRatesValidation,
+    batchSizesValidation,
+    hiddenDimsValidation,
+    numHiddenLayersValidation,
+    dropoutsValidation,
+    defaults,
+    onDatasetChange,
+    onTrainClick,
+    onFindOptimalParamsClick,
+    onApplyOptimalParams,
+    trainingRuns,
+    copyRunsStatus,
+    onCopyTrainingRuns,
+    clearTrainingRuns,
+    completedRuns,
+    optimizerStatus,
+    isOptimalModalOpen,
+    setIsOptimalModalOpen,
+    pendingOptimalParams,
+    pendingOptimalPrediction,
+    isDistillMetricsModalOpen,
+    setIsDistillMetricsModalOpen,
+    distillMetrics,
+    distillModelId,
+    distillModelPath,
+  } = orchestrator({
+    runTraining: runPytorchTraining,
+    runDistillation: runPytorchDistillation,
+  });
 
   return (
     <div className="flex min-h-screen flex-row bg-white text-zinc-900">
@@ -1011,46 +408,12 @@ export default function PyTorchPage() {
             {trainingError ? (
               <p className="mt-3 text-xs text-red-600">{trainingError}</p>
             ) : null}
-            <div className="mt-4 border-t border-zinc-200 pt-4">
-              <div className="mb-2 flex items-center justify-between">
-                <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                  Training Runs
-                </p>
-                <div className="flex items-center gap-2">
-                  {copyRunsStatus ? (
-                    <span className="text-xs text-zinc-500">{copyRunsStatus}</span>
-                  ) : null}
-                  <button
-                    type="button"
-                    className="rounded-md border border-zinc-300 bg-white px-2 py-1 text-xs font-medium text-zinc-700 disabled:cursor-not-allowed disabled:text-zinc-400"
-                    onClick={onCopyTrainingRuns}
-                    disabled={trainingRuns.length === 0}
-                  >
-                    Copy Results
-                  </button>
-                  <button
-                    type="button"
-                    className="rounded-md bg-zinc-900 px-2 py-1 text-xs font-medium text-white disabled:cursor-not-allowed disabled:bg-zinc-400"
-                    onClick={clearTrainingRuns}
-                    disabled={trainingRuns.length === 0}
-                  >
-                    Clear Runs
-                  </button>
-                </div>
-              </div>
-              {trainingRuns.length === 0 ? (
-                <p className="text-xs text-zinc-500">
-                  No runs yet. Train once to populate the results table.
-                </p>
-              ) : (
-                <DataTable
-                  rows={trainingRuns}
-                  columns={[...TRAINING_RUN_COLUMNS]}
-                  height={trainingTableHeight}
-                  maxWidth={980}
-                />
-              )}
-            </div>
+            <TrainingRunsSection
+              trainingRuns={trainingRuns}
+              copyRunsStatus={copyRunsStatus}
+              onCopyTrainingRuns={onCopyTrainingRuns}
+              onClearTrainingRuns={clearTrainingRuns}
+            />
           </section>
 
           <details
@@ -1074,105 +437,20 @@ export default function PyTorchPage() {
       {/* <div className="sticky top-0 h-screen w-[420px] shrink-0 overflow-hidden">
         <CopilotSidebar mode="ag-ui" />
       </div> */}
-      <Modal
+      <OptimalParamsModal
         isOpen={isOptimalModalOpen}
         onClose={() => setIsOptimalModalOpen(false)}
-        title="Bayesian Optimization Suggestion"
-      >
-        <div className="space-y-4 p-1">
-          <p className="text-sm text-zinc-600">
-            Suggested next hyperparameters for better accuracy based on completed runs.
-
-          </p>
-          <div className="grid grid-cols-1 gap-2 text-sm text-zinc-800 md:grid-cols-2">
-            <p>epochs: <span className="font-semibold">{pendingOptimalParams?.epochs ?? "n/a"}</span></p>
-            <p>learning_rate: <span className="font-semibold">{pendingOptimalParams ? Number(pendingOptimalParams.learning_rate.toPrecision(6)) : "n/a"}</span></p>
-            <p>test_size: <span className="font-semibold">{pendingOptimalParams ? Number(pendingOptimalParams.test_size.toPrecision(4)) : "n/a"}</span></p>
-            <p>batch_size: <span className="font-semibold">{pendingOptimalParams?.batch_size ?? "n/a"}</span></p>
-            <p>hidden_dim: <span className="font-semibold">{pendingOptimalParams?.hidden_dim ?? "n/a"}</span></p>
-            <p>num_hidden_layers: <span className="font-semibold">{pendingOptimalParams?.num_hidden_layers ?? "n/a"}</span></p>
-            <p>dropout: <span className="font-semibold">{pendingOptimalParams ? Number(pendingOptimalParams.dropout.toPrecision(4)) : "n/a"}</span></p>
-          </div>
-          {pendingOptimalPrediction ? (
-            <p className="text-sm font-semibold text-red-600">
-              Predicted: {pendingOptimalPrediction.metricName} ≈{" "}
-              {formatMetricNumber(pendingOptimalPrediction.metricValue)}
-            </p>
-          ) : null}
-          <div className="flex items-center justify-end gap-2 pt-2">
-            <button
-              type="button"
-              className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-700"
-              onClick={() => setIsOptimalModalOpen(false)}
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              className="rounded-md bg-zinc-900 px-3 py-2 text-sm font-medium text-white"
-              onClick={onApplyOptimalParams}
-              disabled={!pendingOptimalParams}
-            >
-              Update Table With Values
-            </button>
-          </div>
-        </div>
-      </Modal>
-      <Modal
+        pendingOptimalParams={pendingOptimalParams}
+        pendingOptimalPrediction={pendingOptimalPrediction}
+        onApply={onApplyOptimalParams}
+      />
+      <DistillMetricsModal
         isOpen={isDistillMetricsModalOpen}
         onClose={() => setIsDistillMetricsModalOpen(false)}
-        title="Distillation Metrics"
-      >
-        <div className="space-y-3 p-1 text-sm text-zinc-700">
-          <p>
-            metric_name:{" "}
-            <span className="font-semibold text-zinc-900">
-              {distillMetrics?.test_metric_name ?? "n/a"}
-            </span>
-          </p>
-          <p>
-            metric_score:{" "}
-            <span className="font-semibold text-zinc-900">
-              {formatMetricNumber(distillMetrics?.test_metric_value)}
-            </span>
-          </p>
-          <p>
-            train_loss:{" "}
-            <span className="font-semibold text-zinc-900">
-              {formatMetricNumber(distillMetrics?.train_loss)}
-            </span>
-          </p>
-          <p>
-            test_loss:{" "}
-            <span className="font-semibold text-zinc-900">
-              {formatMetricNumber(distillMetrics?.test_loss)}
-            </span>
-          </p>
-          {distillModelId || distillModelPath ? (
-            <div className="rounded-md border border-zinc-200 bg-zinc-50 p-3 text-xs text-zinc-600">
-              <p>
-                model_id: <span className="font-medium text-zinc-800">{distillModelId ?? "n/a"}</span>
-              </p>
-              <p className="mt-1 break-all">
-                model_path: <span className="font-medium text-zinc-800">{distillModelPath ?? "n/a"}</span>
-              </p>
-            </div>
-          ) : (
-            <p className="text-xs text-zinc-500">
-              Model files were not saved for this run.
-            </p>
-          )}
-          <div className="flex justify-end pt-1">
-            <button
-              type="button"
-              className="rounded-md bg-zinc-900 px-3 py-2 text-sm font-medium text-white"
-              onClick={() => setIsDistillMetricsModalOpen(false)}
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      </Modal>
+        distillMetrics={distillMetrics}
+        distillModelId={distillModelId}
+        distillModelPath={distillModelPath}
+      />
     </div>
   );
 }

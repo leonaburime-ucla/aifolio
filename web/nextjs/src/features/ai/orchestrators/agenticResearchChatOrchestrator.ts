@@ -1,17 +1,19 @@
 import { useMemo } from "react";
-import { useShallow } from "zustand/react/shallow";
 import { fetchChatModels, sendChatMessage } from "@/features/ai/api/chatApi";
 import { useChatIntegration } from "@/features/ai/hooks/useChat.hooks";
 import type {
   ChatApiDeps,
   ChatDeps,
   ChatIntegration,
-  ChatState,
   ChatStateActions,
 } from "@/features/ai/types/chat.types";
-import { useAiChatStore } from "@/features/ai/state/zustand/aiChatStore";
-import { useAgenticResearchState } from "@/features/agentic-research/state/zustand/agenticResearchStore";
-import { useAgenticResearchChartStore } from "@/features/agentic-research/state/zustand/agenticResearchChartStore";
+import { useAiChatStateAdapter } from "@/features/ai/state/adapters/aiChatState.adapter";
+import { useAgenticResearchStateAdapter } from "@/features/agentic-research/state/adapters/agenticResearchState.adapter";
+import { useAgenticResearchChartActionsAdapter } from "@/features/agentic-research/state/adapters/chartActions.adapter";
+import {
+  composeChatStateActions,
+  mapChatStateWithDataset,
+} from "@/features/ai/orchestrators/chatOrchestrator.helpers";
 
 /**
  * Chat orchestrator scoped to Agentic Research charts.
@@ -19,43 +21,25 @@ import { useAgenticResearchChartStore } from "@/features/agentic-research/state/
  * Agentic Research chart store (not the global AI Chat chart store).
  */
 export function useAgenticResearchChatOrchestrator(): ChatIntegration {
-  const researchState = useAgenticResearchState();
-  const state = useAiChatStore(
-    useShallow((store): ChatState => ({
-      messages: store.messages,
-      inputHistory: store.inputHistory,
-      historyCursor: store.historyCursor,
-      isSending: store.isSending,
-      modelOptions: store.modelOptions,
-      selectedModelId: store.selectedModelId,
-      isModelsLoading: store.isModelsLoading,
-      activeDatasetId: researchState.selectedDatasetId ?? null,
-    })),
+  const chatStatePort = useAiChatStateAdapter();
+  const chartActionsPort = useAgenticResearchChartActionsAdapter();
+  const researchStatePort = useAgenticResearchStateAdapter();
+
+  const state = useMemo(
+    () =>
+      mapChatStateWithDataset(
+        chatStatePort.state,
+        researchStatePort.state.selectedDatasetId ?? null
+      ),
+    [chatStatePort.state, researchStatePort.state.selectedDatasetId]
   );
 
   const actions = useMemo<ChatStateActions>(() => {
-    const current = useAiChatStore.getState();
-    const chartStore = useAgenticResearchChartStore.getState();
-    return {
-      addMessage: current.addMessage,
-      addInputToHistory: current.addInputToHistory,
-      moveHistoryCursor: current.moveHistoryCursor,
-      resetHistoryCursor: current.resetHistoryCursor,
-      setSending: current.setSending,
-      setModelOptions: current.setModelOptions,
-      setSelectedModelId: current.setSelectedModelId,
-      setModelsLoading: current.setModelsLoading,
-      addChartSpec: chartStore.addChartSpec,
-      onMessageReceived: (payload) => {
-        if (!payload.chartSpec) return;
-        if (Array.isArray(payload.chartSpec)) {
-          payload.chartSpec.forEach((spec) => chartStore.addChartSpec(spec));
-          return;
-        }
-        chartStore.addChartSpec(payload.chartSpec);
-      },
-    };
-  }, []);
+    return composeChatStateActions(
+      chatStatePort.actions,
+      chartActionsPort.addChartSpec
+    );
+  }, [chatStatePort.actions, chartActionsPort.addChartSpec]);
 
   const api = useMemo<ChatApiDeps>(
     () => ({

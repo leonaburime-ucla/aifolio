@@ -2,25 +2,12 @@ import type {
   ChatAssistantPayload,
   ChatHistoryMessage,
 } from "@/features/ai/types/chat.types";
+import type { ChartSpec } from "@/features/ai/types/chart.types";
 import type {
   ChatApiResponse,
   ModelsApiResponse,
 } from "@/features/ai/api/api.types";
-
-/**
- * Default backend URL for the AI server.
- * Can be overridden with NEXT_PUBLIC_AI_API_URL at build time.
- */
-const DEFAULT_AI_API_URL = "http://127.0.0.1:8000";
-
-/**
- * Resolve the AI API base URL.
- * - Uses NEXT_PUBLIC_AI_API_URL when provided.
- * - Falls back to localhost for local dev.
- */
-function getApiBaseUrl(): string {
-  return process.env.NEXT_PUBLIC_AI_API_URL || DEFAULT_AI_API_URL;
-}
+import { getAiApiBaseUrl } from "@/core/config/aiApi";
 
 /**
  * Attempt to parse a JSON string into the assistant payload.
@@ -147,7 +134,7 @@ function sendChatMessageToEndpoint(
   attachments: ChatHistoryMessage["attachments"],
   datasetId?: string | null
 ): Promise<ChatAssistantPayload | null> {
-  const baseUrl = getApiBaseUrl();
+  const baseUrl = getAiApiBaseUrl();
   return fetch(`${baseUrl}${endpoint}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -178,7 +165,7 @@ export async function fetchChatModels(): Promise<{
   const timeoutId = setTimeout(() => controller.abort(), 5000);
 
   try {
-    const response = await fetch(`${getApiBaseUrl()}/llm/gemini-models`, {
+    const response = await fetch(`${getAiApiBaseUrl()}/llm/gemini-models`, {
       signal: controller.signal,
     });
     if (!response.ok) return null;

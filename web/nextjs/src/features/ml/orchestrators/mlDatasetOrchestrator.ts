@@ -1,26 +1,32 @@
 "use client";
 
 import { useCallback, useEffect, useMemo } from "react";
-import { fetchMlDatasetOptions } from "@/core/views/patterns/mlDatasets";
-import {
-  useMlDatasetActions,
-  useMlDatasetState,
-} from "@/features/ml/state/zustand/mlDataStore";
+import { fetchMlDatasetOptions, fetchMlDatasetRows } from "@/features/ml/api/mlDataApi";
+import { useMlDatasetStateAdapter } from "@/features/ml/state/adapters/mlDataset.adapter";
 import type { MlDatasetCacheEntry } from "@/features/ml/types/mlData.types";
 
-const AI_API_BASE_URL =
-  process.env.NEXT_PUBLIC_AI_API_URL || "http://127.0.0.1:8000";
+type MlDatasetOrchestratorDeps = {
+  useDatasetState?: typeof useMlDatasetStateAdapter;
+  loadDatasetOptions?: typeof fetchMlDatasetOptions;
+  loadDatasetRows?: typeof fetchMlDatasetRows;
+};
 
-export function useMlDatasetOrchestrator() {
-  const state = useMlDatasetState();
-  const actions = useMlDatasetActions();
+/**
+ * Orchestrates ML dataset manifest + row loading through injected state/API dependencies.
+ */
+export function useMlDatasetOrchestrator({
+  useDatasetState = useMlDatasetStateAdapter,
+  loadDatasetOptions = fetchMlDatasetOptions,
+  loadDatasetRows = fetchMlDatasetRows,
+}: MlDatasetOrchestratorDeps = {}) {
+  const { state, actions } = useDatasetState();
 
   const loadManifest = useCallback(async () => {
     if (state.manifestLoaded || state.isLoadingManifest) return;
     try {
       actions.setLoadingManifest(true);
       actions.setError(null);
-      const options = await fetchMlDatasetOptions();
+      const options = await loadDatasetOptions();
       actions.setDatasetOptions(options);
       actions.setSelectedDatasetId(state.selectedDatasetId ?? options[0]?.id ?? null);
       actions.setManifestLoaded(true);
@@ -33,6 +39,7 @@ export function useMlDatasetOrchestrator() {
     }
   }, [
     actions,
+    loadDatasetOptions,
     state.isLoadingManifest,
     state.manifestLoaded,
     state.selectedDatasetId,
@@ -46,18 +53,7 @@ export function useMlDatasetOrchestrator() {
     try {
       actions.setLoadingDataset(true);
       actions.setError(null);
-      const response = await fetch(
-        `${AI_API_BASE_URL}/ml-data/${encodeURIComponent(datasetId)}`
-      );
-      if (!response.ok) {
-        throw new Error("Failed to load dataset rows.");
-      }
-      const payload = (await response.json()) as {
-        columns?: string[];
-        rows?: Array<Record<string, string | number | null>>;
-        rowCount?: number;
-        totalRowCount?: number;
-      };
+      const payload = await loadDatasetRows(datasetId);
       const rows = payload.rows ?? [];
       const columns = payload.columns ?? Object.keys(rows[0] ?? {});
       const cacheEntry: MlDatasetCacheEntry = {
@@ -74,7 +70,7 @@ export function useMlDatasetOrchestrator() {
     } finally {
       actions.setLoadingDataset(false);
     }
-  }, [actions, state.datasetCache, state.selectedDatasetId]);
+  }, [actions, loadDatasetRows, state.datasetCache, state.selectedDatasetId]);
 
   useEffect(() => {
     loadManifest();

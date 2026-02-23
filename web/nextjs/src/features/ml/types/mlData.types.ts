@@ -1,3 +1,9 @@
+export type MlDatasetOption = {
+  id: string;
+  label: string;
+  description?: string;
+};
+
 export type MlDatasetCacheEntry = {
   columns: string[];
   rows: Array<Record<string, string | number | null>>;
@@ -6,7 +12,7 @@ export type MlDatasetCacheEntry = {
 };
 
 export type MlDatasetState = {
-  datasetOptions: import("@/core/views/patterns/CsvDatasetCombobox").CsvDatasetOption[];
+  datasetOptions: MlDatasetOption[];
   selectedDatasetId: string | null;
   datasetCache: Record<string, MlDatasetCacheEntry>;
   manifestLoaded: boolean;
@@ -16,9 +22,7 @@ export type MlDatasetState = {
 };
 
 export type MlDatasetActions = {
-  setDatasetOptions: (
-    value: import("@/core/views/patterns/CsvDatasetCombobox").CsvDatasetOption[]
-  ) => void;
+  setDatasetOptions: (value: MlDatasetOption[]) => void;
   setSelectedDatasetId: (value: string | null) => void;
   setDatasetCacheEntry: (datasetId: string, value: MlDatasetCacheEntry) => void;
   setManifestLoaded: (value: boolean) => void;

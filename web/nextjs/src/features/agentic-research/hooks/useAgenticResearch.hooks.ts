@@ -4,14 +4,8 @@ import type {
   AgenticResearchDeps,
   AgenticResearchIntegration,
   DatasetOption,
-  DatasetManifestEntry,
 } from "@/features/agentic-research/types/agenticResearch.types";
 import { getColumnsFromRows, normalizeRowKeys } from "@/features/agentic-research/utils/datatable.util";
-
-const AI_API_BASE_URL =
-  process.env.NEXT_PUBLIC_AI_API_URL || "http://127.0.0.1:8000";
-const MANIFEST_PATH = `${AI_API_BASE_URL}/sample-data`;
-const SKLEARN_TOOLS_PATH = `${AI_API_BASE_URL}/sklearn-tools`;
 
 function groupSklearnTools(tools: string[]): Record<string, string[]> {
   return tools.reduce<Record<string, string[]>>((acc, tool) => {
@@ -98,14 +92,7 @@ export function useAgenticResearchLogic(
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch(MANIFEST_PATH);
-      if (!response.ok) {
-        throw new Error("Failed to load dataset manifest.");
-      }
-      const payload = (await response.json()) as {
-        datasets?: DatasetManifestEntry[];
-      };
-      const datasets = payload.datasets ?? [];
+      const datasets = await deps.api.fetchDatasetManifest();
       setDatasetManifest(datasets);
       setSelectedDatasetId(
         state.selectedDatasetId ?? datasets[0]?.id ?? null
@@ -117,7 +104,14 @@ export function useAgenticResearchLogic(
     } finally {
       setLoading(false);
     }
-  }, [setDatasetManifest, setError, setLoading, setSelectedDatasetId, state.selectedDatasetId]);
+  }, [
+    deps.api,
+    setDatasetManifest,
+    setError,
+    setLoading,
+    setSelectedDatasetId,
+    state.selectedDatasetId,
+  ]);
 
   /**
    * Fetch the list of available sklearn tools for display.
@@ -125,19 +119,15 @@ export function useAgenticResearchLogic(
    */
   const loadSklearnTools = useCallback(async () => {
     try {
-      const response = await fetch(SKLEARN_TOOLS_PATH);
-      if (!response.ok) {
-        throw new Error("Failed to load sklearn tools.");
-      }
-      const payload = (await response.json()) as { tools?: string[] };
-      setSklearnTools(payload.tools ?? []);
+      const tools = await deps.api.fetchSklearnTools();
+      setSklearnTools(tools);
     } catch (error) {
       setSklearnTools([]);
       setError(
         error instanceof Error ? error.message : "Failed to load sklearn tools."
       );
     }
-  }, [setError, setSklearnTools]);
+  }, [deps.api, setError, setSklearnTools]);
 
   /**
    * Load the selected dataset, parse rows, and update table state.
@@ -154,24 +144,11 @@ export function useAgenticResearchLogic(
       setTableRows([]);
       setTableColumns([]);
       setPcaChartSpec(null);
-      const response = await fetch(
-        `${AI_API_BASE_URL}/sample-data/${selected.id}`
-      );
-      if (!response.ok) {
-        throw new Error("Failed to load dataset file.");
-      }
-      const payload = (await response.json()) as {
-        rows?: Array<Record<string, string | number | null>>;
-        columns?: string[];
-      };
+      const payload = await deps.api.fetchDatasetRows(selected.id);
       let rows: Array<Record<string, string | number | null>> = payload.rows ?? [];
       const columns = payload.columns ?? getColumnsFromRows(rows);
       rows = normalizeRowKeys(rows);
       setTableColumns(columns);
-      console.log("[agentic-research] columns", {
-        datasetId: selected.id,
-        columns,
-      });
       setTableRows(rows);
 
       setNumericMatrix([]);
@@ -190,6 +167,7 @@ export function useAgenticResearchLogic(
       setLoading(false);
     }
   }, [
+    deps.api,
     setError,
     setFeatureNames,
     setLoading,

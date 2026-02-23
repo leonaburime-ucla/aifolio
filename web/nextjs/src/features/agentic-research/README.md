@@ -19,7 +19,7 @@ actions.setSelectedDatasetId("wine-quality-red");
 
 Chart state port example:
 ```ts
-const { chartSpecs } = useChartStateAdapter();
+const { chartSpecs } = useAgenticResearchChartStateAdapter();
 ```
 
 Non-reactive snapshot helpers:

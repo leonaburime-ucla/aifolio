@@ -5,7 +5,7 @@ import CsvDatasetCombobox from "@/core/views/patterns/CsvDatasetCombobox";
 import {
   DEFAULT_ML_DATASET_ID,
   ML_WINE_DATASET_OPTIONS,
-} from "@/core/views/patterns/mlDatasets";
+} from "@/features/ml/api/mlDataApi";
 
 export default function KnowledgeDistillationPage() {
   const [selectedDatasetId, setSelectedDatasetId] = useState<string | null>(

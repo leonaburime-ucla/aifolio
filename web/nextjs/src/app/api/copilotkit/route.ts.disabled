@@ -1,10 +1,9 @@
 import { CopilotRuntime, copilotRuntimeHandler } from "@copilotkit/runtime/nextjs";
 import { CustomHttpAgent } from "@copilotkit/runtime";
+import { getAiApiBaseUrl } from "@/core/config/aiApi";
 
 const aguiBaseUrl =
-  process.env.AG_UI_BASE_URL ||
-  process.env.NEXT_PUBLIC_AI_API_URL ||
-  "http://127.0.0.1:8000";
+  process.env.AG_UI_BASE_URL || getAiApiBaseUrl();
 
 const runtime = new CopilotRuntime({
   agents: [

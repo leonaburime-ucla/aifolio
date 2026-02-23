@@ -2,14 +2,22 @@
 
 import ChatSidebar from "@/features/ai/views/components/ChatSidebar";
 import { useAgenticResearchChatOrchestrator } from "@/features/ai/orchestrators/agenticResearchChatOrchestrator";
+import type { ChatOrchestrator } from "@/features/ai/orchestrators/chatOrchestrator";
 import ChartRenderer from "@/features/recharts/views/components/ChartRenderer";
 import DataTable from "@/core/views/components/Datatable/DataTable";
 import { useAgenticResearchOrchestrator } from "@/features/agentic-research/orchestrators/agenticResearchOrchestrator";
 import DatasetCombobox from "@/features/agentic-research/views/components/DatasetCombobox";
+import type { AgenticResearchOrchestratorModel } from "@/features/agentic-research/types/agenticResearch.types";
+
+type AgenticResearchPageProps = {
+  pageOrchestrator?: () => AgenticResearchOrchestratorModel;
+  chatOrchestrator?: () => ChatOrchestrator;
+};
 
 export default function AgenticResearchPage({
-  pageOrchestrator = useAgenticResearchOrchestrator
-}) {
+  pageOrchestrator = useAgenticResearchOrchestrator,
+  chatOrchestrator = useAgenticResearchChatOrchestrator,
+}: AgenticResearchPageProps) {
   const {
     isLoading,
     error,
@@ -118,7 +126,7 @@ export default function AgenticResearchPage({
 
       <div className="sticky top-16 h-[calc(100vh-64px)] w-[360px] shrink-0 overflow-hidden">
         <ChatSidebar
-          chatOrchestrator={useAgenticResearchChatOrchestrator}
+          chatOrchestrator={chatOrchestrator}
           className="!h-full border-l-0"
         />
       </div>

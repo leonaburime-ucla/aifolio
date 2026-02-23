@@ -1,10 +1,10 @@
 # Agent Specification (SDD + Orc-BASH + DDD)
 
-This document translates the latest `project-specification.md` into an Orc-BASH-aligned, Domain-Driven plan for every AI agent in AIfolio. We combine **Spec-Driven Development (SDD)**, the **Orc-BASH** paradigm (Orchestration, Business Logic, API, State, Hooks), and Bounded Contexts so that each feature ships with deterministic contracts, maximal hook reusability, and predictable error bubbling all the way to the UI. For the Python agent workspace (FastAPI + LangGraph + ML tooling), see `ai-python/AGENT.md`. Reference: [The Orc-BASH Pattern](https://medium.com/@leonaburime/the-orc-bash-pattern-orchestrated-architecture-for-maximum-reusability-5d6b4734c9f6).
+This document translates the latest AI Dev Shop spec kit in `AI-Dev-Shop-speckit/` into an Orc-BASH-aligned, Domain-Driven plan for every AI agent in AIfolio. We combine **Spec-Driven Development (SDD)**, the **Orc-BASH** paradigm (Orchestration, Business Logic, API, State, Hooks), and Bounded Contexts so that each feature ships with deterministic contracts, maximal hook reusability, and predictable error bubbling all the way to the UI. For the Python agent workspace (FastAPI + LangGraph + ML tooling), see `ai-python/AGENT.md`. Reference: [The Orc-BASH Pattern](https://medium.com/@leonaburime/the-orc-bash-pattern-orchestrated-architecture-for-maximum-reusability-5d6b4734c9f6).
 
 ## 1. Working Principles
 
-1. **Start with specs.** Every route, workflow, and feature listed in `project-specification.md` maps to an explicit agent capability and data contract before any code exists.
+1. **Start with specs.** Every route, workflow, and feature listed in `AI-Dev-Shop-speckit/` maps to an explicit agent capability and data contract before any code exists.
 2. **Model layers per Orc-BASH.** Orchestrators know about Business Logic, APIs, State, and Hooks; those four layers never depend on each other—only on shared types.
 3. **Codify ubiquitous language.** Define TypeScript types (`types/agent.ts`) for inputs, outputs, events, and error classes so each bounded context (Crypto, Real Estate, etc.) speaks the same language across runtimes.
 4. **Instrument everything.** All orchestrators emit diagnostics for LangSmith, Sentry, and PostHog so we can trace failures through layers.

@@ -1,4 +1,6 @@
 import type { ChartSpec } from "@/features/ai/types/chart.types";
+import type { DatasetManifestEntry } from "@/features/agentic-research/types/agenticResearch.types";
+import { getAiApiBaseUrl } from "@/core/config/aiApi";
 
 type PcaToolResult = {
   transformed?: number[][];
@@ -13,11 +15,10 @@ type PcaToolResponse = {
   result?: PcaToolResult | null;
 };
 
-const DEFAULT_AI_API_URL = "http://127.0.0.1:8000";
-
-function getApiBaseUrl(): string {
-  return process.env.NEXT_PUBLIC_AI_API_URL || DEFAULT_AI_API_URL;
-}
+type DatasetRowsResponse = {
+  rows?: Array<Record<string, string | number | null>>;
+  columns?: string[];
+};
 
 function buildPcaChartSpec(result: PcaToolResult): ChartSpec | null {
   const transformed = result.transformed ?? [];
@@ -49,6 +50,46 @@ function buildPcaChartSpec(result: PcaToolResult): ChartSpec | null {
   };
 }
 
+/**
+ * Loads dataset manifest metadata for agentic research datasets.
+ */
+export async function fetchDatasetManifest(): Promise<DatasetManifestEntry[]> {
+  const baseUrl = getAiApiBaseUrl();
+  const response = await fetch(`${baseUrl}/sample-data`);
+  if (!response.ok) {
+    throw new Error("Failed to load dataset manifest.");
+  }
+  const payload = (await response.json()) as { datasets?: DatasetManifestEntry[] };
+  return payload.datasets ?? [];
+}
+
+/**
+ * Loads the list of sklearn tools available to the agentic research UI.
+ */
+export async function fetchSklearnTools(): Promise<string[]> {
+  const baseUrl = getAiApiBaseUrl();
+  const response = await fetch(`${baseUrl}/sklearn-tools`);
+  if (!response.ok) {
+    throw new Error("Failed to load sklearn tools.");
+  }
+  const payload = (await response.json()) as { tools?: string[] };
+  return payload.tools ?? [];
+}
+
+/**
+ * Loads dataset rows and optional columns for the selected dataset.
+ */
+export async function fetchDatasetRows(
+  datasetId: string
+): Promise<DatasetRowsResponse> {
+  const baseUrl = getAiApiBaseUrl();
+  const response = await fetch(`${baseUrl}/sample-data/${datasetId}`);
+  if (!response.ok) {
+    throw new Error("Failed to load dataset file.");
+  }
+  return (await response.json()) as DatasetRowsResponse;
+}
+
 export async function fetchPcaChartSpec(payload: {
   data: number[][];
   feature_names?: string[];
@@ -56,7 +97,7 @@ export async function fetchPcaChartSpec(payload: {
   dataset_id?: string;
   dataset_meta?: Record<string, unknown>;
 }): Promise<ChartSpec | null> {
-  const baseUrl = getApiBaseUrl();
+  const baseUrl = getAiApiBaseUrl();
   const response = await fetch(`${baseUrl}/llm/ds`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
