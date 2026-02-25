@@ -56,13 +56,29 @@ export type RunTensorflowTrainingDeps = {
 export async function runTensorflowTraining(
   problem: RunTensorflowTrainingProblem,
   deps: RunTensorflowTrainingDeps
-): Promise<{ stopped: boolean; completed: number; total: number; completedTeacherRuns: TrainingRunRow[] }> {
+): Promise<{
+  stopped: boolean;
+  completed: number;
+  total: number;
+  completedTeacherRuns: TrainingRunRow[];
+  failedRuns: number;
+  firstFailureMessage: string | null;
+}> {
   const total = problem.combinations.length;
   let completed = 0;
+  let failedRuns = 0;
+  let firstFailureMessage: string | null = null;
   const completedTeacherRuns: TrainingRunRow[] = [];
   for (let i = 0; i < total; i += 1) {
     if (deps.shouldContinue && !deps.shouldContinue()) {
-      return { stopped: true, completed, total, completedTeacherRuns };
+      return {
+        stopped: true,
+        completed,
+        total,
+        completedTeacherRuns,
+        failedRuns,
+        firstFailureMessage,
+      };
     }
     const combo = problem.combinations[i];
     const result = await deps.trainModel({
@@ -85,6 +101,10 @@ export async function runTensorflowTraining(
     deps.onProgress(i + 1, total);
 
     if (result.status === "error") {
+      failedRuns += 1;
+      if (!firstFailureMessage) {
+        firstFailureMessage = result.error ?? "Training failed.";
+      }
       deps.prependTrainingRun({
         result: "failed",
         completed_at: deps.formatCompletedAt(),
@@ -137,7 +157,14 @@ export async function runTensorflowTraining(
     deps.prependTrainingRun(completedRun);
     completedTeacherRuns.push(completedRun);
   }
-  return { stopped: false, completed, total, completedTeacherRuns };
+  return {
+    stopped: false,
+    completed,
+    total,
+    completedTeacherRuns,
+    failedRuns,
+    firstFailureMessage,
+  };
 }
 
 export type TensorflowTeacherConfig = {
@@ -215,6 +242,12 @@ export async function runTensorflowDistillation(
       distilledRun: TrainingRunRow;
     }
 > {
+  // Keep distillation faster than full teacher training for interactive runs.
+  const distilledEpochs = Math.min(
+    24,
+    Math.max(8, Math.round(problem.teacher.epochs * 0.4))
+  );
+
   const result = await deps.distillModel({
     dataset_id: problem.datasetId,
     target_column: problem.targetColumn,
@@ -226,7 +259,7 @@ export async function runTensorflowDistillation(
     exclude_columns: problem.excludeColumns,
     date_columns: problem.dateColumns,
     task: problem.task,
-    epochs: Math.max(30, Math.round(problem.teacher.epochs)),
+    epochs: distilledEpochs,
     batch_size: Math.max(1, Math.round(problem.teacher.batch)),
     learning_rate: problem.teacher.learningRate,
     test_size: problem.teacher.testSize,
@@ -245,7 +278,7 @@ export async function runTensorflowDistillation(
   const distilledRun: TrainingRunRow = {
     result: "distilled",
     completed_at: deps.formatCompletedAt(),
-    epochs: Math.max(30, Math.round(problem.teacher.epochs)),
+    epochs: distilledEpochs,
     learning_rate: deps.formatMetricNumber(problem.teacher.learningRate),
     test_size: deps.formatMetricNumber(problem.teacher.testSize),
     batch_size: Math.max(1, Math.round(problem.teacher.batch)),

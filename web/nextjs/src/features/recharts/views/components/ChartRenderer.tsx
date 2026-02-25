@@ -25,6 +25,7 @@ const SERIES_COLORS = ["#18181b", "#2563eb", "#10b981", "#f59e0b", "#ef4444"];
 
 type ChartRendererProps = {
   spec: ChartSpec;
+  onRemove?: (id: string) => void;
 };
 
 /**
@@ -143,7 +144,7 @@ export function renderUnsupportedChart(spec: ChartSpec) {
   );
 }
 
-export default function ChartRenderer({ spec }: ChartRendererProps) {
+export default function ChartRenderer({ spec, onRemove }: ChartRendererProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const yKeys = Array.isArray(spec.yKeys) ? spec.yKeys : [];
   const data = (spec.data ?? []).map((row) => {
@@ -175,12 +176,12 @@ export default function ChartRenderer({ spec }: ChartRendererProps) {
         label={
           spec.yLabel
             ? {
-                value: spec.yLabel,
-                angle: -90,
-                position: "left",
-                dx: -8,
-                dy: -25,
-              }
+              value: spec.yLabel,
+              angle: -90,
+              position: "left",
+              dx: -8,
+              dy: -25,
+            }
             : undefined
         }
       />
@@ -289,7 +290,17 @@ export default function ChartRenderer({ spec }: ChartRendererProps) {
 
   return (
     <>
-      <section className="mt-3 rounded-2xl border border-white/45 bg-white/55 p-4 shadow-[0_12px_32px_rgba(15,23,42,0.12)] backdrop-blur-md">
+      <section className="relative mt-3 rounded-2xl border border-white/45 bg-white/55 p-4 shadow-[0_12px_32px_rgba(15,23,42,0.12)] backdrop-blur-md">
+        {onRemove ? (
+          <button
+            type="button"
+            onClick={() => onRemove(spec.id)}
+            className="absolute -right-2.5 -top-2.5 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-zinc-800 text-xs text-white shadow-md transition-colors hover:bg-red-500"
+            aria-label={`Remove chart ${spec.title}`}
+          >
+            ×
+          </button>
+        ) : null}
         <div className="mb-4 flex items-start justify-between gap-4">
           <div>
             <h3 className="text-sm font-semibold text-zinc-900">{spec.title}</h3>
@@ -321,14 +332,6 @@ export default function ChartRenderer({ spec }: ChartRendererProps) {
                 <line x1="3" y1="21" x2="10" y2="14" />
               </svg>
             </button>
-            {/* <button
-              type="button"
-              onClick={() => removeChartSpec(spec.id)}
-              className="rounded-md border border-white/60 bg-white/60 px-2 py-1 text-xs text-zinc-700 backdrop-blur-sm transition hover:bg-white/80"
-              aria-label={`Remove chart ${spec.title}`}
-            >
-              ×
-            </button> */}
           </div>
         </div>
 

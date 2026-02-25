@@ -147,6 +147,7 @@ export default function PyTorchPage({
     onStopTrainingRuns,
     onDistillFromRun,
     onSeeDistilledFromRun,
+    isDistillationSupportedForRun,
     trainingRuns,
     copyRunsStatus,
     onCopyTrainingRuns,
@@ -176,10 +177,6 @@ export default function PyTorchPage({
           <p className="text-sm font-semibold uppercase tracking-widest text-zinc-500">
             Machine Learning with PyTorch
           </p>
-          <div className="rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">
-            Note for tomorrow: install React Flow for model visualization (inputs, hidden layers, and tensor dimensions).
-          </div>
-
           <div className="mt-2 flex max-w-xl flex-col gap-2">
             <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
               Dataset (CSV/XLS/XLSX)
@@ -552,6 +549,7 @@ export default function PyTorchPage({
               onStopTrainingRuns={onStopTrainingRuns}
               onDistillFromRun={onDistillFromRun}
               onSeeDistilledFromRun={onSeeDistilledFromRun}
+              isDistillationSupportedForRun={isDistillationSupportedForRun}
               distillingTeacherKey={distillingTeacherKey}
               distilledByTeacher={distilledByTeacher}
             />

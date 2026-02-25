@@ -7,5 +7,6 @@ import { useAgenticResearchChartStore } from "@/features/agentic-research/state/
  */
 export function useAgenticResearchChartStateAdapter(): AgenticResearchChartStatePort {
   const chartSpecs = useAgenticResearchChartStore((state) => state.chartSpecs);
-  return { chartSpecs };
+  const removeChartSpec = useAgenticResearchChartStore((state) => state.removeChartSpec);
+  return { chartSpecs, removeChartSpec };
 }

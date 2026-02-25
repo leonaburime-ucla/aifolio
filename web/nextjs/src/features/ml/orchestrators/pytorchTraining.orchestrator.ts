@@ -49,13 +49,29 @@ export type RunPytorchTrainingDeps = {
 export async function runPytorchTraining(
   problem: RunPytorchTrainingProblem,
   deps: RunPytorchTrainingDeps
-): Promise<{ stopped: boolean; completed: number; total: number; completedTeacherRuns: TrainingRunRow[] }> {
+): Promise<{
+  stopped: boolean;
+  completed: number;
+  total: number;
+  completedTeacherRuns: TrainingRunRow[];
+  failedRuns: number;
+  firstFailureMessage: string | null;
+}> {
   const total = problem.combinations.length;
   let completed = 0;
+  let failedRuns = 0;
+  let firstFailureMessage: string | null = null;
   const completedTeacherRuns: TrainingRunRow[] = [];
   for (let i = 0; i < total; i += 1) {
     if (deps.shouldContinue && !deps.shouldContinue()) {
-      return { stopped: true, completed, total, completedTeacherRuns };
+      return {
+        stopped: true,
+        completed,
+        total,
+        completedTeacherRuns,
+        failedRuns,
+        firstFailureMessage,
+      };
     }
     const combo = problem.combinations[i];
     const result = await deps.trainModel({
@@ -78,6 +94,10 @@ export async function runPytorchTraining(
     deps.onProgress(i + 1, total);
 
     if (result.status === "error") {
+      failedRuns += 1;
+      if (!firstFailureMessage) {
+        firstFailureMessage = result.error ?? "Training failed.";
+      }
       deps.prependTrainingRun({
         result: "failed",
         completed_at: deps.formatCompletedAt(),
@@ -130,7 +150,14 @@ export async function runPytorchTraining(
     deps.prependTrainingRun(completedRun);
     completedTeacherRuns.push(completedRun);
   }
-  return { stopped: false, completed, total, completedTeacherRuns };
+  return {
+    stopped: false,
+    completed,
+    total,
+    completedTeacherRuns,
+    failedRuns,
+    firstFailureMessage,
+  };
 }
 
 export type PytorchTeacherConfig = {

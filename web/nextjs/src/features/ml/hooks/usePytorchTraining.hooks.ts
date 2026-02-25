@@ -46,6 +46,10 @@ const PYTORCH_DISTILL_SUPPORTED_MODES: PytorchTrainingMode[] = [
   "tabresnet",
 ];
 
+function isPytorchDistillSupportedMode(mode: string): mode is PytorchTrainingMode {
+  return PYTORCH_DISTILL_SUPPORTED_MODES.includes(mode as PytorchTrainingMode);
+}
+
 export function usePytorchUiState() {
   const baseState = useMlTrainingUiBaseState();
   const [trainingMode, setTrainingMode] = useState<PytorchTrainingMode>("mlp_dense");
@@ -89,7 +93,7 @@ export function usePytorchLogic({
       : ui.excludeColumnsInput;
   const resolvedDateColumnsInput =
     ui.dateColumnsInput === null ? defaults.dateColumns.join(",") : ui.dateColumnsInput;
-  const isDistillationSupported = PYTORCH_DISTILL_SUPPORTED_MODES.includes(ui.trainingMode);
+  const isDistillationSupported = isPytorchDistillSupportedMode(ui.trainingMode);
 
   const epochsValidation = useMemo(
     () => validateEpochValues(ui.epochValuesInput),
@@ -289,12 +293,19 @@ export function usePytorchLogic({
     if (outcome.stopped) {
       ui.setTrainingError(`Training stopped after ${outcome.completed}/${outcome.total} run(s).`);
     } else {
-      // If we didn't stop manually, but there are runs that failed, pop a toast for the user
-      const failedRuns = outcome.completedTeacherRuns.filter((r) => r.result === "failed");
-      if (failedRuns.length > 0) {
-        toast.error(failedRuns[0].error || "A training run failed.");
+      if (outcome.failedRuns > 0) {
+        toast.error(
+          outcome.firstFailureMessage ??
+            `${outcome.failedRuns} training run(s) failed in the sequence.`
+        );
+        if (outcome.failedRuns < outcome.completed) {
+          toast.success(
+            `Training sequence completed with partial success (${outcome.completed - outcome.failedRuns}/${outcome.completed}).`
+          );
+        }
+      } else {
+        toast.success("Training sequence completed.");
       }
-      toast.success("Training sequence completed.");
       ui.setTrainingError(null);
     }
     ui.setIsTraining(false);
@@ -341,9 +352,10 @@ export function usePytorchLogic({
     teacher: TrainingRunRow,
     teacherKey: string
   ) {
-    if (!isDistillationSupported) {
+    const teacherTrainingMode = String(teacher.training_mode ?? ui.trainingMode);
+    if (!isPytorchDistillSupportedMode(teacherTrainingMode)) {
       ui.setTrainingError(
-        `Distillation is not supported for '${ui.trainingMode}' yet. Switch to neural net, linear baseline, or tabresnet.`
+        `Distillation is not supported for '${teacherTrainingMode}' yet.`
       );
       return;
     }
@@ -382,7 +394,7 @@ export function usePytorchLogic({
         datasetId: dataset.selectedDatasetId,
         targetColumn: resolvedTargetColumn.trim(),
         task: ui.task,
-        trainingMode: ui.trainingMode,
+        trainingMode: teacherTrainingMode,
         saveDistilledModel: false,
         excludeColumns,
         dateColumns,
@@ -614,6 +626,8 @@ export function usePytorchLogic({
     onDistillFromRun,
     onSeeDistilledFromRun,
     onCopyTrainingRuns,
+    isDistillationSupportedForRun: (run: TrainingRunRow) =>
+      isPytorchDistillSupportedMode(String(run.training_mode ?? "")),
   };
 }
 

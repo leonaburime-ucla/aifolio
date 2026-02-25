@@ -1,5 +1,5 @@
 """
-Researcher Agent Module.
+Analyst Agent Module.
 
 Receives Data Scientist output and produces human-readable interpretations.
 """
@@ -99,7 +99,7 @@ def interpret_analysis(
     model_id: str = DEFAULT_MODEL_ID,
 ) -> Dict[str, Any]:
     """
-    Ask the Researcher agent to interpret analysis results for the user.
+    Ask the Analyst agent to interpret analysis results for the user.
 
     Args:
         user_request: Current user question/request.
@@ -112,16 +112,16 @@ def interpret_analysis(
         model_id: LLM model to use.
 
     Returns:
-        Dict with researcher_summary and findings list.
+        Dict with analyst_summary and findings list.
     """
     # Format conversation history if present (for follow-up questions)
     history_text = _format_conversation_history(conversation_history or [])
 
     # Build the prompt with optional conversation context
     prompt_parts = [
-        "You are a data science researcher. Interpret the analysis results below.\n",
+        "You are a data science analyst. Interpret the analysis results below.\n",
         "Return ONLY valid JSON:\n"
-        '{"researcher_summary": "...", "findings": ["...", "..."]}\n\n'
+        '{"analyst_summary": "...", "findings": ["...", "..."]}\n\n'
         "RULES:\n"
         "- Cite specific numeric values from the data (loadings, coefficients, R², etc.)\n"
         "- Explain what each number means practically for the target variable\n"
@@ -156,6 +156,6 @@ def interpret_analysis(
     parsed = _safe_json_parse(getattr(result, "content", ""))
 
     return {
-        "researcher_summary": parsed.get("researcher_summary", "Could not parse response."),
+        "analyst_summary": parsed.get("analyst_summary", "Could not parse response."),
         "findings": parsed.get("findings", []),
     }

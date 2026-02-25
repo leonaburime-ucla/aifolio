@@ -14,7 +14,7 @@ export default function Navbar() {
           >
             AI Chat
           </Link>
-          
+
           <Link
             href="/agentic-research"
             className="rounded-md px-2 py-1 transition hover:bg-zinc-100"
@@ -42,12 +42,7 @@ export default function Navbar() {
               >
                 TensorFlow
               </Link>
-              <Link
-                href="/ml/knowledge-distillation"
-                className="block rounded-md px-3 py-2 transition hover:bg-zinc-100"
-              >
-                Knowledge Distillation
-              </Link>
+
             </div>
           </div>
           <Link

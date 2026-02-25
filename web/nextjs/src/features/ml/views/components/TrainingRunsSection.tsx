@@ -15,6 +15,7 @@ type TrainingRunsSectionProps = {
   onStopTrainingRuns?: () => void;
   onDistillFromRun?: (run: TrainingRunRow) => void;
   onSeeDistilledFromRun?: (run: TrainingRunRow) => void;
+  isDistillationSupportedForRun?: (run: TrainingRunRow) => boolean;
   distillingTeacherKey?: string | null;
   distilledByTeacher?: Record<string, string>;
 };
@@ -29,6 +30,7 @@ export function TrainingRunsSection({
   onStopTrainingRuns,
   onDistillFromRun,
   onSeeDistilledFromRun,
+  isDistillationSupportedForRun,
   distillingTeacherKey = null,
   distilledByTeacher = {},
 }: TrainingRunsSectionProps) {
@@ -52,11 +54,14 @@ export function TrainingRunsSection({
         (modelId && modelId !== "n/a" ? modelId : "") ||
         (modelPath && modelPath !== "n/a" ? modelPath : "");
       const isEligibleTeacher = Boolean(teacherKey) && rowResult === "completed";
+      const isSupportedMode = isDistillationSupportedForRun
+        ? isDistillationSupportedForRun(row)
+        : true;
       const isDistillingThisRow = distillingTeacherKey === teacherKey;
       const hasDistilled = Boolean(distilledByTeacher[teacherKey]);
 
-      if (!isEligibleTeacher) {
-        return <span className="text-xs text-zinc-400">n/a</span>;
+      if (!isEligibleTeacher || !isSupportedMode) {
+        return <span className="text-xs text-zinc-400">Not Available</span>;
       }
 
       if (hasDistilled) {

@@ -227,7 +227,13 @@ export async function handleCopyTrainingRuns({
   if (trainingRuns.length === 0) return;
 
   const rowsAsTsv = trainingRuns.map((row) =>
-    TRAINING_RUN_COLUMNS.map((column) => String(row[column] ?? "")).join("\t")
+    TRAINING_RUN_COLUMNS.map((column) => {
+      if (column === "distill_action") {
+        const value = String(row[column] ?? "").trim();
+        return value.length > 0 ? value : "Not Available";
+      }
+      return String(row[column] ?? "");
+    }).join("\t")
   );
   const tsv = [TRAINING_RUN_COLUMNS.join("\t"), ...rowsAsTsv].join("\n");
 

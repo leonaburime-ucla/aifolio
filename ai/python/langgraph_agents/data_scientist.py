@@ -478,6 +478,21 @@ def _coerce_float(value: Any) -> Optional[float]:
         return None
 
 
+def _try_parse_date(value: Any) -> Any:
+    from datetime import datetime
+    text = str(value or "").strip()
+    if not text:
+        return None
+    for fmt in ("%Y-%m-%d", "%d-%m-%Y", "%m-%d-%Y", "%Y/%m/%d", "%d/%m/%Y", "%m/%d/%Y"):
+        try:
+            return datetime.strptime(text, fmt)
+        except ValueError:
+            pass
+    try:
+        return datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+
 def _build_numeric_matrix(
     rows: List[Dict[str, Any]],
     target_column: Optional[str] = None,
@@ -494,53 +509,122 @@ def _build_numeric_matrix(
     """
     if not rows:
         return [], [], []
-    keys = list(rows[0].keys())
-    feature_names = [key for key in keys if key != target_column]
-    matrix: list[list[float]] = []
-    targets: list[float] = []
-    raw_targets: list[Any] = []
-    for row in rows:
-        values: list[float] = []
-        valid = True
-        for key in feature_names:
-            value = _coerce_float(row.get(key))
-            if value is None:
-                valid = False
-                break
-            values.append(value)
-        if not valid:
-            continue
-        matrix.append(values)
-        if target_column:
-            raw_targets.append(row.get(target_column))
-    if not target_column:
-        return matrix, targets, feature_names
 
+    import numpy as np
+    from sklearn.feature_extraction import DictVectorizer
+
+    keys = list(rows[0].keys())
+    feature_candidates = [k for k in keys if k != target_column]
+
+    col_has_strings = {col: False for col in feature_candidates}
+    col_unique_vals = {col: set() for col in feature_candidates}
+    date_cols = [col for col in feature_candidates if "date" in col.lower() or "timestamp" in col.lower()]
+
+    for row in rows:
+        for col in feature_candidates:
+            if col in date_cols:
+                continue
+            val = row.get(col)
+            if val is not None and str(val).strip() != "":
+                if _coerce_float(val) is None:
+                    col_has_strings[col] = True
+                    col_unique_vals[col].add(str(val).strip())
+
+    features_to_keep = []
+    for col in feature_candidates:
+        if col in date_cols:
+            features_to_keep.append(col)
+            continue
+        if col_has_strings[col]:
+            lower = col.lower()
+            is_id = "id" in lower or "uuid" in lower
+            if is_id or len(col_unique_vals[col]) > 20: # High cardinality string or ID
+                continue
+        features_to_keep.append(col)
+
+    dict_rows = []
+    for row in rows:
+        processed = {}
+        for col in features_to_keep:
+            val = row.get(col)
+            if col in date_cols:
+                dt = _try_parse_date(val)
+                if dt:
+                    processed[f"{col}_year"] = dt.year
+                    processed[f"{col}_month"] = dt.month
+                    processed[f"{col}_day"] = dt.day
+            else:
+                num = _coerce_float(val)
+                if num is not None:
+                    processed[col] = num
+                elif val is not None and str(val).strip() != "":
+                    processed[col] = str(val).strip()
+        dict_rows.append(processed)
+
+    if not dict_rows:
+        return [], [], []
+
+    vec = DictVectorizer(sparse=False)
+    matrix_np = vec.fit_transform(dict_rows).astype(float)
+    feature_names = list(vec.get_feature_names_out())
+
+    import warnings
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=RuntimeWarning)
+        col_medians = np.nanmedian(np.where(np.isfinite(matrix_np), matrix_np, np.nan), axis=0)
+    col_medians = np.nan_to_num(col_medians, nan=0.0)
+    for col_idx in range(matrix_np.shape[1]):
+        mask = ~np.isfinite(matrix_np[:, col_idx])
+        matrix_np[mask, col_idx] = col_medians[col_idx]
+
+    matrix_list = matrix_np.tolist()
+
+    if not target_column:
+        return matrix_list, [], feature_names
+
+    raw_targets = [row.get(target_column) for row in rows]
+    
     numeric_targets = []
     non_numeric_targets = []
     for value in raw_targets:
         num = _coerce_float(value)
         if num is None:
-            non_numeric_targets.append(str(value).strip())
-            numeric_targets.append(None)
+            if value is None or str(value).strip() == "":
+                non_numeric_targets.append(None)
+                numeric_targets.append(None)
+            else:
+                non_numeric_targets.append(str(value).strip())
+                numeric_targets.append(None)
         else:
+            non_numeric_targets.append(None)
             numeric_targets.append(num)
 
-    if non_numeric_targets:
-        labels = sorted(set(non_numeric_targets))
+    final_matrix: list[list[float]] = []
+    final_targets: list[float] = []
+
+    has_non_numeric = any(t is not None for t in non_numeric_targets)
+    if has_non_numeric:
+        valid_labels = [t for t in non_numeric_targets if t is not None]
+        labels = sorted(set(valid_labels))
         label_to_index = {label: float(index) for index, label in enumerate(labels)}
-        for idx, value in enumerate(raw_targets):
+        
+        for idx in range(len(raw_targets)):
+            num = numeric_targets[idx]
+            text = non_numeric_targets[idx]
+            if num is not None:
+                final_matrix.append(matrix_list[idx])
+                final_targets.append(num)
+            elif text is not None and text in label_to_index:
+                final_matrix.append(matrix_list[idx])
+                final_targets.append(label_to_index[text])
+    else:
+        for idx in range(len(raw_targets)):
             num = numeric_targets[idx]
             if num is not None:
-                targets.append(num)
-                continue
-            text = str(value).strip()
-            if text in label_to_index:
-                targets.append(label_to_index[text])
-        return matrix[: len(targets)], targets, feature_names
+                final_matrix.append(matrix_list[idx])
+                final_targets.append(num)
 
-    targets = [float(value) for value in numeric_targets if value is not None]
-    return matrix, targets, feature_names
+    return final_matrix, final_targets, feature_names
 
 
 def _build_loadings_chart(
@@ -817,7 +901,7 @@ def _plan_tools_with_llm(
             "IMPORTANT: If the user is asking a follow-up question about a previous analysis "
             "(e.g., 'what does that mean?', 'explain the alcohol loading'), "
             "return an empty tool_calls array and set summary to describe the prior analysis context. "
-            "The Researcher will handle interpretation questions.\n\n"
+            "The Analyst will handle interpretation questions.\n\n"
         )
 
     prompt = (
@@ -838,7 +922,7 @@ def _plan_tools_with_llm(
         "- tool_name MUST be one of the available tool names listed below.\n"
         "- If the user uses a synonym (e.g., PCA/PLSR), map it to the exact tool name.\n"
         "- If multiple analyses are requested, return multiple tool_calls.\n"
-        "- For follow-up/clarification questions, return empty tool_calls and let the Researcher handle it.\n\n"
+        "- For follow-up/clarification questions, return empty tool_calls and let the Analyst handle it.\n\n"
         "Synonyms (map to tool_name):\n"
         f"{json.dumps(synonym_map, default=str)}\n\n"
         "Dataset info:\n"
@@ -941,25 +1025,45 @@ def run_data_scientist_analysis(
     Returns:
         Dict with message and chartSpec (single or list).
     """
+    from ml_data import load_ml_dataset
     started_at = time.perf_counter()
     print(f"[ds] analysis:start dataset_id={dataset_id} model={model_id}")
-    entry = _resolve_dataset_entry(dataset_id)
-    if not entry:
+    
+    loaded = load_ml_dataset(dataset_id)
+    if loaded.get("status") != "ok":
         return {"message": "Dataset not found.", "chartSpec": None}
-    data_path = entry.get("files", {}).get("data")
-    if not data_path:
-        return {"message": "Dataset file missing.", "chartSpec": None}
-    file_path = SAMPLE_DATA_DIR / data_path
-    rows = _load_dataset_rows(file_path)
-    columns = list(rows[0].keys()) if rows else []
+        
+    entry = loaded.get("dataset", {})
+    rows = loaded.get("rows", [])
+    columns = loaded.get("columns", [])
+    
     print(
         f"[ds] dataset:loaded dataset_id={dataset_id} rows={len(rows)} cols={len(columns)} "
         f"elapsed_ms={(time.perf_counter() - started_at) * 1000:.1f}"
     )
+    # the target column is probably not strictly defined in ml_data files but let's safely get it if it exists
     target_column = entry.get("targetColumn")
+
     data, targets, feature_names = _build_numeric_matrix(
         rows, target_column=target_column
     )
+    
+    # StandardScaler: normalize features to zero mean / unit variance before any
+    # sklearn tool runs (PCA, regression, clustering, etc.). Without this, features
+    # with large numeric ranges (e.g. TotalCharges ~8000) dominate algorithms like
+    # PCA, making results meaningless. This matches the PyTorch pipeline's scaling.
+    if data:
+        import numpy as np
+        from sklearn.preprocessing import StandardScaler
+        data_np = np.array(data, dtype=float)
+        scaler = StandardScaler()
+        data_np = scaler.fit_transform(data_np)
+        data = data_np.tolist()
+        print(
+            f"[ds] scaling:done dataset_id={dataset_id} "
+            f"elapsed_ms={(time.perf_counter() - started_at) * 1000:.1f}"
+        )
+
     print(
         f"[ds] matrix:built dataset_id={dataset_id} matrix_rows={len(data)} "
         f"features={len(feature_names)} targets={len(targets)} "

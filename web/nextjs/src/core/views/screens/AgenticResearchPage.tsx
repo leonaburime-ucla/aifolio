@@ -29,6 +29,7 @@ export default function AgenticResearchPage({
     tableColumns,
     activeChartSpec,
     chartSpecs,
+    removeChartSpec,
     groupedTools,
     formatToolName,
   } = pageOrchestrator();
@@ -77,6 +78,35 @@ export default function AgenticResearchPage({
             </div>
           </details>
 
+          <details className="rounded-lg border border-zinc-200 bg-white px-4 py-3 text-[12px] text-zinc-600">
+            <summary className="cursor-pointer font-semibold text-zinc-900">
+              Preprocessing Notes
+            </summary>
+            <div className="mt-3 flex flex-col gap-2">
+              <p>
+                <strong>Categorical Encoding:</strong> Text columns with &le; 20 unique values are
+                automatically One-Hot Encoded.
+              </p>
+              <p>
+                <strong>High Cardinality &amp; IDs:</strong> Text columns with &gt; 20 unique values
+                or ID-like names are dropped to prevent feature explosion.
+              </p>
+              <p>
+                <strong>Date Parsing:</strong> Dates and timestamps are extracted into Year, Month,
+                and Day numeric features.
+              </p>
+              <p>
+                <strong>Missing Values:</strong> Missing numeric values are imputed using the column
+                median to maintain robustness against outliers.
+              </p>
+              <p>
+                <strong>Feature Scaling:</strong> All features are standardized to zero mean and unit
+                variance (StandardScaler) before analysis. This prevents large-range features from
+                dominating algorithms like PCA.
+              </p>
+            </div>
+          </details>
+
           <div className="mt-4">
             <div className="mb-4 flex flex-col gap-2">
               <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
@@ -97,16 +127,15 @@ export default function AgenticResearchPage({
                   <div className="h-56 animate-pulse rounded-xl bg-zinc-100" />
                 ) : chartSpecs.length > 0 ? (
                   <div
-                    className={`flex flex-col gap-4 ${
-                      chartSpecs.length > 2 ? "max-h-[56rem] overflow-y-auto pr-2" : ""
-                    }`}
+                    className={`flex flex-col gap-4 ${chartSpecs.length > 2 ? "max-h-[56rem] overflow-y-auto pr-2" : ""
+                      }`}
                   >
                     {chartSpecs.map((spec) => (
-                      <ChartRenderer key={spec.id} spec={spec} />
+                      <ChartRenderer key={spec.id} spec={spec} onRemove={removeChartSpec} />
                     ))}
                   </div>
                 ) : activeChartSpec ? (
-                  <ChartRenderer spec={activeChartSpec} />
+                  <ChartRenderer spec={activeChartSpec} onRemove={removeChartSpec} />
                 ) : (
                   <div className="rounded-xl border border-dashed border-zinc-200 bg-zinc-50 px-4 py-6 text-sm text-zinc-500">
                     {error ?? "No analysis chart data available yet."}

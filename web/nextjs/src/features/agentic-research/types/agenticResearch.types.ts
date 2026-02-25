@@ -92,11 +92,13 @@ export type AgenticResearchIntegration = AgenticResearchState & {
 export type AgenticResearchOrchestratorModel = AgenticResearchIntegration & {
   activeChartSpec: ChartSpec | null;
   chartSpecs: ChartSpec[];
+  removeChartSpec: (id: string) => void;
   formatToolName: (name: string) => string;
 };
 
 export type AgenticResearchChartStatePort = {
   chartSpecs: ChartSpec[];
+  removeChartSpec: (id: string) => void;
 };
 
 export type UseAgenticResearchChartStatePort = () => AgenticResearchChartStatePort;

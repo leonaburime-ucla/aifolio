@@ -179,6 +179,7 @@ export default function TensorFlowPage({
     onStopTrainingRuns,
     onDistillFromRun,
     onSeeDistilledFromRun,
+    isDistillationSupportedForRun,
     trainingRuns,
     copyRunsStatus,
     onCopyTrainingRuns,
@@ -226,7 +227,7 @@ export default function TensorFlowPage({
             ) : null}
           </div>
 
-          <details className="mt-6 rounded-xl border border-zinc-200 bg-zinc-50 p-4" open>
+          {/* <details className="mt-6 rounded-xl border border-zinc-200 bg-zinc-50 p-4" open>
             <summary className="cursor-pointer text-xs font-semibold uppercase tracking-wide text-zinc-500">
               Roadmap Notes
             </summary>
@@ -244,7 +245,7 @@ export default function TensorFlowPage({
               <li>Calibration mode: post-train probability scaling to align confidence with actual outcome frequency.</li>
               <li>Imbalance-aware mode: class weighting/focal objectives to improve minority-class performance.</li>
             </ol>
-          </details>
+          </details> */}
 
           <section className="rounded-xl border border-zinc-200 bg-white p-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
@@ -601,6 +602,7 @@ export default function TensorFlowPage({
               onStopTrainingRuns={onStopTrainingRuns}
               onDistillFromRun={onDistillFromRun}
               onSeeDistilledFromRun={onSeeDistilledFromRun}
+              isDistillationSupportedForRun={isDistillationSupportedForRun}
               distillingTeacherKey={distillingTeacherKey}
               distilledByTeacher={distilledByTeacher}
             />

@@ -86,7 +86,8 @@ export type TensorflowDistillRequest = {
 };
 
 const AI_API_BASE_URL = getAiApiBaseUrl();
-const DISTILL_TIMEOUT_MS = 60_000;
+const DISTILL_TIMEOUT_MS = 180_000;
+const DISTILL_TIMEOUT_SECONDS = Math.round(DISTILL_TIMEOUT_MS / 1000);
 
 export async function trainTensorflowModel(
   payload: TensorflowTrainRequest
@@ -251,7 +252,7 @@ export async function distillTensorflowModel(
       error:
         error instanceof Error
           ? error.name === "AbortError"
-            ? "Distillation timed out after 60 seconds."
+            ? `Distillation timed out after ${DISTILL_TIMEOUT_SECONDS} seconds.`
             : error.message
           : "Failed to send TensorFlow distillation request.",
     };

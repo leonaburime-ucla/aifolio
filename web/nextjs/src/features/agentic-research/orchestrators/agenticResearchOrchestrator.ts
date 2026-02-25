@@ -62,7 +62,7 @@ export function useAgenticResearchOrchestrator(
     useChartStatePort = useAgenticResearchChartStateAdapter,
   } = options;
   const { state, actions } = useStatePort();
-  const { chartSpecs } = useChartStatePort();
+  const { chartSpecs, removeChartSpec } = useChartStatePort();
 
   const api = useMemo<AgenticResearchApiDeps>(
     () => ({
@@ -88,8 +88,9 @@ export function useAgenticResearchOrchestrator(
       ...integration,
       activeChartSpec,
       chartSpecs,
+      removeChartSpec,
       formatToolName,
     }),
-    [integration, activeChartSpec, chartSpecs]
+    [integration, activeChartSpec, chartSpecs, removeChartSpec]
   );
 }

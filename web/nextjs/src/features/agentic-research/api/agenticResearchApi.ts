@@ -32,9 +32,9 @@ function buildPcaChartSpec(result: PcaToolResult): ChartSpec | null {
   const varianceText =
     variance.length >= 2
       ? `Explained variance: ${variance
-          .slice(0, 3)
-          .map((value, index) => `PC${index + 1} ${(value * 100).toFixed(1)}%`)
-          .join(", ")}`
+        .slice(0, 3)
+        .map((value, index) => `PC${index + 1} ${(value * 100).toFixed(1)}%`)
+        .join(", ")}`
       : undefined;
 
   return {
@@ -55,12 +55,20 @@ function buildPcaChartSpec(result: PcaToolResult): ChartSpec | null {
  */
 export async function fetchDatasetManifest(): Promise<DatasetManifestEntry[]> {
   const baseUrl = getAiApiBaseUrl();
-  const response = await fetch(`${baseUrl}/sample-data`);
+  const response = await fetch(`${baseUrl}/ml-data`);
   if (!response.ok) {
     throw new Error("Failed to load dataset manifest.");
   }
-  const payload = (await response.json()) as { datasets?: DatasetManifestEntry[] };
-  return payload.datasets ?? [];
+  const payload = (await response.json()) as { datasets?: { id: string, label?: string, format?: string }[] };
+
+  // Map the new ml-data schema to the expected agentic research schema
+  return (payload.datasets ?? []).map((entry) => ({
+    id: entry.id,
+    label: entry.label ?? entry.id,
+    description: entry.format
+      ? `${entry.format.toUpperCase()} dataset from ai/ml/data`
+      : "Dataset from ai/ml/data",
+  }));
 }
 
 /**
@@ -83,7 +91,7 @@ export async function fetchDatasetRows(
   datasetId: string
 ): Promise<DatasetRowsResponse> {
   const baseUrl = getAiApiBaseUrl();
-  const response = await fetch(`${baseUrl}/sample-data/${datasetId}`);
+  const response = await fetch(`${baseUrl}/ml-data/${encodeURIComponent(datasetId)}`);
   if (!response.ok) {
     throw new Error("Failed to load dataset file.");
   }

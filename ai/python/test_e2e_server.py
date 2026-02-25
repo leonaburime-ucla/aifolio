@@ -1,5 +1,5 @@
 """
-End-to-end test for the full pipeline: server → coordinator → data_scientist → researcher.
+End-to-end test for the full pipeline: server → coordinator → data_scientist → analyst.
 
 Run:
   1. Start server: python server.py (in another terminal)
@@ -62,9 +62,9 @@ def test_chat_research(dataset_id: str, message: str, expected_chart_type: str =
     msg = result.get("message", "")
     assert msg, "No message in response"
 
-    # Check for [Data Scientist] and [Researcher] sections
+    # Check for [Data Scientist] and [Analyst] sections
     has_ds = "[Data Scientist]" in msg
-    has_researcher = "[Researcher]" in msg
+    has_analyst = "[Analyst]" in msg
 
     # Check chart spec
     chart_spec = result.get("chartSpec")
@@ -76,7 +76,7 @@ def test_chat_research(dataset_id: str, message: str, expected_chart_type: str =
     return {
         "message_length": len(msg),
         "has_data_scientist": has_ds,
-        "has_researcher": has_researcher,
+        "has_analyst": has_analyst,
         "has_chart": has_chart,
         "chart_count": len(chart_spec) if isinstance(chart_spec, list) else (1 if chart_spec else 0),
         "findings_count": len(findings),
@@ -137,8 +137,8 @@ def run_all_tests():
         print(f"   Query: '{message}'")
         try:
             result = test_chat_research(dataset_id, message, expected_type)
-            status = "OK" if result["has_chart"] and result["has_researcher"] else "WARN"
-            print(f"   {status}: DS={result['has_data_scientist']}, Researcher={result['has_researcher']}, Charts={result['chart_count']}, Findings={result['findings_count']}")
+            status = "OK" if result["has_chart"] and result["has_analyst"] else "WARN"
+            print(f"   {status}: DS={result['has_data_scientist']}, Analyst={result['has_analyst']}, Charts={result['chart_count']}, Findings={result['findings_count']}")
 
             # Show chart info if available
             if result["chart_spec"]:

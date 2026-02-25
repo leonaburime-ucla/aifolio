@@ -499,9 +499,9 @@ function buildLayerBullets(mode: ModelPreviewMode): { layers: string[]; terminol
     case "mlp_dense":
       return {
         layers: [
-          "Input Features: Standardized tabular columns fed to the network as numerical values.",
-          "Dense Hidden Blocks: Fully connected layers that learn nonlinear combinations.",
-          "Output Head: Final layer that maps the network state to prediction logits or continuous values.",
+          "Input Features: The raw data you provide (like numbers and categories), cleaned up so the AI can easily read it.",
+          "Dense Hidden Blocks: The main 'brain' layers where the AI mixes and matches the data to find hidden patterns.",
+          "Output Head: The final step that takes the AI's thoughts and spits out the actual guess (like predicting a house price).",
         ],
         terminology: [
           { term: "Latent State", definition: "A hidden, internal summary of the data that the network creates to help it guess the final answer. Think of it like a detective's private notebook." },
@@ -513,9 +513,9 @@ function buildLayerBullets(mode: ModelPreviewMode): { layers: string[]; terminol
     case "linear_glm_baseline":
       return {
         layers: [
-          "Input Features: Raw model input vector consisting of preprocessed numerical and categorical data.",
-          "Linear / GLM Head: A single layer computing a weighted sum directly from inputs per output class or value.",
-          "Output Head: Produces directly interpretable baseline predictions suitable for benchmarking.",
+          "Input Features: The raw starting data (like numbers and categories) ready for the model to look at.",
+          "Linear / GLM Head: A simple math step that just multiplies each input by a specific 'importance score' and adds them all up.",
+          "Output Head: The final result, giving us a highly understandable baseline to compare our fancy AI models against.",
         ],
         terminology: [
           { term: "GLM (Generalized Linear Model)", definition: "A straightforward, classic statistical approach. It essentially takes all your inputs, multiplies them by a specific weight (importance score), and adds them all up to get an answer." },
@@ -526,9 +526,9 @@ function buildLayerBullets(mode: ModelPreviewMode): { layers: string[]; terminol
     case "wide_and_deep":
       return {
         layers: [
-          "Wide Branch: A linear path directly connecting inputs to output that memorizes simple feature patterns.",
-          "Deep Branch Blocks: A nonlinear dense pathway that learns generalizations.",
-          "Merge Layer: Concatenates and combines wide and deep signals into one joint prediction.",
+          "Wide Branch: A fast, direct path that just blatantly memorizes simple, obvious rules (like 'if burger, suggest fries').",
+          "Deep Branch Blocks: A more complex thinking path that tries to learn deeper, creative generalizations.",
+          "Merge Layer: The part where the AI glues together the obvious rules and the deep creative thoughts into one final answer.",
         ],
         terminology: [
           { term: "Memorization (Wide)", definition: "The network's ability to blatantly memorize facts it has seen many times. For example, 'if order includes a burger, suggest fries'." },
@@ -539,22 +539,22 @@ function buildLayerBullets(mode: ModelPreviewMode): { layers: string[]; terminol
     case "tabresnet":
       return {
         layers: [
-          "Input Projection: Maps raw features into a higher-dimensional hidden space.",
-          "Residual Blocks: Applies learned transformations alongside skip connections.",
-          "Output Head: Converts the final residual feature representation into the target prediction.",
+          "Input Projection: Upgrades your basic data into a richer format so the AI has more mathematical 'room' to untangle messy patterns.",
+          "Residual Blocks: The core learning steps. They use 'skip connections'—meaning if a step is confusing, the data can safely bypass or skip it without breaking the AI.",
+          "Output Head: Takes all those careful, step-by-step corrections (residuals) and turns them into a final prediction.",
         ],
         terminology: [
-          { term: "Skip Connections", definition: "A clever trick where we provide the network a 'shortcut bypass' around complex math. If a layer isn't helpful, the model can literally just skip it. This prevents the model from breaking when we make it very deep." },
+          { term: "Skip Connections", definition: "A clever trick where we provide the network a 'shortcut bypass'. If a layer's complicated math isn't helping, the model can literally just skip over it. This prevents the whole system from breaking when we make it very deep." },
           { term: "Hidden Space / Higher-Dimensional", definition: "Imagine taking a 2D drawing and popping it out into a 3D sculpture. The model stretches your data into many dimensions so it has more 'room' to untangle messy patterns." },
-          { term: "Residual", definition: "Instead of learning the entire answer from scratch at every step, the model just learns the 'residual' (the tiny remaining difference or correction) needed to fix the previous step's guess." }
+          { term: "Residual", definition: "Instead of trying to learn the entire final answer from scratch at every single step, each layer just learns the 'residual'—the tiny remaining correction needed to fix the previous step's guess." }
         ],
       };
     case "imbalance_aware":
       return {
         layers: [
-          "Dense Encoder: Extracts a nonlinear representational state from the raw tabular inputs.",
-          "Classifier Head: Computes unnormalized scores which are transformed into class probabilities.",
-          "Class-Weighted Loss Path: The optimization phase where the algorithm artificially upweights mistakes made on minority classes.",
+          "Dense Encoder: Translates your raw spreadsheet data into a secret machine language the AI can easily understand.",
+          "Classifier Head: Looks at that translated data and spits out its confidence scores for each possible category.",
+          "Class-Weighted Loss Path: A harsh grading system that severely punishes the AI if it misses the extremely rare events it was supposed to catch.",
         ],
         terminology: [
           { term: "Minority Class", definition: "A scenario where the thing you are looking for is extremely rare. For example, tracking credit card fraud where 99.9% of transactions are perfectly normal, and only 0.1% are fraudulent." },
@@ -565,22 +565,23 @@ function buildLayerBullets(mode: ModelPreviewMode): { layers: string[]; terminol
     case "quantile_regression":
       return {
         layers: [
-          "Dense Encoder: Extracts continuous predictive latent features from the initial input space.",
-          "Quantile Head (tau=0.8): Predicts the upper quartile boundary (P80) where 80% of actual values fall below the prediction.",
-          "Pinball Loss Path: A specialized asymmetrical penalty function.",
+          "Dense Encoder: Looks at your data and builds internal 'latent' clues—hidden details that help it make a guess.",
+          "Quantile Head (tau=0.8): Instead of making one exact guess, it draws a boundary line where it is 80% sure the real answer will be below it.",
+          "Pinball Loss Path: A special grading system that harshly punishes the AI more for guessing too low than for guessing too high (or vice versa).",
         ],
         terminology: [
           { term: "Quantile Regression", definition: "Instead of just guessing the 'average' expected outcome, this model guesses specific boundary lines. E.g., 'I am 80% sure the delivery will arrive before 5:00 PM'." },
           { term: "Tau (τ)", definition: "A symbol representing the specific boundary line we want to draw. A Tau of 0.8 means we want the 80th percentile mark." },
-          { term: "Pinball Loss", definition: "A unique grading system. If we want to predict the absolute worst-case scenario (like maximum possible traffic), this mathematically punishes the model way harder for underestimating the traffic than overestimating it." }
+          { term: "Pinball Loss", definition: "A unique grading system. If we want to predict the absolute worst-case scenario (like maximum possible traffic), this mathematically punishes the model way harder for underestimating the traffic than overestimating it." },
+          { term: "Latent Clues", definition: "Hidden, underlying features the AI figures out on its own. It's like a detective writing down private notes that aren't in the official police report, but help solve the case." }
         ],
       };
     case "calibrated_classifier":
       return {
         layers: [
-          "Dense Encoder: Builds a mathematical representation designed to linearly separate distinct classes.",
-          "Classifier Head: Outputs raw confidence scores transformed to class probabilities.",
-          "Label Smoothing Objective: Adds artificial uncertainty to the truth labels during training.",
+          "Dense Encoder: Organizes the data nicely so the AI can easily draw a clean line between different categories (like breaking out the 'Yes' vs. 'No' answers).",
+          "Classifier Head: Outputs exactly how confident it is about its guess as a percentage.",
+          "Label Smoothing Objective: The training rule that forces the AI to be humble and slightly unsure, preventing arrogant, overconfident mistakes.",
         ],
         terminology: [
           { term: "Calibration", definition: "Ensuring the AI isn't falsely confident. If an AI says it is 90% sure it will rain, calibration testing proves it actually rains exactly 9 out of 10 times it makes that claim." },
@@ -591,36 +592,36 @@ function buildLayerBullets(mode: ModelPreviewMode): { layers: string[]; terminol
     case "entity_embeddings":
       return {
         layers: [
-          "Embedding Projection Layer: Compresses sparse categorical IDs into continuous dense latent factors.",
-          "Dense Predictor Stack: Further refines those latent factors into task-relevant features.",
-          "Output Head: Maps the final latent representation directly to the prediction.",
+          "Embedding Projection Layer: Takes hard-to-read categories (like Zip Codes) and turns them into easier 'latent' coordinates on a map.",
+          "Dense Predictor Stack: Uses those map coordinates to find deeper patterns useful for predicting your specific goal.",
+          "Output Head: Takes those final thought patterns and turns them into your actual answer.",
         ],
         terminology: [
           { term: "Categorical IDs", definition: "Data that exists as distinct groups or labels rather than numbers (like Zip Codes, User IDs, or Product Brands)." },
-          { term: "Embeddings", definition: "An incredibly powerful trick that turns words or categories into coordinates on a map. For example, the AI might learn to naturally place 'Apple' and 'Banana' very close together on this map because they behave similarly." },
+          { term: "Embeddings / Latent Coordinates", definition: "An incredibly powerful trick that turns words or categories into hidden 'latent' coordinates on a map. For example, the AI might learn on its own to place 'Apple' and 'Banana' very close together on this map because they behave similarly." },
           { term: "Sparse", definition: "A situation where most of your data is entirely zeros or completely empty blank spaces." }
         ],
       };
     case "autoencoder_head":
       return {
         layers: [
-          "Encoder: Computes and compresses the entire feature space down into a much smaller, compact latent representation.",
-          "Latent Bottleneck: The shared, compressed inner state.",
-          "Reconstruction Head: A decoder path that attempts to unpack the bottleneck vector to rebuild the original input features.",
-          "Prediction Head: Operates in parallel, utilizing that exact same noise-filtered bottleneck state to make supervised target predictions.",
+          "Encoder: Squashes all your data down into a tiny, ultra-compact summary called a 'latent' representation.",
+          "Latent Bottleneck: The tiny wire the data gets squeezed through, which physically forces the AI to drop useless noise and only keep what matters.",
+          "Reconstruction Head: A separate path that tries to unpack that squishy summary back into its full, original form to make sure no important details were lost.",
+          "Prediction Head: Uses that exact same clear, noise-free summary to actually predict what you want to know.",
         ],
         terminology: [
           { term: "Autoencoder", definition: "An AI that is literally forced to play a game of 'telephone' with itself. It squashes data down, sends it through a tiny wire, and then tries to perfectly rebuild the original data on the other side." },
-          { term: "Bottleneck", definition: "The tiny wire in the telephone game. Because the data has to squeeze through this restrictive bottleneck, the AI is physically forced to throw away useless noise and purely memorize the most critically important structural concepts." },
-          { term: "Reconstruction / Decoder", Phase: "The part of the AI whose only job is to unpack the tightly compressed ZIP file of data back into its original size." }
+          { term: "Bottleneck / Latent Representation", definition: "The tiny wire in the telephone game. Because the data has to squeeze through this restrictive bottleneck, the AI is physically forced to format it into a tight 'latent' code, throwing away useless noise and purely memorizing the most critically important structural concepts." },
+          { term: "Reconstruction / Decoder", definition: "The part of the AI whose only job is to unpack the tightly compressed ZIP file of data back into its original size." }
         ],
       };
     case "multi_task_learning":
       return {
         layers: [
-          "Shared Trunk: A set of initial dense layers that learns a common representation optimized across multiple related objectives.",
-          "Main Task Head: The specialized output layer focusing solely on optimizing the primary supervised prediction objective.",
-          "Auxiliary Head: An additional output layer adding secondary supervision signals.",
+          "Shared Trunk: The foundational base of the AI. It does all the heavy lifting to learn basic patterns before branching off.",
+          "Main Task Head: The part of the AI's 'brain' that focuses entirely on answering your primary question.",
+          "Auxiliary Head: A 'side-quest' brain. By forcing the AI to solve this extra related problem, it accidentally gets vastly smarter at the main task.",
         ],
         terminology: [
           { term: "Multi-Task", definition: "Training the AI to solve two different problems at the exact same time using the exact same brain. Surprisingly, learning two related things together often makes the AI vastly smarter at both." },
@@ -631,9 +632,9 @@ function buildLayerBullets(mode: ModelPreviewMode): { layers: string[]; terminol
     case "time_aware_tabular":
       return {
         layers: [
-          "Temporal Gate: A learnable mechanism evaluating which specific time-derived signals should be emphasized or suppressed.",
-          "Gated Features: Applies the learned temporal mathematical weighting back to the relevant inputs.",
-          "Concat Raw + Gated: Combines both the base inputs and the time-aware features into a single array passed down for prediction.",
+          "Temporal Gate: Like a bouncer looking at a clock. It decides which time-related clues (like 'It's Friday') are important right now, and which are just noise.",
+          "Gated Features: The cleaned-up data where the important time clues are mathematically highlighted and the irrelevant ones are muted.",
+          "Concat Raw + Gated: Glues your regular data and your time clues together so the final AI step can use both at once.",
         ],
         terminology: [
           { term: "Temporal", definition: "A fancy word meaning 'related to time'. For example, noticing that ice cream sales fundamentally behave differently in August versus December." },
@@ -644,22 +645,22 @@ function buildLayerBullets(mode: ModelPreviewMode): { layers: string[]; terminol
     case "tree_teacher_distillation":
       return {
         layers: [
-          "Tree Teacher Ensemble: A pre-trained, robust forest model that naturally captures strong tabular decision boundaries.",
-          "Neural Student: A more compact neural network learning to mimic the complex teacher.",
-          "Teacher-to-Student Distillation Path: The loss function penalizes the neural student relative to how closely it matches the teacher's soft prediction probabilities.",
+          "Tree Teacher Ensemble: A massive, slow 'forest model' (made of many decision trees) that already perfectly understands the data.",
+          "Neural Student: A tiny, fast AI that is desperately trying to copy the massive teacher's behavior so it can run quickly on a cell phone.",
+          "Teacher-to-Student Distillation Path: The grading system. The tiny student is graded on how perfectly it mimics all the teacher's nuanced doubts and guesses.",
         ],
         terminology: [
           { term: "Knowledge Distillation", definition: "A process where we have a massive, slow, genius AI (the Teacher) teach a tiny, hyper-fast AI (the Student) how to emulate its exact behavior so we can run it affordably on a cell phone." },
-          { term: "Tree Ensemble", definition: "An AI built not from 'neural networks' but from hundreds of 'decision trees' (essentially massive flowcharts of Yes/No questions) voting together on an answer. They are notoriously great at spreadsheet data." },
+          { term: "Tree Ensemble / Forest Model", definition: "An AI built not from 'neural networks' but from hundreds of 'decision trees' (essentially massive flowcharts of Yes/No questions) voting together on an answer. It's frequently called a 'Forest Model' because it's a giant group of trees." },
           { term: "Soft Probabilities", definition: "Instead of telling the student the final answer is simply 'Cat', the Teacher tells the student 'I am 82% sure it is a Cat, 15% sure it is a Dog, and 3% sure it is a Car.' The student learns infinitely faster by observing these nuanced doubts." }
         ],
       };
     default:
       return {
         layers: [
-          "Input Features: Mapped and processed tabular columns suitable for numerical computation.",
-          "Model Core: Architecture-specific internal layers responsible for representation learning.",
-          "Output Head: Maps the abstract core features into final predictions.",
+          "Input Features: The raw columns of data (like an Excel sheet), properly prepared so the AI can read them.",
+          "Model Core: The internal 'brain' where the magic happens and hidden patterns are discovered.",
+          "Output Head: The final step that turns those discovered patterns into your actual prediction.",
         ],
         terminology: [
           { term: "Features", definition: "The individual columns of data you feed the AI (like 'Age', 'Height', or 'Zip Code')." },

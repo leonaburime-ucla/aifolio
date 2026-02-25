@@ -7,7 +7,7 @@ This project has a local package named `langgraph`, which shadows the external
 `langgraph.graph` from the external package fails in this environment.
 
 This file implements the same node-style coordinator flow in plain Python:
-Data Scientist -> Researcher -> Formatter.
+Data Scientist -> Analyst -> Formatter.
 """
 
 from __future__ import annotations
@@ -25,7 +25,7 @@ DATASETS_MANIFEST_PATH = SAMPLE_DATA_DIR / "datasets.json"
 
 def _load_dataset_metadata(dataset_id: str) -> Dict[str, Any]:
     """
-    Load dataset metadata (context + optional names file excerpt) for researcher prompts.
+    Load dataset metadata (context + optional names file excerpt) for analyst prompts.
     """
     if not DATASETS_MANIFEST_PATH.exists():
         return {}
@@ -52,7 +52,7 @@ def _load_dataset_metadata(dataset_id: str) -> Dict[str, Any]:
         "files": {"names": names_path} if names_path else {},
         "excerpts": {"names": names_excerpt} if names_excerpt else {},
     }
-from langgraph_agents.researcher import interpret_analysis
+from langgraph_agents.analyst import interpret_analysis
 
 
 class CoordinatorState(TypedDict, total=False):
@@ -70,8 +70,8 @@ class CoordinatorState(TypedDict, total=False):
     dataset_label: str
     # Raw Data Scientist output (charts + summary).
     data_scientist_result: Dict[str, Any]
-    # Raw Researcher output (interpretation + findings).
-    researcher_result: Dict[str, Any]
+    # Raw Analyst output (interpretation + findings).
+    analyst_result: Dict[str, Any]
     # LangSmith observability payload (trace/run identifiers).
     langsmith: Dict[str, Any]
     # Final payload returned to FastAPI route.
@@ -111,9 +111,9 @@ def _data_scientist_node(state: CoordinatorState) -> CoordinatorState:
     }
 
 
-def _researcher_node(state: CoordinatorState) -> CoordinatorState:
+def _analyst_node(state: CoordinatorState) -> CoordinatorState:
     """
-    Ask the Researcher agent to interpret Data Scientist outputs.
+    Ask the Analyst agent to interpret Data Scientist outputs.
     """
     # Pull DS result.
     ds_result = state.get("data_scientist_result", {})
@@ -121,8 +121,8 @@ def _researcher_node(state: CoordinatorState) -> CoordinatorState:
     charts = ds_result.get("chartSpec") or []
     if isinstance(charts, dict):
         charts = [charts]
-    # Run Researcher interpretation with conversation history for follow-ups.
-    researcher = interpret_analysis(
+    # Run Analyst interpretation with conversation history for follow-ups.
+    analyst = interpret_analysis(
         user_request=state.get("user_message", ""),
         dataset_label=state.get("dataset_label", state.get("dataset_id", "")),
         data_scientist_message=ds_result.get("message", ""),
@@ -132,10 +132,10 @@ def _researcher_node(state: CoordinatorState) -> CoordinatorState:
         conversation_history=state.get("conversation_history", []),
         model_id=state.get("model_id", DEFAULT_MODEL_ID),
     )
-    # Return state with researcher output attached.
+    # Return state with analyst output attached.
     return {
         **state,
-        "researcher_result": researcher,
+        "analyst_result": analyst,
     }
 
 
@@ -145,14 +145,14 @@ def _format_response_node(state: CoordinatorState) -> CoordinatorState:
     """
     # Pull DS result.
     ds_result = state.get("data_scientist_result", {})
-    # Pull researcher result.
-    researcher = state.get("researcher_result", {})
+    # Pull analyst result.
+    analyst = state.get("analyst_result", {})
     # Normalize charts to list.
     charts = ds_result.get("chartSpec")
     if isinstance(charts, dict):
         charts = [charts]
-    # Pull researcher findings list.
-    findings = researcher.get("findings", [])
+    # Pull analyst findings list.
+    findings = analyst.get("findings", [])
     chart_count = len(charts) if isinstance(charts, list) else 0
     findings_count = len(findings) if isinstance(findings, list) else 0
     # Pull LangSmith observability metadata.
@@ -164,7 +164,7 @@ def _format_response_node(state: CoordinatorState) -> CoordinatorState:
     # Build chat text with explicit role sections for readability.
     response_message = (
         f"[Data Scientist] {ds_result.get('message', '')}\n\n"
-        f"[Researcher] {researcher.get('researcher_summary', '')}\n\n"
+        f"[Analyst] {analyst.get('analyst_summary', '')}\n\n"
         f"{langsmith_line}"
     )
     # Build structured response contract consumed by frontend.
@@ -186,9 +186,9 @@ def _format_response_node(state: CoordinatorState) -> CoordinatorState:
 def _coordinator_pipeline(initial_state: CoordinatorState) -> CoordinatorState:
     # Execute deterministic node sequence (LangGraph-style orchestration).
     state_after_ds = _data_scientist_node(initial_state)
-    state_after_researcher = _researcher_node(state_after_ds)
+    state_after_analyst = _analyst_node(state_after_ds)
     state_with_observability: CoordinatorState = {
-        **state_after_researcher,
+        **state_after_analyst,
         "langsmith": {
             "enabled": False,
             "note": "Temporarily disabled for performance during Agentic UI iteration.",
