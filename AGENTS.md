@@ -1,6 +1,15 @@
+# Mandatory Startup
+
+On the first user message in this repository (including greetings), before any reply:
+1. Open and read `AI-Dev-Shop-speckit/AGENTS.md`.
+2. Confirm compliance in the first response with: "Booted with AI-Dev-Shop-speckit/AGENTS.md loaded."
+3. If the file is missing or unreadable, state that explicitly and stop.
+
+Failure to perform Mandatory Startup is a blocking error. Do not proceed with task work until corrected.
+
 # Agent Specification (SDD + Orc-BASH + DDD)
 
-This document translates the latest AI Dev Shop spec kit in `AI-Dev-Shop-speckit/` into an Orc-BASH-aligned, Domain-Driven plan for every AI agent in AIfolio. We combine **Spec-Driven Development (SDD)**, the **Orc-BASH** paradigm (Orchestration, Business Logic, API, State, Hooks), and Bounded Contexts so that each feature ships with deterministic contracts, maximal hook reusability, and predictable error bubbling all the way to the UI. For the Python agent workspace (FastAPI + LangGraph + ML tooling), see `ai-python/AGENT.md`. Reference: [The Orc-BASH Pattern](https://medium.com/@leonaburime/the-orc-bash-pattern-orchestrated-architecture-for-maximum-reusability-5d6b4734c9f6).
+This file defines how AIfolio agents should be built and operated using SDD + Orc-BASH + DDD. It aligns implementation contracts, layer boundaries, and error bubbling with `AI-Dev-Shop-speckit/`. For the Python workspace (FastAPI + LangGraph + ML), see `ai-python/AGENT.md`. Reference: [The Orc-BASH Pattern](https://medium.com/@leonaburime/the-orc-bash-pattern-orchestrated-architecture-for-maximum-reusability-5d6b4734c9f6).
 
 ## 1. Working Principles
 

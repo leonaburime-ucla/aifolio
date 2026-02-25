@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import io
 import json
 import random
 import uuid
@@ -12,6 +13,11 @@ import numpy as np
 import torch
 import torch.nn as nn
 try:
+    from .distill import (
+        InMemoryBundleRegistry,
+        distill_model_from_file as shared_distill_model_from_file,
+        handle_distill_request as shared_handle_distill_request,
+    )
     from .file_util import coerce_value, load_tabular_file, split_features_target
     from .ml_util import (
         TaskType,
@@ -20,6 +26,11 @@ try:
         infer_task,
     )
 except ImportError:  # pragma: no cover
+    from distill import (
+        InMemoryBundleRegistry,
+        distill_model_from_file as shared_distill_model_from_file,
+        handle_distill_request as shared_handle_distill_request,
+    )
     from file_util import coerce_value, load_tabular_file, split_features_target
     from ml_util import (
         TaskType,
@@ -28,13 +39,28 @@ except ImportError:  # pragma: no cover
         infer_task,
     )
 from sklearn.feature_extraction import DictVectorizer
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, StandardScaler
+
+
+TrainingMode = Literal[
+    "mlp_dense",
+    "linear_glm_baseline",
+    "tabresnet",
+    "imbalance_aware",
+    "calibrated_classifier",
+    "tree_teacher_distillation",
+]
+_BUNDLE_REGISTRY: InMemoryBundleRegistry[ModelBundle] = InMemoryBundleRegistry(
+    ttl_seconds=900, max_items=128
+)
 
 
 @dataclass
 class TrainingConfig:
     target_column: str
+    training_mode: TrainingMode = "mlp_dense"
     task: TaskType | Literal["auto"] = "auto"
     test_size: float = 0.2
     random_seed: int = 42
@@ -99,6 +125,89 @@ class MLP(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.net(x)
+
+
+class LinearBaseline(nn.Module):
+    def __init__(self, input_dim: int, output_dim: int) -> None:
+        super().__init__()
+        self.net = nn.Linear(input_dim, output_dim)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.net(x)
+
+
+class ResidualBlock(nn.Module):
+    def __init__(self, hidden_dim: int, dropout: float) -> None:
+        super().__init__()
+        self.fc1 = nn.Linear(hidden_dim, hidden_dim)
+        self.bn1 = nn.BatchNorm1d(hidden_dim)
+        self.fc2 = nn.Linear(hidden_dim, hidden_dim)
+        self.bn2 = nn.BatchNorm1d(hidden_dim)
+        self.dropout = nn.Dropout(dropout) if dropout > 0 else nn.Identity()
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        identity = x
+        out = self.fc1(x)
+        out = self.bn1(out)
+        out = torch.relu(out)
+        out = self.dropout(out)
+        out = self.fc2(out)
+        out = self.bn2(out)
+        out = out + identity
+        out = torch.relu(out)
+        return out
+
+
+class TabResNet(nn.Module):
+    def __init__(
+        self,
+        input_dim: int,
+        output_dim: int,
+        hidden_dim: int,
+        num_hidden_layers: int,
+        dropout: float,
+    ) -> None:
+        super().__init__()
+        self.input = nn.Linear(input_dim, hidden_dim)
+        self.input_bn = nn.BatchNorm1d(hidden_dim)
+        blocks = [ResidualBlock(hidden_dim, dropout) for _ in range(max(1, num_hidden_layers))]
+        self.blocks = nn.Sequential(*blocks)
+        self.head = nn.Linear(hidden_dim, output_dim)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        out = self.input(x)
+        out = self.input_bn(out)
+        out = torch.relu(out)
+        out = self.blocks(out)
+        out = self.head(out)
+        return out
+
+
+def build_model(
+    input_dim: int,
+    output_dim: int,
+    training_mode: TrainingMode,
+    hidden_dim: int,
+    num_hidden_layers: int,
+    dropout: float,
+) -> nn.Module:
+    if training_mode == "linear_glm_baseline":
+        return LinearBaseline(input_dim=input_dim, output_dim=output_dim)
+    if training_mode == "tabresnet":
+        return TabResNet(
+            input_dim=input_dim,
+            output_dim=output_dim,
+            hidden_dim=hidden_dim,
+            num_hidden_layers=num_hidden_layers,
+            dropout=dropout,
+        )
+    return MLP(
+        input_dim=input_dim,
+        output_dim=output_dim,
+        hidden_dim=hidden_dim,
+        num_hidden_layers=num_hidden_layers,
+        dropout=dropout,
+    )
 
 
 def _prepare_tensors(
@@ -220,6 +329,14 @@ def _compute_loss(
     return criterion(logits, y)
 
 
+def _compute_class_weights(y_train: torch.Tensor, output_dim: int, device: torch.device) -> torch.Tensor:
+    counts = torch.bincount(y_train.detach().cpu(), minlength=output_dim).float()
+    safe_counts = torch.clamp(counts, min=1.0)
+    total = float(torch.sum(safe_counts).item())
+    weights = total / (float(output_dim) * safe_counts)
+    return weights.to(device)
+
+
 def train_model_from_file(
     data_path: str | Path,
     cfg: TrainingConfig,
@@ -242,6 +359,10 @@ def train_model_from_file(
     x_rows, y_raw = split_features_target(rows, cfg.target_column)
 
     task: TaskType = infer_task(y_raw) if cfg.task == "auto" else cfg.task
+    if cfg.training_mode in {"imbalance_aware", "calibrated_classifier"} and task != "classification":
+        raise ValueError(
+            f"training_mode '{cfg.training_mode}' is classification-only; use task='classification' or choose a regression mode."
+        )
 
     (
         x_train,
@@ -259,9 +380,10 @@ def train_model_from_file(
     ) = _prepare_tensors(x_rows, y_raw, task, cfg)
 
     torch_device = torch.device(device or ("cuda" if torch.cuda.is_available() else "cpu"))
-    model = MLP(
+    model = build_model(
         input_dim=input_dim,
         output_dim=output_dim,
+        training_mode=cfg.training_mode,
         hidden_dim=cfg.hidden_dim,
         num_hidden_layers=cfg.num_hidden_layers,
         dropout=cfg.dropout,
@@ -272,7 +394,48 @@ def train_model_from_file(
     y_train = y_train.to(torch_device)
     y_test = y_test.to(torch_device)
 
-    criterion: nn.Module = nn.CrossEntropyLoss() if task == "classification" else nn.MSELoss()
+    if task == "classification":
+        if cfg.training_mode == "imbalance_aware":
+            class_weights = _compute_class_weights(y_train, output_dim=output_dim, device=torch_device)
+            criterion = nn.CrossEntropyLoss(weight=class_weights)
+        elif cfg.training_mode == "calibrated_classifier":
+            criterion = nn.CrossEntropyLoss(label_smoothing=0.05)
+        else:
+            criterion = nn.CrossEntropyLoss()
+    else:
+        criterion = nn.MSELoss()
+
+    tree_teacher_probs: torch.Tensor | None = None
+    tree_teacher_preds: torch.Tensor | None = None
+    tree_temperature = 2.0
+    if cfg.training_mode == "tree_teacher_distillation":
+        x_train_np = x_train.detach().cpu().numpy()
+        if task == "classification":
+            y_train_np = y_train.detach().cpu().numpy()
+            teacher = RandomForestClassifier(
+                n_estimators=120,
+                max_depth=8,
+                random_state=cfg.random_seed,
+                n_jobs=-1,
+            )
+            teacher.fit(x_train_np, y_train_np)
+            probs = teacher.predict_proba(x_train_np)
+            tree_teacher_probs = torch.tensor(
+                np.clip(probs, 1e-6, 1.0),
+                dtype=torch.float32,
+                device=torch_device,
+            )
+        else:
+            y_train_np = y_train.detach().cpu().numpy().reshape(-1)
+            teacher = RandomForestRegressor(
+                n_estimators=120,
+                max_depth=10,
+                random_state=cfg.random_seed,
+                n_jobs=-1,
+            )
+            teacher.fit(x_train_np, y_train_np)
+            preds = teacher.predict(x_train_np).reshape(-1, 1)
+            tree_teacher_preds = torch.tensor(preds, dtype=torch.float32, device=torch_device)
     # weight_decay adds L2 regularization to prevent overfitting by penalizing
     # large weights. This encourages the model to learn simpler patterns that
     # generalize better to unseen data. 1e-4 is a moderate regularization strength.
@@ -289,7 +452,23 @@ def train_model_from_file(
                 continue
 
             optimizer.zero_grad()
-            loss = _compute_loss(model, xb, yb, task, criterion)
+            if cfg.training_mode == "tree_teacher_distillation":
+                student_logits = model(xb)
+                hard_loss = _compute_loss(model, xb, yb, task, criterion)
+                if task == "classification":
+                    assert tree_teacher_probs is not None
+                    soft_targets = tree_teacher_probs[batch]
+                    soft_loss = nn.functional.kl_div(
+                        nn.functional.log_softmax(student_logits / tree_temperature, dim=1),
+                        soft_targets,
+                        reduction="batchmean",
+                    ) * (tree_temperature**2)
+                else:
+                    assert tree_teacher_preds is not None
+                    soft_loss = nn.functional.mse_loss(student_logits, tree_teacher_preds[batch])
+                loss = 0.5 * hard_loss + 0.5 * soft_loss
+            else:
+                loss = _compute_loss(model, xb, yb, task, criterion)
             loss.backward()
             optimizer.step()
             update_steps += 1
@@ -330,12 +509,14 @@ def train_model_from_file(
                 preds_original = preds_np
                 y_test_original = y_test_np
             rmse = float(np.sqrt(np.mean((preds_original - y_test_original) ** 2)))
+            metric_name = "rmse"
+            metric_value = rmse
             metrics = Metrics(
                 task=task,
                 train_loss=float(train_loss),
                 test_loss=float(test_loss),
-                test_metric_name="rmse",
-                test_metric_value=rmse,
+                test_metric_name=metric_name,
+                test_metric_value=metric_value,
             )
 
     bundle = ModelBundle(
@@ -356,32 +537,85 @@ def train_model_from_file(
 
 
 def _model_hidden_dim(model: nn.Module) -> int:
+    if isinstance(model, LinearBaseline):
+        return 0
     if isinstance(model, MLP):
         first_linear = next((layer for layer in model.net if isinstance(layer, nn.Linear)), None)
         if first_linear is not None:
             return int(first_linear.out_features)
+    if isinstance(model, TabResNet):
+        return int(model.input.out_features)
     return 128
 
 
 def _model_num_hidden_layers(model: nn.Module) -> int:
+    if isinstance(model, LinearBaseline):
+        return 0
     if isinstance(model, MLP):
         linear_count = sum(1 for layer in model.net if isinstance(layer, nn.Linear))
         return max(1, linear_count - 1)
+    if isinstance(model, TabResNet):
+        return int(len(model.blocks))
     return 2
 
 
 def _model_dropout(model: nn.Module) -> float:
+    if isinstance(model, LinearBaseline):
+        return 0.0
     if isinstance(model, MLP):
         dropout_layer = next((layer for layer in model.net if isinstance(layer, nn.Dropout)), None)
         if dropout_layer is not None:
             return float(dropout_layer.p)
+    if isinstance(model, TabResNet):
+        first_block = next(iter(model.blocks), None)
+        if first_block is not None and isinstance(first_block.dropout, nn.Dropout):
+            return float(first_block.dropout.p)
     return 0.0
 
 
-def distill_model_from_file(
+def _model_training_mode(model: nn.Module) -> TrainingMode:
+    if isinstance(model, LinearBaseline):
+        return "linear_glm_baseline"
+    if isinstance(model, TabResNet):
+        return "tabresnet"
+    return "mlp_dense"
+
+
+def _safe_file_size(path: str | None) -> int | None:
+    if not path:
+        return None
+    file_path = Path(path)
+    if not file_path.exists() or not file_path.is_file():
+        return None
+    return int(file_path.stat().st_size)
+
+
+def _parameter_count(model: nn.Module) -> int:
+    return int(sum(param.numel() for param in model.parameters()))
+
+
+def _serialized_model_size_bytes(model: nn.Module) -> int | None:
+    buffer = io.BytesIO()
+    try:
+        torch.save(model.state_dict(), buffer)
+        return int(buffer.tell())
+    except Exception:
+        return None
+
+
+def _store_in_memory_bundle(bundle: ModelBundle) -> str:
+    return _BUNDLE_REGISTRY.store(bundle)
+
+
+def _load_in_memory_bundle(run_id: str) -> ModelBundle | None:
+    return _BUNDLE_REGISTRY.load(run_id)
+
+
+def _distill_model_from_file_impl(
     data_path: str | Path,
     cfg: TrainingConfig,
-    teacher_path: str | Path,
+    teacher_path: str | Path | None = None,
+    teacher_bundle: ModelBundle | None = None,
     sheet_name: str | None = None,
     exclude_columns: list[str] | None = None,
     date_columns: list[str] | None = None,
@@ -401,7 +635,12 @@ def distill_model_from_file(
     if not 0 <= alpha <= 1:
         raise ValueError("alpha must be between 0 and 1")
 
-    teacher = load_bundle(teacher_path)
+    if teacher_bundle is not None:
+        teacher = teacher_bundle
+    elif teacher_path is not None:
+        teacher = load_bundle(teacher_path)
+    else:
+        raise ValueError("teacher_path or teacher_bundle is required.")
     task: TaskType = teacher.task if cfg.task == "auto" else cfg.task
     if task != teacher.task:
         raise ValueError("Requested task does not match teacher task.")
@@ -481,9 +720,10 @@ def distill_model_from_file(
     teacher.model.to(torch_device)
     teacher.model.eval()
 
-    student = MLP(
+    student = build_model(
         input_dim=int(x_train.shape[1]),
         output_dim=int(teacher.output_dim),
+        training_mode=cfg.training_mode,
         hidden_dim=int(student_hd),
         num_hidden_layers=int(student_layers),
         dropout=float(student_do),
@@ -585,7 +825,7 @@ def distill_model_from_file(
     return bundle, metrics
 
 
-def handle_distill_request(
+def _handle_distill_request_impl(
     payload: dict[str, Any],
     resolve_dataset_path: Callable[[str], Path | None],
     artifacts_dir: Path,
@@ -602,6 +842,7 @@ def handle_distill_request(
 
     teacher_model_path = payload.get("teacher_model_path")
     teacher_model_id = payload.get("teacher_model_id")
+    teacher_run_id = payload.get("teacher_run_id")
     if not teacher_model_path and teacher_model_id:
         teacher_model_path = str(artifacts_dir / str(teacher_model_id) / "model_bundle.pt")
 
@@ -610,10 +851,10 @@ def handle_distill_request(
             "status": "error",
             "error": "target_column and either data_path or dataset_id are required.",
         }
-    if not teacher_model_path:
+    if not teacher_model_path and not teacher_run_id:
         return 400, {
             "status": "error",
-            "error": "teacher_model_path or teacher_model_id is required.",
+            "error": "teacher_run_id, teacher_model_path, or teacher_model_id is required.",
         }
 
     model_id = (payload.get("model_id") or str(uuid.uuid4())) if save_model else None
@@ -668,6 +909,10 @@ def handle_distill_request(
     except (TypeError, ValueError):
         return 400, {"status": "error", "error": "Invalid numeric distillation parameters."}
 
+    training_mode = str(payload.get("training_mode", "mlp_dense"))
+    if training_mode == "mlp":
+        training_mode = "mlp_dense"
+
     if not 0 < test_size < 1:
         return 400, {"status": "error", "error": "test_size must be > 0 and < 1."}
     if not 1 <= epochs <= 500:
@@ -684,9 +929,27 @@ def handle_distill_request(
         return 400, {"status": "error", "error": "temperature must be > 0 and <= 20."}
     if not 0 <= alpha <= 1:
         return 400, {"status": "error", "error": "alpha must be between 0 and 1."}
+    if training_mode not in {
+        "mlp_dense",
+        "linear_glm_baseline",
+        "tabresnet",
+        "imbalance_aware",
+        "calibrated_classifier",
+        "tree_teacher_distillation",
+    }:
+        return 400, {
+            "status": "error",
+            "error": "training_mode must be 'mlp_dense', 'linear_glm_baseline', 'tabresnet', 'imbalance_aware', 'calibrated_classifier', or 'tree_teacher_distillation'.",
+        }
+    if training_mode in {"imbalance_aware", "calibrated_classifier", "tree_teacher_distillation"}:
+        return 400, {
+            "status": "error",
+            "error": f"Distillation is not yet supported for training_mode '{training_mode}'. Use mlp_dense, linear_glm_baseline, or tabresnet.",
+        }
 
     cfg = TrainingConfig(
         target_column=str(target_column),
+        training_mode=training_mode,
         task=payload.get("task", "auto"),
         test_size=test_size,
         random_seed=random_seed,
@@ -699,10 +962,14 @@ def handle_distill_request(
     )
 
     try:
-        bundle, metrics = distill_model_from_file(
+        teacher_bundle = _load_in_memory_bundle(str(teacher_run_id)) if teacher_run_id else None
+        if teacher_run_id and teacher_bundle is None:
+            return 404, {"status": "error", "error": "Teacher run not found or expired."}
+        bundle, metrics = _distill_model_from_file_impl(
             data_path=data_path,
             cfg=cfg,
             teacher_path=teacher_model_path,
+            teacher_bundle=teacher_bundle,
             sheet_name=sheet_name,
             exclude_columns=exclude_columns,
             date_columns=date_columns,
@@ -714,14 +981,74 @@ def handle_distill_request(
             student_dropout=student_dropout,
         )
         model_path = save_bundle(bundle, model_dir, metrics) if save_model and model_dir else None
+        teacher_model_size_bytes = _safe_file_size(str(teacher_model_path))
+        student_model_size_bytes = _safe_file_size(str(model_path) if model_path else None)
+        size_saved_bytes = (
+            teacher_model_size_bytes - student_model_size_bytes
+            if teacher_model_size_bytes is not None and student_model_size_bytes is not None
+            else None
+        )
+        size_saved_percent = (
+            (float(size_saved_bytes) / float(teacher_model_size_bytes)) * 100.0
+            if size_saved_bytes is not None and teacher_model_size_bytes and teacher_model_size_bytes > 0
+            else None
+        )
+        teacher_model_for_stats = (
+            teacher_bundle if teacher_bundle is not None else load_bundle(str(teacher_model_path))
+        )
+        teacher_param_count = _parameter_count(teacher_model_for_stats.model)
+        student_param_count = _parameter_count(bundle.model)
+        param_saved_count = teacher_param_count - student_param_count
+        param_saved_percent = (
+            (float(param_saved_count) / float(teacher_param_count)) * 100.0
+            if teacher_param_count > 0
+            else None
+        )
+        if teacher_model_size_bytes is None:
+            teacher_model_size_bytes = _serialized_model_size_bytes(teacher_model_for_stats.model)
+        if student_model_size_bytes is None:
+            student_model_size_bytes = _serialized_model_size_bytes(bundle.model)
+            if teacher_model_size_bytes is not None and student_model_size_bytes is not None:
+                size_saved_bytes = teacher_model_size_bytes - student_model_size_bytes
+                size_saved_percent = (
+                    (float(size_saved_bytes) / float(teacher_model_size_bytes)) * 100.0
+                    if teacher_model_size_bytes > 0
+                    else None
+                )
+        run_id = _store_in_memory_bundle(bundle)
         return 200, {
             "status": "ok",
+            "run_id": run_id,
             "model_id": model_id,
             "model_path": str(model_path) if model_path else None,
             "metrics": asdict(metrics),
+            "teacher_input_dim": int(teacher_model_for_stats.input_dim),
+            "teacher_output_dim": int(teacher_model_for_stats.output_dim),
+            "student_input_dim": int(bundle.input_dim),
+            "student_output_dim": int(bundle.output_dim),
+            "teacher_model_size_bytes": teacher_model_size_bytes,
+            "student_model_size_bytes": student_model_size_bytes,
+            "size_saved_bytes": size_saved_bytes,
+            "size_saved_percent": size_saved_percent,
+            "teacher_param_count": teacher_param_count,
+            "student_param_count": student_param_count,
+            "param_saved_count": param_saved_count,
+            "param_saved_percent": param_saved_percent,
         }
     except Exception as exc:
         return 400, {"status": "error", "error": str(exc)}
+
+
+def distill_model_from_file(**kwargs: Any) -> tuple[ModelBundle, Metrics]:
+    return shared_distill_model_from_file("pytorch", **kwargs)
+
+
+def handle_distill_request(
+    payload: dict[str, Any],
+    resolve_dataset_path: Callable[[str], Path | None],
+    artifacts_dir: Path,
+) -> tuple[int, dict[str, Any]]:
+    return shared_handle_distill_request("pytorch", payload, resolve_dataset_path, artifacts_dir)
 
 
 def handle_train_request(
@@ -776,6 +1103,7 @@ def handle_train_request(
         epochs = int(payload.get("epochs", 500))
         batch_size = int(payload.get("batch_size", 64))
         learning_rate = float(payload.get("learning_rate", 1e-3))
+        training_mode = str(payload.get("training_mode", "mlp_dense"))
         hidden_dim = int(payload.get("hidden_dim", 128))
         num_hidden_layers = int(payload.get("num_hidden_layers", 2))
         dropout = float(payload.get("dropout", 0.1))
@@ -790,15 +1118,30 @@ def handle_train_request(
         return 400, {"status": "error", "error": "batch_size must be between 1 and 200."}
     if not 0 < learning_rate <= 1:
         return 400, {"status": "error", "error": "learning_rate must be > 0 and <= 1."}
-    if not 8 <= hidden_dim <= 500:
+    if training_mode == "mlp":
+        training_mode = "mlp_dense"
+    if training_mode not in {
+        "mlp_dense",
+        "linear_glm_baseline",
+        "tabresnet",
+        "imbalance_aware",
+        "calibrated_classifier",
+        "tree_teacher_distillation",
+    }:
+        return 400, {
+            "status": "error",
+            "error": "training_mode must be 'mlp_dense', 'linear_glm_baseline', 'tabresnet', 'imbalance_aware', 'calibrated_classifier', or 'tree_teacher_distillation'.",
+        }
+    if training_mode != "linear_glm_baseline" and not 8 <= hidden_dim <= 500:
         return 400, {"status": "error", "error": "hidden_dim must be between 8 and 500."}
-    if not 1 <= num_hidden_layers <= 15:
+    if training_mode != "linear_glm_baseline" and not 1 <= num_hidden_layers <= 15:
         return 400, {"status": "error", "error": "num_hidden_layers must be between 1 and 15."}
-    if not 0 <= dropout <= 0.9:
+    if training_mode != "linear_glm_baseline" and not 0 <= dropout <= 0.9:
         return 400, {"status": "error", "error": "dropout must be between 0 and 0.9."}
 
     cfg = TrainingConfig(
         target_column=str(target_column),
+        training_mode=training_mode,
         task=payload.get("task", "auto"),
         test_size=test_size,
         random_seed=int(payload.get("random_seed", 42)),
@@ -819,9 +1162,11 @@ def handle_train_request(
             date_columns=date_columns,
             device=payload.get("device"),
         )
+        run_id = _store_in_memory_bundle(bundle)
         model_path = save_bundle(bundle, model_dir, metrics) if save_model and model_dir else None
         return 200, {
             "status": "ok",
+            "run_id": run_id,
             "model_id": model_id,
             "model_path": str(model_path) if model_path else None,
             "metrics": asdict(metrics),
@@ -887,6 +1232,7 @@ def save_bundle(bundle: ModelBundle, output_dir: str | Path, metrics: Metrics | 
         "label_encoder": bundle.label_encoder,
         "target_scaler": bundle.target_scaler,
         "model_config": {
+            "training_mode": _model_training_mode(bundle.model),
             "hidden_dim": _model_hidden_dim(bundle.model),
             "num_hidden_layers": _model_num_hidden_layers(bundle.model),
             "dropout": _model_dropout(bundle.model),
@@ -906,9 +1252,10 @@ def load_bundle(path: str | Path, map_location: str = "cpu") -> ModelBundle:
     payload = torch.load(Path(path), map_location=map_location)
     model_cfg = payload.get("model_config", {})
 
-    model = MLP(
+    model = build_model(
         input_dim=int(payload["input_dim"]),
         output_dim=int(payload["output_dim"]),
+        training_mode=model_cfg.get("training_mode", "mlp_dense"),
         hidden_dim=int(model_cfg.get("hidden_dim", 128)),
         num_hidden_layers=int(model_cfg.get("num_hidden_layers", 2)),
         dropout=float(model_cfg.get("dropout", 0.0)),

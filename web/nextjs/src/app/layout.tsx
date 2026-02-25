@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Navbar from "@/core/views/patterns/Nav/Navbar";
-import CopilotChatProvider from "@/features/copilot-chat/views/providers/CopilotChatProvider";
 import "./globals.css";
+import "@xyflow/react/dist/style.css";
+import { Toaster } from "react-hot-toast";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,10 +31,9 @@ export default function RootLayout({
         suppressHydrationWarning
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <CopilotChatProvider>
-          <Navbar />
-          {children}
-        </CopilotChatProvider>
+        <Navbar />
+        {children}
+        <Toaster />
       </body>
     </html>
   );

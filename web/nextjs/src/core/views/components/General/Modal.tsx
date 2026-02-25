@@ -5,10 +5,11 @@ type ModalProps = {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
+  position?: "center" | "top";
   children: React.ReactNode;
 };
 
-export function Modal({ isOpen, onClose, title, children }: ModalProps) {
+export function Modal({ isOpen, onClose, title, position = "center", children }: ModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -32,7 +33,7 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
   if (!isOpen) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className={`fixed inset-0 z-50 flex justify-center p-4 ${position === "top" ? "items-start pt-4 md:pt-8" : "items-center"}`}>
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity"

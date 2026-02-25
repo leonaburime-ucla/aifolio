@@ -3,7 +3,17 @@ import { getAiApiBaseUrl } from "@/core/config/aiApi";
 export type TensorflowTrainRequest = {
   dataset_id: string;
   target_column: string;
-  training_mode?: "mlp" | "linear_glm_baseline";
+  training_mode?:
+    | "mlp_dense"
+    | "linear_glm_baseline"
+    | "wide_and_deep"
+    | "imbalance_aware"
+    | "quantile_regression"
+    | "calibrated_classifier"
+    | "entity_embeddings"
+    | "autoencoder_head"
+    | "multi_task_learning"
+    | "time_aware_tabular";
   save_model?: boolean;
   exclude_columns?: string[];
   date_columns?: string[];
@@ -19,9 +29,22 @@ export type TensorflowTrainRequest = {
 
 export type TensorflowTrainSuccess = {
   status: "ok";
+  run_id?: string;
   model_id?: string;
   model_path?: string;
   metrics?: unknown;
+  teacher_input_dim?: number | null;
+  teacher_output_dim?: number | null;
+  student_input_dim?: number | null;
+  student_output_dim?: number | null;
+  teacher_model_size_bytes?: number | null;
+  student_model_size_bytes?: number | null;
+  size_saved_bytes?: number | null;
+  size_saved_percent?: number | null;
+  teacher_param_count?: number | null;
+  student_param_count?: number | null;
+  param_saved_count?: number | null;
+  param_saved_percent?: number | null;
 };
 
 export type TensorflowTrainError = {
@@ -33,8 +56,19 @@ export type TensorflowTrainError = {
 export type TensorflowDistillRequest = {
   dataset_id: string;
   target_column: string;
-  training_mode?: "mlp" | "linear_glm_baseline";
+  training_mode?:
+    | "mlp_dense"
+    | "linear_glm_baseline"
+    | "wide_and_deep"
+    | "imbalance_aware"
+    | "quantile_regression"
+    | "calibrated_classifier"
+    | "entity_embeddings"
+    | "autoencoder_head"
+    | "multi_task_learning"
+    | "time_aware_tabular";
   save_model?: boolean;
+  teacher_run_id?: string;
   teacher_model_id?: string;
   teacher_model_path?: string;
   exclude_columns?: string[];
@@ -52,6 +86,7 @@ export type TensorflowDistillRequest = {
 };
 
 const AI_API_BASE_URL = getAiApiBaseUrl();
+const DISTILL_TIMEOUT_MS = 60_000;
 
 export async function trainTensorflowModel(
   payload: TensorflowTrainRequest
@@ -63,7 +98,7 @@ export async function trainTensorflowModel(
       body: JSON.stringify({
         dataset_id: payload.dataset_id,
         target_column: payload.target_column,
-        training_mode: payload.training_mode ?? "mlp",
+        training_mode: payload.training_mode ?? "mlp_dense",
         save_model: payload.save_model ?? false,
         exclude_columns: payload.exclude_columns,
         date_columns: payload.date_columns,
@@ -80,9 +115,18 @@ export async function trainTensorflowModel(
 
     const data = (await response.json()) as {
       status?: string;
+      run_id?: string;
       model_id?: string;
       model_path?: string;
       metrics?: unknown;
+      teacher_input_dim?: number | null;
+      teacher_output_dim?: number | null;
+      student_input_dim?: number | null;
+      student_output_dim?: number | null;
+      teacher_model_size_bytes?: number | null;
+      student_model_size_bytes?: number | null;
+      size_saved_bytes?: number | null;
+      size_saved_percent?: number | null;
       error?: string;
     };
 
@@ -96,9 +140,14 @@ export async function trainTensorflowModel(
 
     return {
       status: "ok",
+      run_id: data.run_id,
       model_id: data.model_id,
       model_path: data.model_path,
       metrics: data.metrics,
+      teacher_model_size_bytes: data.teacher_model_size_bytes ?? null,
+      student_model_size_bytes: data.student_model_size_bytes ?? null,
+      size_saved_bytes: data.size_saved_bytes ?? null,
+      size_saved_percent: data.size_saved_percent ?? null,
     };
   } catch (error) {
     return {
@@ -115,15 +164,19 @@ export async function trainTensorflowModel(
 export async function distillTensorflowModel(
   payload: TensorflowDistillRequest
 ): Promise<TensorflowTrainSuccess | TensorflowTrainError> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), DISTILL_TIMEOUT_MS);
   try {
     const response = await fetch(`${AI_API_BASE_URL}/ml/tensorflow/distill`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      signal: controller.signal,
       body: JSON.stringify({
         dataset_id: payload.dataset_id,
         target_column: payload.target_column,
-        training_mode: payload.training_mode ?? "mlp",
+        training_mode: payload.training_mode ?? "mlp_dense",
         save_model: payload.save_model ?? false,
+        teacher_run_id: payload.teacher_run_id,
         teacher_model_id: payload.teacher_model_id,
         teacher_model_path: payload.teacher_model_path,
         exclude_columns: payload.exclude_columns,
@@ -140,12 +193,26 @@ export async function distillTensorflowModel(
         student_dropout: payload.student_dropout,
       }),
     });
+    clearTimeout(timeout);
 
     const data = (await response.json()) as {
       status?: string;
+      run_id?: string;
       model_id?: string;
       model_path?: string;
       metrics?: unknown;
+      teacher_input_dim?: number | null;
+      teacher_output_dim?: number | null;
+      student_input_dim?: number | null;
+      student_output_dim?: number | null;
+      teacher_model_size_bytes?: number | null;
+      student_model_size_bytes?: number | null;
+      size_saved_bytes?: number | null;
+      size_saved_percent?: number | null;
+      teacher_param_count?: number | null;
+      student_param_count?: number | null;
+      param_saved_count?: number | null;
+      param_saved_percent?: number | null;
       error?: string;
     };
 
@@ -159,17 +226,33 @@ export async function distillTensorflowModel(
 
     return {
       status: "ok",
+      run_id: data.run_id,
       model_id: data.model_id,
       model_path: data.model_path,
       metrics: data.metrics,
+      teacher_input_dim: data.teacher_input_dim ?? null,
+      teacher_output_dim: data.teacher_output_dim ?? null,
+      student_input_dim: data.student_input_dim ?? null,
+      student_output_dim: data.student_output_dim ?? null,
+      teacher_model_size_bytes: data.teacher_model_size_bytes ?? null,
+      student_model_size_bytes: data.student_model_size_bytes ?? null,
+      size_saved_bytes: data.size_saved_bytes ?? null,
+      size_saved_percent: data.size_saved_percent ?? null,
+      teacher_param_count: data.teacher_param_count ?? null,
+      student_param_count: data.student_param_count ?? null,
+      param_saved_count: data.param_saved_count ?? null,
+      param_saved_percent: data.param_saved_percent ?? null,
     };
   } catch (error) {
+    clearTimeout(timeout);
     return {
       status: "error",
       code: "TENSORFLOW_DISTILL_REQUEST_FAILED",
       error:
         error instanceof Error
-          ? error.message
+          ? error.name === "AbortError"
+            ? "Distillation timed out after 60 seconds."
+            : error.message
           : "Failed to send TensorFlow distillation request.",
     };
   }

@@ -14,7 +14,17 @@ type TensorflowTrainCombo = {
   dropout: number;
 };
 
-export type TensorflowTrainingMode = "mlp" | "linear_glm_baseline";
+export type TensorflowTrainingMode =
+  | "mlp_dense"
+  | "linear_glm_baseline"
+  | "wide_and_deep"
+  | "imbalance_aware"
+  | "quantile_regression"
+  | "calibrated_classifier"
+  | "entity_embeddings"
+  | "autoencoder_head"
+  | "multi_task_learning"
+  | "time_aware_tabular";
 
 export type RunTensorflowTrainingProblem = {
   datasetId: string;
@@ -30,6 +40,7 @@ export type RunTensorflowTrainingProblem = {
 export type RunTensorflowTrainingDeps = {
   trainModel: (payload: TensorflowTrainRequest) => Promise<{
     status: "ok" | "error";
+    run_id?: string;
     model_id?: string;
     model_path?: string;
     metrics?: unknown;
@@ -39,14 +50,20 @@ export type RunTensorflowTrainingDeps = {
   onProgress: (current: number, total: number) => void;
   formatCompletedAt: () => string;
   formatMetricNumber: (value: unknown) => string;
+  shouldContinue?: () => boolean;
 };
 
 export async function runTensorflowTraining(
   problem: RunTensorflowTrainingProblem,
   deps: RunTensorflowTrainingDeps
-): Promise<void> {
+): Promise<{ stopped: boolean; completed: number; total: number; completedTeacherRuns: TrainingRunRow[] }> {
   const total = problem.combinations.length;
+  let completed = 0;
+  const completedTeacherRuns: TrainingRunRow[] = [];
   for (let i = 0; i < total; i += 1) {
+    if (deps.shouldContinue && !deps.shouldContinue()) {
+      return { stopped: true, completed, total, completedTeacherRuns };
+    }
     const combo = problem.combinations[i];
     const result = await deps.trainModel({
       dataset_id: problem.datasetId,
@@ -64,6 +81,7 @@ export async function runTensorflowTraining(
       num_hidden_layers: problem.isLinearBaselineMode ? 2 : combo.numHiddenLayers,
       dropout: problem.isLinearBaselineMode ? 0.1 : combo.dropout,
     });
+    completed += 1;
     deps.onProgress(i + 1, total);
 
     if (result.status === "error") {
@@ -78,6 +96,7 @@ export async function runTensorflowTraining(
         num_hidden_layers: problem.isLinearBaselineMode ? "n/a" : combo.numHiddenLayers,
         dropout: problem.isLinearBaselineMode ? "n/a" : deps.formatMetricNumber(combo.dropout),
         task: problem.task,
+        training_mode: problem.trainingMode,
         target_column: problem.targetColumn,
         dataset_id: problem.datasetId,
         metric_name: "n/a",
@@ -86,13 +105,14 @@ export async function runTensorflowTraining(
         test_loss: "n/a",
         model_id: "n/a",
         model_path: "n/a",
+        run_id: "n/a",
         error: result.error ?? "Training failed.",
       });
       continue;
     }
 
     const metrics = (result.metrics ?? {}) as TrainingMetrics;
-    deps.prependTrainingRun({
+    const completedRun: TrainingRunRow = {
       result: "completed",
       completed_at: deps.formatCompletedAt(),
       epochs: combo.epochs,
@@ -103,6 +123,7 @@ export async function runTensorflowTraining(
       num_hidden_layers: problem.isLinearBaselineMode ? "n/a" : combo.numHiddenLayers,
       dropout: problem.isLinearBaselineMode ? "n/a" : deps.formatMetricNumber(combo.dropout),
       task: problem.task,
+      training_mode: problem.trainingMode,
       target_column: problem.targetColumn,
       dataset_id: problem.datasetId,
       metric_name: metrics.test_metric_name ?? "n/a",
@@ -111,8 +132,12 @@ export async function runTensorflowTraining(
       test_loss: deps.formatMetricNumber(metrics.test_loss),
       model_id: result.model_id ?? "n/a",
       model_path: result.model_path ?? "n/a",
-    });
+      run_id: result.run_id ?? "n/a",
+    };
+    deps.prependTrainingRun(completedRun);
+    completedTeacherRuns.push(completedRun);
   }
+  return { stopped: false, completed, total, completedTeacherRuns };
 }
 
 export type TensorflowTeacherConfig = {
@@ -123,6 +148,7 @@ export type TensorflowTeacherConfig = {
   batch: number;
   learningRate: number;
   testSize: number;
+  runId?: string;
   modelId?: string;
   modelPath?: string;
 };
@@ -141,9 +167,22 @@ export type RunTensorflowDistillationProblem = {
 export type RunTensorflowDistillationDeps = {
   distillModel: (payload: TensorflowDistillRequest) => Promise<{
     status: "ok" | "error";
+    run_id?: string;
     model_id?: string;
     model_path?: string;
     metrics?: unknown;
+    teacher_input_dim?: number | null;
+    teacher_output_dim?: number | null;
+    student_input_dim?: number | null;
+    student_output_dim?: number | null;
+    teacher_model_size_bytes?: number | null;
+    student_model_size_bytes?: number | null;
+    size_saved_bytes?: number | null;
+    size_saved_percent?: number | null;
+    teacher_param_count?: number | null;
+    student_param_count?: number | null;
+    param_saved_count?: number | null;
+    param_saved_percent?: number | null;
     error?: string;
   }>;
   formatCompletedAt: () => string;
@@ -160,6 +199,19 @@ export async function runTensorflowDistillation(
       metrics: TrainingMetrics;
       modelId: string | null;
       modelPath: string | null;
+      runId: string | null;
+      teacherModelSizeBytes: number | null;
+      studentModelSizeBytes: number | null;
+      teacherInputDim: number | null;
+      teacherOutputDim: number | null;
+      studentInputDim: number | null;
+      studentOutputDim: number | null;
+      sizeSavedBytes: number | null;
+      sizeSavedPercent: number | null;
+      teacherParamCount: number | null;
+      studentParamCount: number | null;
+      paramSavedCount: number | null;
+      paramSavedPercent: number | null;
       distilledRun: TrainingRunRow;
     }
 > {
@@ -168,6 +220,7 @@ export async function runTensorflowDistillation(
     target_column: problem.targetColumn,
     training_mode: problem.trainingMode,
     save_model: problem.saveDistilledModel,
+    teacher_run_id: problem.teacher.runId,
     teacher_model_id: problem.teacher.modelId,
     teacher_model_path: problem.teacher.modelPath,
     exclude_columns: problem.excludeColumns,
@@ -200,6 +253,7 @@ export async function runTensorflowDistillation(
     num_hidden_layers: Math.max(1, Math.min(15, Math.round(problem.teacher.layers - 1))),
     dropout: deps.formatMetricNumber(Math.min(0.5, problem.teacher.dropout + 0.05)),
     task: problem.task,
+    training_mode: problem.trainingMode,
     target_column: problem.targetColumn,
     dataset_id: problem.datasetId,
     metric_name: metrics.test_metric_name ?? "n/a",
@@ -208,6 +262,7 @@ export async function runTensorflowDistillation(
     test_loss: deps.formatMetricNumber(metrics.test_loss),
     model_id: result.model_id ?? "n/a",
     model_path: result.model_path ?? "n/a",
+    run_id: result.run_id ?? "n/a",
     error: "",
   };
 
@@ -216,6 +271,19 @@ export async function runTensorflowDistillation(
     metrics,
     modelId: result.model_id ?? null,
     modelPath: result.model_path ?? null,
+    runId: result.run_id ?? null,
+    teacherModelSizeBytes: result.teacher_model_size_bytes ?? null,
+    studentModelSizeBytes: result.student_model_size_bytes ?? null,
+    teacherInputDim: result.teacher_input_dim ?? null,
+    teacherOutputDim: result.teacher_output_dim ?? null,
+    studentInputDim: result.student_input_dim ?? null,
+    studentOutputDim: result.student_output_dim ?? null,
+    sizeSavedBytes: result.size_saved_bytes ?? null,
+    sizeSavedPercent: result.size_saved_percent ?? null,
+    teacherParamCount: result.teacher_param_count ?? null,
+    studentParamCount: result.student_param_count ?? null,
+    paramSavedCount: result.param_saved_count ?? null,
+    paramSavedPercent: result.param_saved_percent ?? null,
     distilledRun,
   };
 }

@@ -2,6 +2,7 @@ import { Modal } from "@/core/views/components/General/Modal";
 import type { HyperParams } from "@/features/ml/utils/bayesianOptimizer.util";
 import {
   formatMetricNumber,
+  type DistillComparison,
   type TrainingMetrics,
 } from "@/features/ml/utils/trainingRuns.util";
 
@@ -11,6 +12,7 @@ type OptimalParamsModalProps = {
   pendingOptimalParams: HyperParams | null;
   pendingOptimalPrediction: { metricName: string; metricValue: number } | null;
   onApply: () => void;
+  activeAlgorithm?: string;
 };
 
 export function OptimalParamsModal({
@@ -19,12 +21,13 @@ export function OptimalParamsModal({
   pendingOptimalParams,
   pendingOptimalPrediction,
   onApply,
+  activeAlgorithm,
 }: OptimalParamsModalProps) {
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Bayesian Optimization Suggestion">
       <div className="space-y-4 p-1">
         <p className="text-sm text-zinc-600">
-          Suggested next hyperparameters for better accuracy based on completed runs.
+          Suggested next hyperparameters for {activeAlgorithm ? <span className="font-semibold text-zinc-800">{activeAlgorithm}</span> : "this architecture"} for better accuracy based on completed runs.
         </p>
         <div className="grid grid-cols-1 gap-2 text-sm text-zinc-800 md:grid-cols-2">
           <p>epochs: <span className="font-semibold">{pendingOptimalParams?.epochs ?? "n/a"}</span></p>
@@ -69,7 +72,21 @@ type DistillMetricsModalProps = {
   distillMetrics: TrainingMetrics | null;
   distillModelId: string | null;
   distillModelPath: string | null;
+  distillComparison?: DistillComparison | null;
 };
+
+function formatBytes(value: number | null | undefined): string {
+  if (typeof value !== "number" || Number.isNaN(value) || value < 0) return "n/a";
+  if (value < 1024) return `${value} B`;
+  if (value < 1024 ** 2) return `${(value / 1024).toFixed(1)} KB`;
+  if (value < 1024 ** 3) return `${(value / (1024 ** 2)).toFixed(2)} MB`;
+  return `${(value / (1024 ** 3)).toFixed(2)} GB`;
+}
+
+function formatInt(value: number | null | undefined): string {
+  if (typeof value !== "number" || Number.isNaN(value)) return "n/a";
+  return value.toLocaleString();
+}
 
 export function DistillMetricsModal({
   isOpen,
@@ -77,34 +94,126 @@ export function DistillMetricsModal({
   distillMetrics,
   distillModelId,
   distillModelPath,
+  distillComparison,
 }: DistillMetricsModalProps) {
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Distillation Metrics">
       <div className="space-y-3 p-1 text-sm text-zinc-700">
-        <p>
-          metric_name:{" "}
-          <span className="font-semibold text-zinc-900">
-            {distillMetrics?.test_metric_name ?? "n/a"}
-          </span>
-        </p>
-        <p>
-          metric_score:{" "}
-          <span className="font-semibold text-zinc-900">
-            {formatMetricNumber(distillMetrics?.test_metric_value)}
-          </span>
-        </p>
-        <p>
-          train_loss:{" "}
-          <span className="font-semibold text-zinc-900">
-            {formatMetricNumber(distillMetrics?.train_loss)}
-          </span>
-        </p>
-        <p>
-          test_loss:{" "}
-          <span className="font-semibold text-zinc-900">
-            {formatMetricNumber(distillMetrics?.test_loss)}
-          </span>
-        </p>
+        <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+          <div className="rounded-md border border-zinc-200 bg-zinc-50 p-2">
+            <p className="text-[11px] uppercase tracking-wide text-zinc-500">metric_name</p>
+            <p className="mt-1 font-semibold text-zinc-900">{distillMetrics?.test_metric_name ?? "n/a"}</p>
+          </div>
+          <div className="rounded-md border border-zinc-200 bg-zinc-50 p-2">
+            <p className="text-[11px] uppercase tracking-wide text-zinc-500">metric_score</p>
+            <p className="mt-1 font-semibold text-zinc-900">
+              {formatMetricNumber(distillMetrics?.test_metric_value)}
+            </p>
+          </div>
+          <div className="rounded-md border border-zinc-200 bg-zinc-50 p-2">
+            <p className="text-[11px] uppercase tracking-wide text-zinc-500">train_loss</p>
+            <p className="mt-1 font-semibold text-zinc-900">{formatMetricNumber(distillMetrics?.train_loss)}</p>
+          </div>
+          <div className="rounded-md border border-zinc-200 bg-zinc-50 p-2">
+            <p className="text-[11px] uppercase tracking-wide text-zinc-500">test_loss</p>
+            <p className="mt-1 font-semibold text-zinc-900">{formatMetricNumber(distillMetrics?.test_loss)}</p>
+          </div>
+        </div>
+        {distillComparison ? (
+          <div className="rounded-md border border-zinc-200 bg-zinc-50 p-3 text-xs text-zinc-700">
+            <p className="font-semibold text-zinc-800">Teacher vs Student</p>
+            <p className="mt-1">
+              metric ({distillComparison.metricName}): teacher{" "}
+              <span className="font-medium text-zinc-900">
+                {formatMetricNumber(distillComparison.teacherMetricValue)}
+              </span>{" "}
+              | student{" "}
+              <span className="font-medium text-zinc-900">
+                {formatMetricNumber(distillComparison.studentMetricValue)}
+              </span>
+            </p>
+            <p className="mt-1">
+              quality delta (student vs teacher):{" "}
+              <span className="font-medium text-zinc-900">
+                {formatMetricNumber(distillComparison.qualityDelta)}
+              </span>{" "}
+              <span className="text-zinc-500">
+                ({distillComparison.higherIsBetter ? "higher is better" : "lower is better"})
+              </span>
+            </p>
+            <p className="mt-1">
+              model size: teacher{" "}
+              <span className="font-medium text-zinc-900">
+                {formatBytes(distillComparison.teacherModelSizeBytes)}
+              </span>{" "}
+              | student{" "}
+              <span className="font-medium text-zinc-900">
+                {formatBytes(distillComparison.studentModelSizeBytes)}
+              </span>
+            </p>
+            <p className="mt-1">
+              size saved:{" "}
+              <span className="font-medium text-zinc-900">
+                {formatBytes(distillComparison.sizeSavedBytes)}
+              </span>{" "}
+              {typeof distillComparison.sizeSavedPercent === "number" ? (
+                <span className="text-zinc-500">
+                  ({Number(distillComparison.sizeSavedPercent.toFixed(2))}%)
+                </span>
+              ) : (
+                <span className="text-zinc-500">
+                  (file-size savings unavailable when no artifact files are persisted)
+                </span>
+              )}
+            </p>
+            <p className="mt-1">
+              params: teacher{" "}
+              <span className="font-medium text-zinc-900">
+                {formatInt(distillComparison.teacherParamCount)}
+              </span>{" "}
+              | student{" "}
+              <span className="font-medium text-zinc-900">
+                {formatInt(distillComparison.studentParamCount)}
+              </span>
+            </p>
+            <p className="mt-1">
+              params saved:{" "}
+              <span className="font-medium text-zinc-900">
+                {formatInt(distillComparison.paramSavedCount)}
+              </span>{" "}
+              {typeof distillComparison.paramSavedPercent === "number" ? (
+                <span className="text-zinc-500">
+                  ({Number(distillComparison.paramSavedPercent.toFixed(2))}%)
+                </span>
+              ) : null}
+            </p>
+            <div className="mt-2 rounded-md border border-zinc-200 bg-white p-2 text-zinc-600">
+              <p className="font-medium text-zinc-700">Parameter Math</p>
+              <p className="mt-1">
+                D = input feature columns: columns of the dataset. Categorical columns are expanded via one-hot encoding.
+              </p>
+              <p className="mt-1">
+                H = hidden dim, L = hidden layers, C = output classes/targets.
+              </p>
+            </div>
+            <p className="mt-2 break-words text-zinc-600">
+              Teacher:{" "}
+              (D={distillComparison.teacherInputDim ?? "n/a"}, H={distillComparison.teacherHiddenDim ?? "n/a"}, L={distillComparison.teacherNumHiddenLayers ?? "n/a"}, C={distillComparison.teacherOutputDim ?? "n/a"});{" "}
+              total params = (D*H + H) + ((L-1)*(H*H + H)) + (H*C + C) + (2*H*L){" = "}
+              <span className="font-medium text-zinc-900">
+                {formatInt(distillComparison.teacherParamCount)}
+              </span>
+            </p>
+            <p className="mt-1 break-words text-zinc-600">
+              Student:{" "}
+              (D={distillComparison.studentInputDim ?? "n/a"}, H={distillComparison.studentHiddenDim ?? "n/a"}, L={distillComparison.studentNumHiddenLayers ?? "n/a"}, C={distillComparison.studentOutputDim ?? "n/a"});{" "}
+              total params = (D*H + H) + ((L-1)*(H*H + H)) + (H*C + C) + (2*H*L){" = "}
+              <span className="font-medium text-zinc-900">
+                {formatInt(distillComparison.studentParamCount)}
+              </span>
+            </p>
+          </div>
+        ) : null}
         {distillModelId || distillModelPath ? (
           <div className="rounded-md border border-zinc-200 bg-zinc-50 p-3 text-xs text-zinc-600">
             <p>

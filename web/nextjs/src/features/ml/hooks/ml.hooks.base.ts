@@ -1,5 +1,8 @@
 import { useState } from "react";
-import type { TrainingMetrics } from "@/features/ml/utils/trainingRuns.util";
+import type {
+  DistillComparison,
+  TrainingMetrics,
+} from "@/features/ml/utils/trainingRuns.util";
 import type { NumericInputSnapshot } from "@/features/ml/utils/trainingUiShared";
 
 /**
@@ -23,6 +26,7 @@ export function useMlTrainingUiBaseState() {
   const [savedSweepInputs, setSavedSweepInputs] = useState<NumericInputSnapshot | null>(null);
   const [isTraining, setIsTraining] = useState(false);
   const [isDistilling, setIsDistilling] = useState(false);
+  const [autoDistillEnabled, setAutoDistillEnabled] = useState(false);
   const [trainingProgress, setTrainingProgress] = useState<{ current: number; total: number }>({
     current: 0,
     total: 0,
@@ -50,6 +54,7 @@ export function useMlTrainingUiBaseState() {
   const [distillMetrics, setDistillMetrics] = useState<TrainingMetrics | null>(null);
   const [distillModelId, setDistillModelId] = useState<string | null>(null);
   const [distillModelPath, setDistillModelPath] = useState<string | null>(null);
+  const [distillComparison, setDistillComparison] = useState<DistillComparison | null>(null);
 
   return {
     targetColumn,
@@ -84,6 +89,8 @@ export function useMlTrainingUiBaseState() {
     setIsTraining,
     isDistilling,
     setIsDistilling,
+    autoDistillEnabled,
+    setAutoDistillEnabled,
     trainingProgress,
     setTrainingProgress,
     trainingError,
@@ -110,5 +117,7 @@ export function useMlTrainingUiBaseState() {
     setDistillModelId,
     distillModelPath,
     setDistillModelPath,
+    distillComparison,
+    setDistillComparison,
   };
 }

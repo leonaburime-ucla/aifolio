@@ -9,7 +9,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { useMemo, useRef, useState } from "react";
+import { type ReactNode, useMemo, useRef, useState } from "react";
 
 type ResearchRow = {
   id: string;
@@ -50,7 +50,7 @@ const data: ResearchRow[] = Array.from({ length: 1200 }, (_, index) => {
  * Column definitions for TanStack Table.
  * Includes a checkbox column to prove per-row action wiring.
  */
-const columns: ColumnDef<ResearchRow>[] = [
+const researchColumns: ColumnDef<ResearchRow>[] = [
   {
     id: "select",
     header: "",
@@ -121,6 +121,7 @@ type DataTableProps = {
   maxWidth?: number;
   rows?: GenericRow[];
   columns?: string[];
+  cellRenderers?: Record<string, (value: GenericRow[keyof GenericRow], row: GenericRow) => ReactNode>;
 };
 
 export default function DataTable({
@@ -128,6 +129,7 @@ export default function DataTable({
   maxWidth = 900,
   rows,
   columns,
+  cellRenderers = {},
 }: DataTableProps) {
   const useGenericRows = Array.isArray(rows);
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -141,15 +143,23 @@ export default function DataTable({
       // Use direct key access so dotted names like "MS.SubClass" are treated
       // as literal keys, not nested access paths.
       accessorFn: (row) => row[key] ?? null,
+      cell: ({ row, getValue }) => {
+        const value = getValue<GenericRow[keyof GenericRow]>();
+        const renderer = cellRenderers[key];
+        if (renderer) {
+          return renderer(value, row.original);
+        }
+        return value as ReactNode;
+      },
     }));
-  }, [columns, rows, useGenericRows]);
+  }, [cellRenderers, columns, rows, useGenericRows]);
 
   /**
    * Build the TanStack table instance with the core row model only.
    */
   const table = useReactTable({
     data: useGenericRows ? rows ?? [] : data,
-    columns: useGenericRows ? genericColumns : columns,
+    columns: useGenericRows ? genericColumns : researchColumns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     onSortingChange: setSorting,

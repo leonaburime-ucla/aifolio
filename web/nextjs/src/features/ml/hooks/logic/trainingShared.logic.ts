@@ -165,7 +165,7 @@ export function handleFindOptimalParams({
 }) {
   const optimized = findOptimalParamsFromRuns(trainingRuns);
   if (!optimized) {
-    ui.setOptimizerStatus("Need at least 5 completed runs.");
+    ui.setOptimizerStatus("Need at least 5 completed runs for the specific algorithm.");
     setTimeout(() => ui.setOptimizerStatus(null), 2500);
     return;
   }
@@ -186,18 +186,18 @@ export function handleApplyOptimalParams({
   ui,
 }: {
   ui: OptimizerUiState &
-    Pick<
-      NumericInputSetters,
-      | "setEpochValuesInput"
-      | "setLearningRatesInput"
-      | "setTestSizesInput"
-      | "setBatchSizesInput"
-      | "setHiddenDimsInput"
-      | "setNumHiddenLayersInput"
-      | "setDropoutsInput"
-    > & {
-      setRunSweepEnabled: (value: boolean) => void;
-    };
+  Pick<
+    NumericInputSetters,
+    | "setEpochValuesInput"
+    | "setLearningRatesInput"
+    | "setTestSizesInput"
+    | "setBatchSizesInput"
+    | "setHiddenDimsInput"
+    | "setNumHiddenLayersInput"
+    | "setDropoutsInput"
+  > & {
+    setRunSweepEnabled: (value: boolean) => void;
+  };
 }) {
   if (!ui.pendingOptimalParams) return;
   ui.setEpochValuesInput(String(ui.pendingOptimalParams.epochs));

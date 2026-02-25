@@ -8,8 +8,35 @@ export type TrainingMetrics = {
   test_metric_value?: number;
 };
 
+export type DistillComparison = {
+  metricName: string;
+  teacherMetricValue: number | null;
+  studentMetricValue: number | null;
+  qualityDelta: number | null;
+  higherIsBetter: boolean;
+  teacherTrainingMode: string | null;
+  studentTrainingMode: string | null;
+  teacherHiddenDim: number | null;
+  studentHiddenDim: number | null;
+  teacherNumHiddenLayers: number | null;
+  studentNumHiddenLayers: number | null;
+  teacherInputDim: number | null;
+  studentInputDim: number | null;
+  teacherOutputDim: number | null;
+  studentOutputDim: number | null;
+  teacherModelSizeBytes: number | null;
+  studentModelSizeBytes: number | null;
+  sizeSavedBytes: number | null;
+  sizeSavedPercent: number | null;
+  teacherParamCount: number | null;
+  studentParamCount: number | null;
+  paramSavedCount: number | null;
+  paramSavedPercent: number | null;
+};
+
 export const TRAINING_RUN_COLUMNS = [
   "completed_at",
+  "distill_action",
   // Display name for backend `test_metric_value` (e.g. accuracy, rmse).
   "metric_score",
   "train_loss",
@@ -24,8 +51,11 @@ export const TRAINING_RUN_COLUMNS = [
   "num_hidden_layers",
   "dropout",
   "task",
+  "training_mode",
   "target_column",
   "dataset_id",
+  "model_id",
+  "model_path",
   "error",
 ] as const;
 

@@ -13,9 +13,19 @@ import numpy as np
 import tensorflow as tf
 
 try:
+    from .distill import (
+        InMemoryBundleRegistry,
+        distill_model_from_file as shared_distill_model_from_file,
+        handle_distill_request as shared_handle_distill_request,
+    )
     from .file_util import coerce_value, load_tabular_file, split_features_target
     from .ml_util import TaskType, expand_date_columns, infer_task
 except ImportError:  # pragma: no cover
+    from distill import (
+        InMemoryBundleRegistry,
+        distill_model_from_file as shared_distill_model_from_file,
+        handle_distill_request as shared_handle_distill_request,
+    )
     from file_util import coerce_value, load_tabular_file, split_features_target
     from ml_util import TaskType, expand_date_columns, infer_task
 
@@ -23,13 +33,23 @@ from sklearn.feature_extraction import DictVectorizer
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 
-TrainingMode = Literal["mlp", "linear_glm_baseline"]
+TrainingMode = Literal[
+    "mlp_dense",
+    "linear_glm_baseline",
+    "wide_and_deep",
+    "imbalance_aware",
+    "quantile_regression",
+    "calibrated_classifier",
+]
+_BUNDLE_REGISTRY: InMemoryBundleRegistry[ModelBundle] = InMemoryBundleRegistry(
+    ttl_seconds=900, max_items=128
+)
 
 
 @dataclass
 class TrainingConfig:
     target_column: str
-    training_mode: TrainingMode = "mlp"
+    training_mode: TrainingMode = "mlp_dense"
     task: TaskType | Literal["auto"] = "auto"
     test_size: float = 0.2
     random_seed: int = 42
@@ -166,30 +186,157 @@ def _build_model(
     dropout: float,
     learning_rate: float,
 ) -> tf.keras.Model:
-    model = tf.keras.Sequential(name="tf_mlp")
-    model.add(tf.keras.layers.Input(shape=(input_dim,)))
+    quantile_tau = 0.8
 
-    if training_mode == "mlp":
-        for _ in range(max(1, num_hidden_layers)):
-            model.add(tf.keras.layers.Dense(hidden_dim, activation=None))
-            model.add(tf.keras.layers.BatchNormalization())
-            model.add(tf.keras.layers.ReLU())
+    def pinball_loss(y_true: tf.Tensor, y_pred: tf.Tensor) -> tf.Tensor:
+        err = y_true - y_pred
+        return tf.reduce_mean(tf.maximum(quantile_tau * err, (quantile_tau - 1.0) * err))
+
+    inputs = tf.keras.layers.Input(shape=(input_dim,))
+
+    if training_mode == "linear_glm_baseline":
+        logits = tf.keras.layers.Dense(output_dim, activation=None, name="linear_head")(inputs)
+    elif training_mode == "entity_embeddings":
+        embed_dim = max(16, min(hidden_dim, 128))
+        embedded = tf.keras.layers.Dense(embed_dim, activation=None, name="entity_embed_proj")(inputs)
+        embedded = tf.keras.layers.BatchNormalization(name="entity_embed_bn")(embedded)
+        embedded = tf.keras.layers.ReLU(name="entity_embed_relu")(embedded)
+        deep = embedded
+        for idx in range(max(1, num_hidden_layers)):
+            deep = tf.keras.layers.Dense(hidden_dim, activation=None, name=f"entity_dense_{idx}")(deep)
+            deep = tf.keras.layers.BatchNormalization(name=f"entity_bn_{idx}")(deep)
+            deep = tf.keras.layers.ReLU(name=f"entity_relu_{idx}")(deep)
             if dropout > 0:
-                model.add(tf.keras.layers.Dropout(dropout))
+                deep = tf.keras.layers.Dropout(dropout, name=f"entity_dropout_{idx}")(deep)
+        logits = tf.keras.layers.Dense(output_dim, activation=None, name="entity_head")(deep)
+    elif training_mode == "wide_and_deep":
+        wide_logits = tf.keras.layers.Dense(output_dim, activation=None, name="wide_head")(inputs)
+        deep = inputs
+        for idx in range(max(1, num_hidden_layers)):
+            deep = tf.keras.layers.Dense(hidden_dim, activation=None, name=f"deep_dense_{idx}")(deep)
+            deep = tf.keras.layers.BatchNormalization(name=f"deep_bn_{idx}")(deep)
+            deep = tf.keras.layers.ReLU(name=f"deep_relu_{idx}")(deep)
+            if dropout > 0:
+                deep = tf.keras.layers.Dropout(dropout, name=f"deep_dropout_{idx}")(deep)
+        deep_logits = tf.keras.layers.Dense(output_dim, activation=None, name="deep_head")(deep)
+        logits = tf.keras.layers.Add(name="wide_deep_add")([wide_logits, deep_logits])
+    elif training_mode == "time_aware_tabular":
+        gate = tf.keras.layers.Dense(input_dim, activation="sigmoid", name="temporal_gate")(inputs)
+        gated = tf.keras.layers.Multiply(name="temporal_multiply")([inputs, gate])
+        merged = tf.keras.layers.Concatenate(name="temporal_concat")([inputs, gated])
+        deep = merged
+        for idx in range(max(1, num_hidden_layers)):
+            deep = tf.keras.layers.Dense(hidden_dim, activation=None, name=f"time_dense_{idx}")(deep)
+            deep = tf.keras.layers.BatchNormalization(name=f"time_bn_{idx}")(deep)
+            deep = tf.keras.layers.ReLU(name=f"time_relu_{idx}")(deep)
+            if dropout > 0:
+                deep = tf.keras.layers.Dropout(dropout, name=f"time_dropout_{idx}")(deep)
+        logits = tf.keras.layers.Dense(output_dim, activation=None, name="time_head")(deep)
+    else:
+        deep = inputs
+        for idx in range(max(1, num_hidden_layers)):
+            deep = tf.keras.layers.Dense(hidden_dim, activation=None, name=f"dense_{idx}")(deep)
+            deep = tf.keras.layers.BatchNormalization(name=f"bn_{idx}")(deep)
+            deep = tf.keras.layers.ReLU(name=f"relu_{idx}")(deep)
+            if dropout > 0:
+                deep = tf.keras.layers.Dropout(dropout, name=f"dropout_{idx}")(deep)
+        if training_mode == "autoencoder_head":
+            bottleneck_dim = max(8, hidden_dim // 2)
+            bottleneck = tf.keras.layers.Dense(
+                bottleneck_dim, activation="relu", name="autoencoder_bottleneck"
+            )(deep)
+            recon = tf.keras.layers.Dense(
+                input_dim, activation="linear", name="reconstruction_output"
+            )(bottleneck)
+            pred_logits = tf.keras.layers.Dense(
+                output_dim, activation=None, name="main_logits"
+            )(bottleneck)
+        elif training_mode == "multi_task_learning":
+            shared = tf.keras.layers.Dense(hidden_dim, activation="relu", name="shared_trunk")(deep)
+            main_logits = tf.keras.layers.Dense(
+                output_dim, activation=None, name="main_logits"
+            )(shared)
+            aux_logits = tf.keras.layers.Dense(
+                output_dim, activation=None, name="aux_logits"
+            )(shared)
+        else:
+            logits = tf.keras.layers.Dense(output_dim, activation=None, name="mlp_head")(deep)
 
     if task == "classification":
-        model.add(tf.keras.layers.Dense(output_dim, activation="softmax"))
-        model.compile(
-            optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
-            loss="sparse_categorical_crossentropy",
-            metrics=["accuracy"],
-        )
+        loss_fn: str | tf.keras.losses.Loss = "sparse_categorical_crossentropy"
+        if training_mode == "calibrated_classifier":
+            loss_fn = tf.keras.losses.SparseCategoricalCrossentropy(label_smoothing=0.05)
+        if training_mode == "autoencoder_head":
+            main_probs = tf.keras.layers.Activation(
+                "softmax", name="main_output"
+            )(pred_logits)
+            model = tf.keras.Model(
+                inputs=inputs, outputs=[main_probs, recon], name=f"tf_{training_mode}"
+            )
+            model.compile(
+                optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
+                loss={"main_output": loss_fn, "reconstruction_output": "mse"},
+                loss_weights={"main_output": 1.0, "reconstruction_output": 0.2},
+                metrics={"main_output": ["accuracy"]},
+            )
+        elif training_mode == "multi_task_learning":
+            main_probs = tf.keras.layers.Activation(
+                "softmax", name="main_output"
+            )(main_logits)
+            aux_probs = tf.keras.layers.Activation("softmax", name="aux_output")(aux_logits)
+            model = tf.keras.Model(
+                inputs=inputs, outputs=[main_probs, aux_probs], name=f"tf_{training_mode}"
+            )
+            model.compile(
+                optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
+                loss={"main_output": loss_fn, "aux_output": loss_fn},
+                loss_weights={"main_output": 1.0, "aux_output": 0.3},
+                metrics={"main_output": ["accuracy"]},
+            )
+        else:
+            outputs = tf.keras.layers.Activation("softmax", name="softmax")(logits)
+            model = tf.keras.Model(inputs=inputs, outputs=outputs, name=f"tf_{training_mode}")
+            model.compile(
+                optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
+                loss=loss_fn,
+                metrics=["accuracy"],
+            )
     else:
-        model.add(tf.keras.layers.Dense(output_dim, activation="linear"))
-        model.compile(
-            optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
-            loss="mse",
+        loss_fn: str | Callable[..., tf.Tensor] = (
+            pinball_loss if training_mode == "quantile_regression" else "mse"
         )
+        if training_mode == "autoencoder_head":
+            main_out = tf.keras.layers.Activation(
+                "linear", name="main_output"
+            )(pred_logits)
+            model = tf.keras.Model(
+                inputs=inputs, outputs=[main_out, recon], name=f"tf_{training_mode}"
+            )
+            model.compile(
+                optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
+                loss={"main_output": loss_fn, "reconstruction_output": "mse"},
+                loss_weights={"main_output": 1.0, "reconstruction_output": 0.2},
+            )
+        elif training_mode == "multi_task_learning":
+            main_out = tf.keras.layers.Activation(
+                "linear", name="main_output"
+            )(main_logits)
+            aux_out = tf.keras.layers.Activation("linear", name="aux_output")(aux_logits)
+            model = tf.keras.Model(
+                inputs=inputs, outputs=[main_out, aux_out], name=f"tf_{training_mode}"
+            )
+            model.compile(
+                optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
+                loss={"main_output": loss_fn, "aux_output": "mse"},
+                loss_weights={"main_output": 1.0, "aux_output": 0.3},
+            )
+        else:
+            outputs = tf.keras.layers.Activation("linear", name="regression_output")(logits)
+            model = tf.keras.Model(inputs=inputs, outputs=outputs, name=f"tf_{training_mode}")
+            model.compile(
+                optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
+                loss=loss_fn,
+            )
 
     return model
 
@@ -215,6 +362,14 @@ def train_model_from_file(
     x_rows, y_raw = split_features_target(rows, cfg.target_column)
 
     task: TaskType = infer_task(y_raw) if cfg.task == "auto" else cfg.task
+    if cfg.training_mode in {"imbalance_aware", "calibrated_classifier"} and task != "classification":
+        raise ValueError(
+            f"training_mode '{cfg.training_mode}' is classification-only; use task='classification' or choose a regression mode."
+        )
+    if cfg.training_mode == "quantile_regression" and task != "regression":
+        raise ValueError(
+            "training_mode 'quantile_regression' is regression-only; use task='regression' or choose a classification mode."
+        )
 
     (
         x_train,
@@ -242,21 +397,56 @@ def train_model_from_file(
         learning_rate=cfg.learning_rate,
     )
 
+    is_multi_task = cfg.training_mode == "multi_task_learning"
+    is_autoencoder_head = cfg.training_mode == "autoencoder_head"
+    if is_multi_task:
+        y_train_fit: Any = {"main_output": y_train, "aux_output": y_train}
+        y_test_fit: Any = {"main_output": y_test, "aux_output": y_test}
+    elif is_autoencoder_head:
+        y_train_fit = {"main_output": y_train, "reconstruction_output": x_train}
+        y_test_fit = {"main_output": y_test, "reconstruction_output": x_test}
+    else:
+        y_train_fit = y_train
+        y_test_fit = y_test
+
+    fit_kwargs: dict[str, Any] = {}
+    if task == "classification" and cfg.training_mode == "imbalance_aware":
+        counts = np.bincount(y_train.astype(np.int64), minlength=output_dim).astype(np.float32)
+        counts = np.clip(counts, a_min=1.0, a_max=None)
+        total = float(np.sum(counts))
+        fit_kwargs["class_weight"] = {
+            idx: float(total / (float(output_dim) * float(counts[idx])))
+            for idx in range(output_dim)
+        }
+
     model.fit(
         x_train,
-        y_train,
+        y_train_fit,
         epochs=cfg.epochs,
         batch_size=cfg.batch_size,
         verbose=0,
+        **fit_kwargs,
     )
 
-    train_eval = model.evaluate(x_train, y_train, verbose=0)
-    test_eval = model.evaluate(x_test, y_test, verbose=0)
+    train_eval = model.evaluate(x_train, y_train_fit, verbose=0)
+    test_eval = model.evaluate(x_test, y_test_fit, verbose=0)
     train_loss = float(train_eval[0] if isinstance(train_eval, (list, tuple)) else train_eval)
     test_loss = float(test_eval[0] if isinstance(test_eval, (list, tuple)) else test_eval)
 
+    def _main_output(preds: Any) -> np.ndarray:
+        if isinstance(preds, dict):
+            if "main_output" in preds:
+                return np.asarray(preds["main_output"])
+            return np.asarray(next(iter(preds.values())))
+        if isinstance(preds, list):
+            return np.asarray(preds[0])
+        return np.asarray(preds)
+
     if task == "classification":
-        test_accuracy = float(test_eval[1] if isinstance(test_eval, (list, tuple)) and len(test_eval) > 1 else 0.0)
+        preds_raw = model.predict(x_test, verbose=0)
+        probs = _main_output(preds_raw)
+        predicted_classes = np.argmax(probs, axis=1)
+        test_accuracy = float(np.mean(predicted_classes == y_test))
         metrics = Metrics(
             task=task,
             train_loss=train_loss,
@@ -265,7 +455,7 @@ def train_model_from_file(
             test_metric_value=test_accuracy,
         )
     else:
-        preds = model.predict(x_test, verbose=0)
+        preds = _main_output(model.predict(x_test, verbose=0))
         if target_scaler is not None:
             preds_original = target_scaler.inverse_transform(preds)
             y_test_original = target_scaler.inverse_transform(y_test)
@@ -273,12 +463,20 @@ def train_model_from_file(
             preds_original = preds
             y_test_original = y_test
         rmse = float(np.sqrt(np.mean((preds_original - y_test_original) ** 2)))
+        if cfg.training_mode == "quantile_regression":
+            error = y_test_original - preds_original
+            quantile = 0.8
+            metric_name = "pinball_p80"
+            metric_value = float(np.mean(np.maximum(quantile * error, (quantile - 1.0) * error)))
+        else:
+            metric_name = "rmse"
+            metric_value = rmse
         metrics = Metrics(
             task=task,
             train_loss=train_loss,
             test_loss=test_loss,
-            test_metric_name="rmse",
-            test_metric_value=rmse,
+            test_metric_name=metric_name,
+            test_metric_value=metric_value,
         )
 
     bundle = ModelBundle(
@@ -321,10 +519,11 @@ def _model_dropout(bundle: ModelBundle) -> float:
     return float(bundle.model_config.get("dropout", 0.0))
 
 
-def distill_model_from_file(
+def _distill_model_from_file_impl(
     data_path: str | Path,
     cfg: TrainingConfig,
-    teacher_path: str | Path,
+    teacher_path: str | Path | None = None,
+    teacher_bundle: ModelBundle | None = None,
     sheet_name: str | None = None,
     exclude_columns: list[str] | None = None,
     date_columns: list[str] | None = None,
@@ -343,7 +542,12 @@ def distill_model_from_file(
     if not 0 <= alpha <= 1:
         raise ValueError("alpha must be between 0 and 1")
 
-    teacher = load_bundle(teacher_path)
+    if teacher_bundle is not None:
+        teacher = teacher_bundle
+    elif teacher_path is not None:
+        teacher = load_bundle(teacher_path)
+    else:
+        raise ValueError("teacher_path or teacher_bundle is required.")
     task: TaskType = teacher.task if cfg.task == "auto" else cfg.task
     if task != teacher.task:
         raise ValueError("Requested task does not match teacher task.")
@@ -607,7 +811,38 @@ def predict_rows(bundle: ModelBundle, rows: list[dict[str, Any]], device: str | 
     return preds.squeeze(1).tolist()
 
 
-def handle_distill_request(
+def _safe_file_size(path: str | None) -> int | None:
+    if not path:
+        return None
+    file_path = Path(path)
+    if not file_path.exists() or not file_path.is_file():
+        return None
+    return int(file_path.stat().st_size)
+
+
+def _parameter_count(model: tf.keras.Model) -> int:
+    return int(model.count_params())
+
+
+def _serialized_model_size_bytes(model: tf.keras.Model) -> int | None:
+    try:
+        payload = []
+        for weights in model.get_weights():
+            payload.append(weights.tobytes())
+        return int(sum(len(chunk) for chunk in payload))
+    except Exception:
+        return None
+
+
+def _store_in_memory_bundle(bundle: ModelBundle) -> str:
+    return _BUNDLE_REGISTRY.store(bundle)
+
+
+def _load_in_memory_bundle(run_id: str) -> ModelBundle | None:
+    return _BUNDLE_REGISTRY.load(run_id)
+
+
+def _handle_distill_request_impl(
     payload: dict[str, Any],
     resolve_dataset_path: Callable[[str], Path | None],
     artifacts_dir: Path,
@@ -624,6 +859,7 @@ def handle_distill_request(
 
     teacher_model_path = payload.get("teacher_model_path")
     teacher_model_id = payload.get("teacher_model_id")
+    teacher_run_id = payload.get("teacher_run_id")
     if not teacher_model_path and teacher_model_id:
         teacher_model_path = str(artifacts_dir / str(teacher_model_id) / "model_bundle.keras")
 
@@ -632,10 +868,10 @@ def handle_distill_request(
             "status": "error",
             "error": "target_column and either data_path or dataset_id are required.",
         }
-    if not teacher_model_path:
+    if not teacher_model_path and not teacher_run_id:
         return 400, {
             "status": "error",
-            "error": "teacher_model_path or teacher_model_id is required.",
+            "error": "teacher_run_id, teacher_model_path, or teacher_model_id is required.",
         }
 
     model_id = (payload.get("model_id") or str(uuid.uuid4())) if save_model else None
@@ -706,12 +942,42 @@ def handle_distill_request(
         return 400, {"status": "error", "error": "temperature must be > 0 and <= 20."}
     if not 0 <= alpha <= 1:
         return 400, {"status": "error", "error": "alpha must be between 0 and 1."}
-    if payload.get("training_mode", "mlp") not in {"mlp", "linear_glm_baseline"}:
-        return 400, {"status": "error", "error": "training_mode must be 'mlp' or 'linear_glm_baseline'."}
+    training_mode = str(payload.get("training_mode", "mlp_dense"))
+    if training_mode == "mlp":
+        training_mode = "mlp_dense"
+    if training_mode not in {
+        "mlp_dense",
+        "linear_glm_baseline",
+        "wide_and_deep",
+        "imbalance_aware",
+        "quantile_regression",
+        "calibrated_classifier",
+        "entity_embeddings",
+        "autoencoder_head",
+        "multi_task_learning",
+        "time_aware_tabular",
+    }:
+        return 400, {
+            "status": "error",
+            "error": "training_mode must be 'mlp_dense', 'linear_glm_baseline', 'wide_and_deep', 'imbalance_aware', 'quantile_regression', 'calibrated_classifier', 'entity_embeddings', 'autoencoder_head', 'multi_task_learning', or 'time_aware_tabular'.",
+        }
+    if training_mode in {
+        "imbalance_aware",
+        "quantile_regression",
+        "calibrated_classifier",
+        "entity_embeddings",
+        "autoencoder_head",
+        "multi_task_learning",
+        "time_aware_tabular",
+    }:
+        return 400, {
+            "status": "error",
+            "error": f"Distillation is not yet supported for training_mode '{training_mode}'. Use mlp_dense, linear_glm_baseline, or wide_and_deep.",
+        }
 
     cfg = TrainingConfig(
         target_column=str(target_column),
-        training_mode=payload.get("training_mode", "mlp"),
+        training_mode=training_mode,
         task=payload.get("task", "auto"),
         test_size=test_size,
         random_seed=random_seed,
@@ -724,10 +990,14 @@ def handle_distill_request(
     )
 
     try:
-        bundle, metrics = distill_model_from_file(
+        teacher_bundle = _load_in_memory_bundle(str(teacher_run_id)) if teacher_run_id else None
+        if teacher_run_id and teacher_bundle is None:
+            return 404, {"status": "error", "error": "Teacher run not found or expired."}
+        bundle, metrics = _distill_model_from_file_impl(
             data_path=data_path,
             cfg=cfg,
             teacher_path=teacher_model_path,
+            teacher_bundle=teacher_bundle,
             sheet_name=sheet_name,
             exclude_columns=exclude_columns,
             date_columns=date_columns,
@@ -739,14 +1009,74 @@ def handle_distill_request(
             student_dropout=student_dropout,
         )
         model_path = save_bundle(bundle, model_dir, metrics) if save_model and model_dir else None
+        teacher_model_size_bytes = _safe_file_size(str(teacher_model_path))
+        student_model_size_bytes = _safe_file_size(str(model_path) if model_path else None)
+        size_saved_bytes = (
+            teacher_model_size_bytes - student_model_size_bytes
+            if teacher_model_size_bytes is not None and student_model_size_bytes is not None
+            else None
+        )
+        size_saved_percent = (
+            (float(size_saved_bytes) / float(teacher_model_size_bytes)) * 100.0
+            if size_saved_bytes is not None and teacher_model_size_bytes and teacher_model_size_bytes > 0
+            else None
+        )
+        teacher_model_for_stats = (
+            teacher_bundle if teacher_bundle is not None else load_bundle(str(teacher_model_path))
+        )
+        teacher_param_count = _parameter_count(teacher_model_for_stats.model)
+        student_param_count = _parameter_count(bundle.model)
+        param_saved_count = teacher_param_count - student_param_count
+        param_saved_percent = (
+            (float(param_saved_count) / float(teacher_param_count)) * 100.0
+            if teacher_param_count > 0
+            else None
+        )
+        if teacher_model_size_bytes is None:
+            teacher_model_size_bytes = _serialized_model_size_bytes(teacher_model_for_stats.model)
+        if student_model_size_bytes is None:
+            student_model_size_bytes = _serialized_model_size_bytes(bundle.model)
+            if teacher_model_size_bytes is not None and student_model_size_bytes is not None:
+                size_saved_bytes = teacher_model_size_bytes - student_model_size_bytes
+                size_saved_percent = (
+                    (float(size_saved_bytes) / float(teacher_model_size_bytes)) * 100.0
+                    if teacher_model_size_bytes > 0
+                    else None
+                )
+        run_id = _store_in_memory_bundle(bundle)
         return 200, {
             "status": "ok",
+            "run_id": run_id,
             "model_id": model_id,
             "model_path": str(model_path) if model_path else None,
             "metrics": asdict(metrics),
+            "teacher_input_dim": int(teacher_model_for_stats.input_dim),
+            "teacher_output_dim": int(teacher_model_for_stats.output_dim),
+            "student_input_dim": int(bundle.input_dim),
+            "student_output_dim": int(bundle.output_dim),
+            "teacher_model_size_bytes": teacher_model_size_bytes,
+            "student_model_size_bytes": student_model_size_bytes,
+            "size_saved_bytes": size_saved_bytes,
+            "size_saved_percent": size_saved_percent,
+            "teacher_param_count": teacher_param_count,
+            "student_param_count": student_param_count,
+            "param_saved_count": param_saved_count,
+            "param_saved_percent": param_saved_percent,
         }
     except Exception as exc:
         return 400, {"status": "error", "error": str(exc)}
+
+
+def distill_model_from_file(**kwargs: Any) -> tuple[ModelBundle, Metrics]:
+    return shared_distill_model_from_file("tensorflow", **kwargs)
+
+
+def handle_distill_request(
+    payload: dict[str, Any],
+    resolve_dataset_path: Callable[[str], Path | None],
+    artifacts_dir: Path,
+) -> tuple[int, dict[str, Any]]:
+    return shared_handle_distill_request("tensorflow", payload, resolve_dataset_path, artifacts_dir)
 
 
 def handle_train_request(
@@ -801,7 +1131,7 @@ def handle_train_request(
         epochs = int(payload.get("epochs", 500))
         batch_size = int(payload.get("batch_size", 64))
         learning_rate = float(payload.get("learning_rate", 1e-3))
-        training_mode = str(payload.get("training_mode", "mlp"))
+        training_mode = str(payload.get("training_mode", "mlp_dense"))
         hidden_dim = int(payload.get("hidden_dim", 128))
         num_hidden_layers = int(payload.get("num_hidden_layers", 2))
         dropout = float(payload.get("dropout", 0.1))
@@ -816,13 +1146,29 @@ def handle_train_request(
         return 400, {"status": "error", "error": "batch_size must be between 1 and 200."}
     if not 0 < learning_rate <= 1:
         return 400, {"status": "error", "error": "learning_rate must be > 0 and <= 1."}
-    if training_mode not in {"mlp", "linear_glm_baseline"}:
-        return 400, {"status": "error", "error": "training_mode must be 'mlp' or 'linear_glm_baseline'."}
-    if training_mode == "mlp" and not 8 <= hidden_dim <= 500:
+    if training_mode == "mlp":
+        training_mode = "mlp_dense"
+    if training_mode not in {
+        "mlp_dense",
+        "linear_glm_baseline",
+        "wide_and_deep",
+        "imbalance_aware",
+        "quantile_regression",
+        "calibrated_classifier",
+        "entity_embeddings",
+        "autoencoder_head",
+        "multi_task_learning",
+        "time_aware_tabular",
+    }:
+        return 400, {
+            "status": "error",
+            "error": "training_mode must be 'mlp_dense', 'linear_glm_baseline', 'wide_and_deep', 'imbalance_aware', 'quantile_regression', 'calibrated_classifier', 'entity_embeddings', 'autoencoder_head', 'multi_task_learning', or 'time_aware_tabular'.",
+        }
+    if training_mode != "linear_glm_baseline" and not 8 <= hidden_dim <= 500:
         return 400, {"status": "error", "error": "hidden_dim must be between 8 and 500."}
-    if training_mode == "mlp" and not 1 <= num_hidden_layers <= 15:
+    if training_mode != "linear_glm_baseline" and not 1 <= num_hidden_layers <= 15:
         return 400, {"status": "error", "error": "num_hidden_layers must be between 1 and 15."}
-    if training_mode == "mlp" and not 0 <= dropout <= 0.9:
+    if training_mode != "linear_glm_baseline" and not 0 <= dropout <= 0.9:
         return 400, {"status": "error", "error": "dropout must be between 0 and 0.9."}
 
     cfg = TrainingConfig(
@@ -848,9 +1194,11 @@ def handle_train_request(
             date_columns=date_columns,
             device=payload.get("device"),
         )
+        run_id = _store_in_memory_bundle(bundle)
         model_path = save_bundle(bundle, model_dir, metrics) if save_model and model_dir else None
         return 200, {
             "status": "ok",
+            "run_id": run_id,
             "model_id": model_id,
             "model_path": str(model_path) if model_path else None,
             "metrics": asdict(metrics),
