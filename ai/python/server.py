@@ -28,36 +28,54 @@ from crypto_data import list_datasets, load_dataset
 from ml_data import list_ml_datasets, load_ml_dataset, resolve_ml_dataset_path
 
 PYTORCH_IMPORT_ERROR: str | None = None
+PYTORCH_HANDLER_IMPORT_ERROR: str | None = None
+PYTORCH_TRAINER_IMPORT_ERROR: str | None = None
 try:
-    from ml.pytorch import (  # noqa: E402
+    from ml.frameworks.pytorch.handlers import (  # noqa: E402
         handle_distill_request as handle_pytorch_distill_request,
         handle_train_request as handle_pytorch_train_request,
+    )
+except ModuleNotFoundError as exc:  # pragma: no cover
+    PYTORCH_HANDLER_IMPORT_ERROR = str(exc)
+    handle_pytorch_distill_request = None  # type: ignore[assignment]
+    handle_pytorch_train_request = None  # type: ignore[assignment]
+
+try:
+    from ml.frameworks.pytorch.trainer import (  # noqa: E402
         load_bundle as load_pytorch_bundle,
         predict_rows as predict_pytorch_rows,
     )
 except ModuleNotFoundError as exc:  # pragma: no cover
-    PYTORCH_IMPORT_ERROR = str(exc)
-    handle_pytorch_distill_request = None  # type: ignore[assignment]
-    handle_pytorch_train_request = None  # type: ignore[assignment]
+    PYTORCH_TRAINER_IMPORT_ERROR = str(exc)
     load_pytorch_bundle = None  # type: ignore[assignment]
     predict_pytorch_rows = None  # type: ignore[assignment]
+PYTORCH_IMPORT_ERROR = PYTORCH_HANDLER_IMPORT_ERROR or PYTORCH_TRAINER_IMPORT_ERROR
 
 TENSORFLOW_IMPORT_ERROR: str | None = None
+TENSORFLOW_HANDLER_IMPORT_ERROR: str | None = None
+TENSORFLOW_TRAINER_IMPORT_ERROR: str | None = None
 try:
-    from ml.tensorflow import (  # noqa: E402
+    from ml.frameworks.tensorflow.handlers import (  # noqa: E402
         handle_distill_request as handle_tensorflow_distill_request,
         handle_train_request as handle_tensorflow_train_request,
+    )
+except ModuleNotFoundError as exc:  # pragma: no cover
+    TENSORFLOW_HANDLER_IMPORT_ERROR = str(exc)
+    handle_tensorflow_distill_request = None  # type: ignore[assignment]
+    handle_tensorflow_train_request = None  # type: ignore[assignment]
+
+try:
+    from ml.frameworks.tensorflow.trainer import (  # noqa: E402
         load_bundle as load_tensorflow_bundle,
         predict_rows as predict_tensorflow_rows,
     )
 except ModuleNotFoundError as exc:  # pragma: no cover
-    TENSORFLOW_IMPORT_ERROR = str(exc)
-    handle_tensorflow_distill_request = None  # type: ignore[assignment]
-    handle_tensorflow_train_request = None  # type: ignore[assignment]
+    TENSORFLOW_TRAINER_IMPORT_ERROR = str(exc)
     load_tensorflow_bundle = None  # type: ignore[assignment]
     predict_tensorflow_rows = None  # type: ignore[assignment]
+TENSORFLOW_IMPORT_ERROR = TENSORFLOW_HANDLER_IMPORT_ERROR or TENSORFLOW_TRAINER_IMPORT_ERROR
 
-app = FastAPI(title="AI Orchestrator", version="0.1.0")
+app = FastAPI(title="AI Portfolio", version="0.1.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],

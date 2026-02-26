@@ -185,7 +185,30 @@ export default function ChartRenderer({ spec, onRemove }: ChartRendererProps) {
             : undefined
         }
       />
-      <Tooltip formatter={(value) => formatValue(value, spec)} />
+      <Tooltip
+        formatter={(value) => formatValue(value, spec)}
+        content={
+          spec.type === "scatter" || spec.type === "biplot"
+            ? ({ active, payload: tipPayload }) => {
+              if (!active || !tipPayload?.length) return null;
+              const entry = tipPayload[0]?.payload as Record<string, unknown> | undefined;
+              const featureName = entry?.["feature"] as string | undefined;
+              return (
+                <div className="rounded-md border border-zinc-200 bg-white px-3 py-2 text-xs shadow-lg">
+                  {featureName ? (
+                    <p className="mb-1 font-semibold text-zinc-900">{featureName}</p>
+                  ) : null}
+                  {tipPayload.map((tp) => (
+                    <p key={String(tp.dataKey)} className="text-zinc-600">
+                      {String(tp.name ?? tp.dataKey)}: {formatValue(tp.value as number, spec)}
+                    </p>
+                  ))}
+                </div>
+              );
+            }
+            : undefined
+        }
+      />
       {yKeys.length > 1 ? <Legend /> : null}
     </>
   );

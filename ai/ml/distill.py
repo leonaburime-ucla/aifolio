@@ -69,16 +69,16 @@ def distill_model_from_file(framework: str, **kwargs: Any) -> Any:
     """
     if framework == "pytorch":
         try:
-            from . import pytorch as mod
+            from .frameworks.pytorch import trainer as mod
         except ImportError:  # pragma: no cover
-            import pytorch as mod  # type: ignore
-        return mod._distill_model_from_file_impl(**kwargs)
+            from frameworks.pytorch import trainer as mod  # type: ignore
+        return mod.distill_model_from_file(**kwargs)
     if framework == "tensorflow":
         try:
-            from . import tensorflow as mod
+            from .frameworks.tensorflow import trainer as mod
         except ImportError:  # pragma: no cover
-            import tensorflow as mod  # type: ignore
-        return mod._distill_model_from_file_impl(**kwargs)
+            from frameworks.tensorflow import trainer as mod  # type: ignore
+        return mod.distill_model_from_file(**kwargs)
     raise ValueError(f"Unsupported framework: {framework}")
 
 
@@ -93,14 +93,14 @@ def handle_distill_request(
     """
     if framework == "pytorch":
         try:
-            from . import pytorch as mod
+            from .frameworks.pytorch import handlers as mod
         except ImportError:  # pragma: no cover
-            import pytorch as mod  # type: ignore
-        return mod._handle_distill_request_impl(payload, resolve_dataset_path, artifacts_dir)
+            from frameworks.pytorch import handlers as mod  # type: ignore
+        return mod.handle_distill_request(payload, resolve_dataset_path, artifacts_dir)
     if framework == "tensorflow":
         try:
-            from . import tensorflow as mod
+            from .frameworks.tensorflow import handlers as mod
         except ImportError:  # pragma: no cover
-            import tensorflow as mod  # type: ignore
-        return mod._handle_distill_request_impl(payload, resolve_dataset_path, artifacts_dir)
+            from frameworks.tensorflow import handlers as mod  # type: ignore
+        return mod.handle_distill_request(payload, resolve_dataset_path, artifacts_dir)
     return 400, {"status": "error", "error": f"Unsupported framework: {framework}"}

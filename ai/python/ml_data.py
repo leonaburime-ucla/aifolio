@@ -18,19 +18,16 @@ ML_DATA_DIR = Path(__file__).resolve().parent.parent / "ml" / "data"
 SUPPORTED_SUFFIXES = {".csv", ".xls", ".xlsx"}
 
 
-def _load_sources() -> dict[str, list[str]]:
-    sources_path = ML_DATA_DIR / "sources.json"
-    if not sources_path.exists():
+def _load_config() -> dict[str, dict[str, Any]]:
+    """Load the unified sources.json config (sources, targetColumn, task per dataset)."""
+    config_path = ML_DATA_DIR / "sources.json"
+    if not config_path.exists():
         return {}
-    with sources_path.open("r", encoding="utf-8") as handle:
+    with config_path.open("r", encoding="utf-8") as handle:
         payload = json.load(handle)
     if not isinstance(payload, dict):
         return {}
-    out: dict[str, list[str]] = {}
-    for key, value in payload.items():
-        if isinstance(value, list):
-            out[str(key)] = [str(v) for v in value]
-    return out
+    return {str(k): v for k, v in payload.items() if isinstance(v, dict)}
 
 
 def _dataset_files() -> list[Path]:
@@ -46,20 +43,26 @@ def _dataset_files() -> list[Path]:
     )
 
 
-def _to_manifest_entry(path: Path, sources: dict[str, list[str]]) -> dict[str, Any]:
-    return {
+def _to_manifest_entry(path: Path, config: dict[str, dict[str, Any]]) -> dict[str, Any]:
+    info = config.get(path.name, {})
+    entry: dict[str, Any] = {
         "id": path.name,
         "label": path.name,
         "format": path.suffix.lower().lstrip("."),
         "sizeBytes": path.stat().st_size,
         "files": {"data": path.name},
-        "sources": sources.get(path.name, []),
+        "sources": info.get("sources", []),
     }
+    if info.get("targetColumn"):
+        entry["targetColumn"] = info["targetColumn"]
+    if info.get("task"):
+        entry["task"] = info["task"]
+    return entry
 
 
 def list_ml_datasets() -> list[dict[str, Any]]:
-    sources = _load_sources()
-    return [_to_manifest_entry(path, sources) for path in _dataset_files()]
+    config = _load_config()
+    return [_to_manifest_entry(path, config) for path in _dataset_files()]
 
 
 def resolve_ml_dataset_path(dataset_id: str) -> Path | None:
@@ -89,14 +92,15 @@ def load_ml_dataset(
         rows = rows[:row_limit]
 
     columns = list(rows[0].keys()) if rows else []
-    sources = _load_sources()
+    config = _load_config()
 
     return {
         "status": "ok",
-        "dataset": _to_manifest_entry(file_path, sources),
+        "dataset": _to_manifest_entry(file_path, config),
         "columns": columns,
         "rows": rows,
         "rowCount": len(rows),
         "totalRowCount": total_rows,
         "dataPath": str(file_path),
     }
+
