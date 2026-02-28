@@ -5,21 +5,30 @@
       "https://raw.githubusercontent.com/blastchar/telco-customer-churn/master/WA_Fn-UseC_-Telco-Customer-Churn.csv"
     ],
     "targetColumn": "Churn",
-    "task": "classification"
+    "task": "classification",
+    "preprocessing": {
+      "idColumns": ["customerID"]
+    }
   },
   "house_prices_ames.csv": {
     "sources": [
       "https://cmustatistics.github.io/data-repository/data/ames-housing.csv"
     ],
     "targetColumn": "SalePrice",
-    "task": "regression"
+    "task": "regression",
+    "preprocessing": {
+      "idColumns": ["Order", "PID"]
+    }
   },
   "loan_default_credit_card_clients.xls": {
     "sources": [
       "https://archive.ics.uci.edu/ml/machine-learning-databases/00350/default%20of%20credit%20card%20clients.xls"
     ],
     "targetColumn": "default payment next month",
-    "task": "classification"
+    "task": "classification",
+    "preprocessing": {
+      "idColumns": ["ID"]
+    }
   },
   "fraud_detection_phishing_websites.csv": {
     "sources": [
@@ -33,6 +42,9 @@
       "https://huggingface.co/datasets/Ammok/walmart_sales_prediction/resolve/main/Walmart.csv"
     ],
     "targetColumn": "Weekly_Sales",
-    "task": "regression"
+    "task": "regression",
+    "preprocessing": {
+      "dateColumns": ["Date"]
+    }
   }
 }

@@ -57,6 +57,8 @@ def _to_manifest_entry(path: Path, config: dict[str, dict[str, Any]]) -> dict[st
         entry["targetColumn"] = info["targetColumn"]
     if info.get("task"):
         entry["task"] = info["task"]
+    if isinstance(info.get("preprocessing"), dict):
+        entry["preprocessing"] = info["preprocessing"]
     return entry
 
 
@@ -103,4 +105,3 @@ def load_ml_dataset(
         "totalRowCount": total_rows,
         "dataPath": str(file_path),
     }
-

@@ -10,6 +10,7 @@ Overall job:
 
 from __future__ import annotations
 import json
+import re
 import time
 from typing import Any, Callable, Dict, List, Optional, Sequence, TypedDict
 
@@ -496,6 +497,7 @@ def _try_parse_date(value: Any) -> Any:
 def _build_numeric_matrix(
     rows: List[Dict[str, Any]],
     target_column: Optional[str] = None,
+    preprocessing: Optional[Dict[str, Any]] = None,
 ) -> tuple[list[list[float]], list[float], list[str]]:
     """
     Build numeric feature matrix and target vector from row dictionaries.
@@ -513,12 +515,29 @@ def _build_numeric_matrix(
     import numpy as np
     from sklearn.feature_extraction import DictVectorizer
 
+    config = preprocessing or {}
+    drop_columns = {str(col) for col in (config.get("dropColumns") or [])}
+    id_columns = {str(col) for col in (config.get("idColumns") or [])}
+    configured_date_cols = {str(col) for col in (config.get("dateColumns") or [])}
+    high_cardinality_threshold = int(config.get("highCardinalityThreshold", 20))
+
     keys = list(rows[0].keys())
-    feature_candidates = [k for k in keys if k != target_column]
+    feature_candidates = [k for k in keys if k != target_column and k not in drop_columns]
 
     col_has_strings = {col: False for col in feature_candidates}
     col_unique_vals = {col: set() for col in feature_candidates}
-    date_cols = [col for col in feature_candidates if "date" in col.lower() or "timestamp" in col.lower()]
+    date_cols = [
+        col
+        for col in feature_candidates
+        if col in configured_date_cols or "date" in col.lower() or "timestamp" in col.lower()
+    ]
+
+    def _looks_like_id_column(column_name: str) -> bool:
+        lower = column_name.lower()
+        # Match explicit ID naming patterns while avoiding broad substring false positives.
+        return bool(
+            re.search(r"(^id$|(^|[_\-.])id($|[_\-.])|uuid|^pid$|customerid|recordid|^order$)", lower)
+        )
 
     for row in rows:
         for col in feature_candidates:
@@ -535,10 +554,12 @@ def _build_numeric_matrix(
         if col in date_cols:
             features_to_keep.append(col)
             continue
+        if col in id_columns:
+            continue
+        if _looks_like_id_column(col):
+            continue
         if col_has_strings[col]:
-            lower = col.lower()
-            is_id = "id" in lower or "uuid" in lower
-            if is_id or len(col_unique_vals[col]) > 20: # High cardinality string or ID
+            if len(col_unique_vals[col]) > high_cardinality_threshold:
                 continue
         features_to_keep.append(col)
 
@@ -879,6 +900,9 @@ def _plan_tools_with_llm(
         "truncated svd": "truncated_svd",
         "ica": "fast_ica",
         "independent component analysis": "fast_ica",
+        "nmf": "nmf_decomposition",
+        "non-negative matrix factorization": "nmf_decomposition",
+        "non negative matrix factorization": "nmf_decomposition",
         "plsr": "pls_regression",
         "pls": "pls_regression",
         "partial least squares": "pls_regression",
@@ -1005,6 +1029,8 @@ def run_data_scientist_analysis(
     dataset_id: str,
     model_id: str = DEFAULT_MODEL_ID,
     conversation_history: List[Dict[str, Any]] | None = None,
+    planned_tool_calls: List[Dict[str, Any]] | None = None,
+    row_limit: int | None = None,
 ) -> Dict[str, Any]:
     """
     End-to-end analysis pipeline for a dataset request.
@@ -1021,6 +1047,9 @@ def run_data_scientist_analysis(
         dataset_id: Active dataset id selected in UI.
         model_id: Gemini model id.
         conversation_history: Prior messages for follow-up context.
+        planned_tool_calls: Optional deterministic tool call list. When provided,
+            LLM planning is skipped and these tool calls are executed directly.
+        row_limit: Optional row limit for dataset loading (useful for tests).
 
     Returns:
         Dict with message and chartSpec (single or list).
@@ -1029,7 +1058,7 @@ def run_data_scientist_analysis(
     started_at = time.perf_counter()
     print(f"[ds] analysis:start dataset_id={dataset_id} model={model_id}")
     
-    loaded = load_ml_dataset(dataset_id)
+    loaded = load_ml_dataset(dataset_id, row_limit=row_limit)
     if loaded.get("status") != "ok":
         return {"message": "Dataset not found.", "chartSpec": None}
         
@@ -1045,7 +1074,9 @@ def run_data_scientist_analysis(
     target_column = entry.get("targetColumn")
 
     data, targets, feature_names = _build_numeric_matrix(
-        rows, target_column=target_column
+        rows,
+        target_column=target_column,
+        preprocessing=entry.get("preprocessing"),
     )
     
     # StandardScaler: normalize features to zero mean / unit variance before any
@@ -1071,25 +1102,37 @@ def run_data_scientist_analysis(
     )
 
     tools_schema = sklearn_tools.get_tools_schema()
-    plan_started = time.perf_counter()
-    print(f"[ds] planner:start dataset_id={dataset_id}")
-    plan = _plan_tools_with_llm(
-        message,
-        tools_schema,
-        {
-            "columns": columns,
-            "targetColumn": target_column,
-            "task": entry.get("task"),
-        },
-        model_id=model_id,
-        conversation_history=conversation_history,
-    )
-    print(
-        f"[ds] planner:end dataset_id={dataset_id} tool_calls={len(plan.get('tool_calls', []))} "
-        f"elapsed_ms={(time.perf_counter() - plan_started) * 1000:.1f}"
-    )
-    plan = _validate_tool_plan(plan, [tool["name"] for tool in tools_schema])
-    tool_calls = plan.get("tool_calls", [])
+    if planned_tool_calls is not None:
+        plan = {
+            "summary": "Executed deterministic tool plan.",
+            "tool_calls": planned_tool_calls,
+        }
+        tool_calls = list(planned_tool_calls)
+        print(
+            f"[ds] planner:skipped dataset_id={dataset_id} "
+            f"tool_calls={len(tool_calls)} (deterministic plan)"
+        )
+    else:
+        plan_started = time.perf_counter()
+        print(f"[ds] planner:start dataset_id={dataset_id}")
+        plan = _plan_tools_with_llm(
+            message,
+            tools_schema,
+            {
+                "columns": columns,
+                "targetColumn": target_column,
+                "task": entry.get("task"),
+            },
+            model_id=model_id,
+            conversation_history=conversation_history,
+        )
+        print(
+            f"[ds] planner:end dataset_id={dataset_id} tool_calls={len(plan.get('tool_calls', []))} "
+            f"elapsed_ms={(time.perf_counter() - plan_started) * 1000:.1f}"
+        )
+        plan = _validate_tool_plan(plan, [tool["name"] for tool in tools_schema])
+        tool_calls = plan.get("tool_calls", [])
+    used_fallback_dispatch = False
     if not tool_calls:
         fallback_map = {
             "pca": "pca_transform",
@@ -1129,6 +1172,7 @@ def run_data_scientist_analysis(
                 fallback_tools.append(tool)
         fallback_tools = list(dict.fromkeys(fallback_tools))
         if fallback_tools:
+            used_fallback_dispatch = True
             tool_calls = []
             for fallback_tool in fallback_tools:
                 chart_kind = "regression"
@@ -1305,12 +1349,11 @@ def run_data_scientist_analysis(
             if not targets:
                 notes.append("Target column is missing for regression.")
                 continue
-            tool_args = {
-                "data": data,
-                "target": targets,
-                "feature_names": feature_names,
-                **tool_args,
-            }
+            tool_args = {"data": data, "target": targets, **tool_args}
+            # Only estimators that expose feature-level coefficients/importances
+            # accept feature_names in this tool layer.
+            if tool_name != "svr_regression":
+                tool_args["feature_names"] = feature_names
             result = regression_tools[tool_name](**tool_args)
             if "feature_importances" in result:
                 chart = _build_feature_importance_chart(
@@ -1605,7 +1648,11 @@ def run_data_scientist_analysis(
             f"elapsed_ms={(time.perf_counter() - tool_started) * 1000:.1f}"
         )
 
-    summary = plan.get("summary") or "Analysis complete."
+    summary = (
+        "Running requested analysis from deterministic fallback mapping."
+        if used_fallback_dispatch
+        else (plan.get("summary") or "Analysis complete.")
+    )
     if notes:
         summary = f"{summary} " + " ".join(notes)
     total_elapsed_ms = (time.perf_counter() - started_at) * 1000

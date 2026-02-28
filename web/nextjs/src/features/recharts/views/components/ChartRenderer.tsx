@@ -58,6 +58,9 @@ export function formatValue(value: unknown, spec: ChartSpec): string {
     }).format(value);
   }
   if (spec.unit) return `${value} ${spec.unit}`;
+  if (!Number.isInteger(value)) {
+    return parseFloat(value.toFixed(7)).toString();
+  }
   return String(value);
 }
 

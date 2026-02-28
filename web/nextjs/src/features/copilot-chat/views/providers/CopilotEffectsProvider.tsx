@@ -15,7 +15,7 @@ import { useCopilotMessagePersistenceOrchestrator } from "@/features/copilot-cha
  * This provider calls the orchestrator hooks that contain these effects,
  * eliminating the need for "fake components" that return null.
  */
-export function CopilotEffectsProvider({ children }: { children: React.ReactNode }) {
+function CopilotEffectsRuntime() {
   // Register CopilotKit frontend tools (useCopilotAction calls)
   useCopilotFrontendToolsOrchestrator();
 
@@ -25,7 +25,16 @@ export function CopilotEffectsProvider({ children }: { children: React.ReactNode
   // Sync CopilotKit messages to localStorage
   useCopilotMessagePersistenceOrchestrator();
 
-  return <>{children}</>;
+  return null;
+}
+
+export function CopilotEffectsProvider({ children }: { children: React.ReactNode }) {
+  return (
+    <>
+      <CopilotEffectsRuntime />
+      {children}
+    </>
+  );
 }
 
 export default CopilotEffectsProvider;

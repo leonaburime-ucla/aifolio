@@ -13,11 +13,15 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 
 AVAILABLE_MODELS: Dict[str, str] = {
     "gemini-2.5-pro": "Gemini 2.5 Pro",
+    # "gemini-3.1-pro-preview": "Gemini 3.1 Pro Preview",
     "gemini-3-pro-preview": "Gemini 3 Pro Preview",
     "gemini-3-flash-preview": "Gemini 3 Flash Preview",
 }
 
 DEFAULT_MODEL_ID = "gemini-3-flash-preview"
+MODEL_ID_ALIASES: Dict[str, str] = {
+    "gemini-3-flash": "gemini-3-flash-preview",
+}
 
 _MODEL_CACHE: Dict[str, ChatGoogleGenerativeAI] = {}
 _GENAI_CONFIGURED = False
@@ -112,12 +116,25 @@ def resolve_default_model_id(models: List[Dict[str, str]]) -> str:
     return models[0]["id"] if models else DEFAULT_MODEL_ID
 
 
+def normalize_model_id(model_id: Optional[str]) -> str:
+    """
+    Normalize incoming model IDs to supported, curated IDs.
+    """
+    raw = (model_id or "").strip()
+    if not raw:
+        return DEFAULT_MODEL_ID
+    normalized = MODEL_ID_ALIASES.get(raw, raw)
+    if normalized in AVAILABLE_MODELS:
+        return normalized
+    return DEFAULT_MODEL_ID
+
+
 def get_model(model_id: Optional[str] = None) -> ChatGoogleGenerativeAI:
     """
     Build or reuse a LangChain Gemini model by ID.
     Defaults to DEFAULT_MODEL_ID when no ID is provided.
     """
-    resolved = model_id or DEFAULT_MODEL_ID
+    resolved = normalize_model_id(model_id)
     if resolved not in _MODEL_CACHE:
         _MODEL_CACHE[resolved] = ChatGoogleGenerativeAI(
             model=resolved,

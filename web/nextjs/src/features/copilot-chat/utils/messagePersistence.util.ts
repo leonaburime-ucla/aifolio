@@ -1,13 +1,23 @@
 /**
- * Utility functions for Copilot message persistence serialization.
+ * Utilities for sanitizing and serializing Copilot message history for persistence.
  */
 
 /**
  * Convert messages to a JSON-serializable format by stripping functions,
  * symbols, bigints, and circular references.
+ *
+ * @param messages - Raw Copilot messages from runtime context.
+ * @returns Safe JSON-like message array that can be persisted to storage.
  */
 export function toPersistableMessages(messages: unknown[]): unknown[] {
   const seen = new WeakSet<object>();
+  /**
+   * JSON replacer that drops unsupported values and circular references.
+   *
+   * @param _key - Current JSON key (unused).
+   * @param value - Current JSON value.
+   * @returns Sanitized value or `undefined` to omit field.
+   */
   const replacer = (_key: string, value: unknown) => {
     if (typeof value === "function" || typeof value === "symbol") return undefined;
     if (typeof value === "bigint") return String(value);
@@ -33,7 +43,10 @@ export function toPersistableMessages(messages: unknown[]): unknown[] {
 }
 
 /**
- * Safely serialize a value to JSON string, returning empty string on failure.
+ * Safely serializes a value to JSON.
+ *
+ * @param value - Any value to serialize.
+ * @returns JSON string, or empty string when serialization fails.
  */
 export function safeSerialize(value: unknown): string {
   try {

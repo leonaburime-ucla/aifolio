@@ -1,4 +1,5 @@
 import CopilotSidebar from "@/features/copilot-chat/views/components/CopilotSidebar";
+import CopilotChatProvider from "@/features/copilot-chat/views/providers/CopilotChatProvider";
 import LandingCharts from "@/core/views/screens/LandingCharts";
 
 export default function AgUiPage() {
@@ -53,7 +54,9 @@ export default function AgUiPage() {
       </main>
 
       <div className="h-full w-[420px] shrink-0 overflow-hidden">
-        <CopilotSidebar mode="ag-ui" />
+        <CopilotChatProvider>
+          <CopilotSidebar mode="ag-ui" />
+        </CopilotChatProvider>
       </div>
     </div>
   );

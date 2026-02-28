@@ -201,8 +201,8 @@ function buildScatterOption(spec: ChartSpec) {
         const point = params?.data ?? {};
         const label = point.feature ? `${point.feature}<br/>` : "";
         return (
-          `${label}${spec.xLabel ?? spec.xKey}: ${toNumber(point[spec.xKey]).toFixed(4)}<br/>` +
-          `${spec.yLabel ?? yKey}: ${toNumber(point[yKey]).toFixed(4)}`
+          `${label}${spec.xLabel ?? spec.xKey}: ${parseFloat(toNumber(point[spec.xKey]).toFixed(7))}<br/>` +
+          `${spec.yLabel ?? yKey}: ${parseFloat(toNumber(point[yKey]).toFixed(7))}`
         );
       },
     },
@@ -229,12 +229,12 @@ function buildScatterOption(spec: ChartSpec) {
         data: spec.data,
         label: hasFeatureLabels
           ? {
-              show: true,
-              position: "right",
-              color: "#52525b",
-              fontSize: 11,
-              formatter: (params: any) => params?.data?.feature ?? "",
-            }
+            show: true,
+            position: "right",
+            color: "#52525b",
+            fontSize: 11,
+            formatter: (params: any) => params?.data?.feature ?? "",
+          }
           : { show: false },
       },
     ],

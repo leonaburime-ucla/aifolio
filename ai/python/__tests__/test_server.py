@@ -12,6 +12,7 @@ for path in (str(APP_ROOT), str(PROJECT_ROOT)):
         sys.path.append(path)
 
 from server import app
+from google_gemini import normalize_model_id
 
 client = TestClient(app)
 
@@ -59,3 +60,17 @@ def test_ml_data_detail_returns_rows():
     assert isinstance(data["columns"], list)
     assert isinstance(data["rows"], list)
     assert data["rowCount"] <= 5
+
+
+def test_gemini_models_excludes_commented_31_pro_option():
+    response = client.get("/llm/gemini-models")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "ok"
+    model_ids = {model["id"] for model in data["models"]}
+    assert "gemini-3.1-pro-preview" not in model_ids
+
+
+def test_normalize_model_id_maps_legacy_flash_id():
+    assert normalize_model_id("gemini-3-flash") == "gemini-3-flash-preview"
+    assert normalize_model_id("gemini-3-flash-preview") == "gemini-3-flash-preview"

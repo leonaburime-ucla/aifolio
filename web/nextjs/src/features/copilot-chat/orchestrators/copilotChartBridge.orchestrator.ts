@@ -125,7 +125,7 @@ export type CopilotChartBridgeOrchestrator = {
  * Orchestrator hook for CopilotChartBridge.
  *
  * This hook is self-contained and watches Copilot assistant messages,
- * pushing validated chart specs into Zustand.
+ * pushing validated chart specs into the store.
  *
  * Previously, the message watching logic was in a separate component (CopilotChartBridge.tsx).
  * Now it is consolidated here, eliminating the need for "invisible" null-returning components.

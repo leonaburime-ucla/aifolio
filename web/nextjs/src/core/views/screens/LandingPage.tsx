@@ -15,8 +15,8 @@ export default async function LandingPage() {
             </summary>
             <div className="mt-3 space-y-3 text-sm text-zinc-700">
               <p>
-                This AI Chat creates charts(Recharts and Echarts) from internal sample data. I do not have APIs for real-time data. 
-                All data is from the LLM&apos;s internal models. 
+                This AI Chat creates charts(Recharts and Echarts) from internal sample data. I do not have APIs for real-time data.
+                All data is from the LLM&apos;s internal models.
               </p>
               <div>
                 <p className="font-medium text-zinc-900">Sample prompts to try:</p>
@@ -24,7 +24,7 @@ export default async function LandingPage() {
                   <li>“Create a line chart of Solana and Bitcoin for the past 5 months.”</li>
                   <li>“Create an area chart of Peruvian beef exports over the past 15 years.”</li>
                   <li>“Show a line chart of Manhattan vs London vs Paris average rent since 2000 as a share of average salary in each of those cities respectively.”</li>
-                  <li>“Plot a line chart of US debt levels for the past 50 years. Estimate what it will be for the next 20 in a red line”</li>
+                  <li>“Plot a line chart of US debt levels for the past 50 years. Estimate what it will be for the next 20 in a blue line”</li>
                   <li>“Make a scatter chart comparing Bitcoin and Ethereum returns over the last 30 days.”</li>
                 </ul>
               </div>

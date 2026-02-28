@@ -1,5 +1,8 @@
 import type { ChartSpec } from "@/features/ai/types/chart.types";
 
+/**
+ * Normalized transport payload shape expected from Copilot assistant responses.
+ */
 export type CopilotAssistantPayload = {
   message: string;
   chartSpec: ChartSpec | ChartSpec[] | null;
@@ -27,16 +30,37 @@ const DEBUG_COPILOT_PAYLOAD =
   process.env.NEXT_PUBLIC_COPILOT_DEBUG === "1" ||
   process.env.COPILOT_DEBUG === "1";
 
+/**
+ * Type guard for plain JSON-like objects.
+ *
+ * @param value - Candidate value to validate.
+ * @returns True when the value is a non-null, non-array object.
+ */
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+/**
+ * Removes optional markdown code fences around assistant JSON responses.
+ *
+ * @param raw - Raw assistant text.
+ * @returns Cleaned text suitable for JSON parsing.
+ */
 function stripCodeFences(raw: string): string {
   const trimmed = raw.trim();
   if (!trimmed.startsWith("```")) return trimmed;
   return trimmed.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
 }
 
+/**
+ * Parses a JSON object from free-form assistant content.
+ *
+ * The parser first attempts full-string parse and then a best-effort
+ * substring parse between the first "{" and last "}".
+ *
+ * @param raw - Raw assistant content that may include text/code fences.
+ * @returns Parsed object or `null` when parsing/shape checks fail.
+ */
 function parseJsonObject(raw: string): Record<string, unknown> | null {
   const cleaned = stripCodeFences(raw);
   try {
@@ -55,6 +79,13 @@ function parseJsonObject(raw: string): Record<string, unknown> | null {
   }
 }
 
+/**
+ * Validates and normalizes a single unknown chart-spec payload.
+ *
+ * @param raw - Unknown incoming chart spec.
+ * @param fallbackId - Deterministic id to use when payload id is missing.
+ * @returns A normalized `ChartSpec` or `null` when required fields are invalid.
+ */
 function normalizeChartSpec(raw: unknown, fallbackId: string): ChartSpec | null {
   if (!isRecord(raw)) return null;
 
@@ -119,6 +150,12 @@ function normalizeChartSpec(raw: unknown, fallbackId: string): ChartSpec | null 
   return spec;
 }
 
+/**
+ * Validates and normalizes chart-spec payloads that may be singular or array.
+ *
+ * @param raw - Unknown `chartSpec` payload.
+ * @returns One normalized spec, many specs, or `null` when invalid/empty.
+ */
 function normalizeChartSpecPayload(raw: unknown): ChartSpec | ChartSpec[] | null {
   if (raw == null) return null;
 
@@ -137,11 +174,20 @@ function normalizeChartSpecPayload(raw: unknown): ChartSpec | ChartSpec[] | null
  *
  * Intended for frontend tool handlers that receive model arguments and need
  * to enforce the same schema guarantees as assistant-message parsing.
+ *
+ * @param raw - Unknown payload from a tool call argument.
+ * @returns One normalized chart spec, an array of specs, or `null`.
  */
 export function normalizeChartSpecInput(raw: unknown): ChartSpec | ChartSpec[] | null {
   return normalizeChartSpecPayload(raw);
 }
 
+/**
+ * Parses Copilot assistant content into a typed transport payload.
+ *
+ * @param rawContent - Raw assistant message content, usually JSON-like text.
+ * @returns Parsed payload when valid, otherwise `null`.
+ */
 export function parseCopilotAssistantPayload(rawContent: string): CopilotAssistantPayload | null {
   const parsed = parseJsonObject(rawContent);
   if (!parsed) return null;
@@ -170,6 +216,14 @@ export function parseCopilotAssistantPayload(rawContent: string): CopilotAssista
   return payload;
 }
 
+/**
+ * Extracts user-facing message text from Copilot assistant payload content.
+ *
+ * Falls back to original content when payload parsing fails.
+ *
+ * @param rawContent - Raw assistant message content.
+ * @returns Display-safe assistant message.
+ */
 export function extractCopilotDisplayMessage(rawContent: string): string {
   const parsed = parseCopilotAssistantPayload(rawContent);
   if (!parsed) return rawContent;

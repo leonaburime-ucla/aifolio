@@ -192,6 +192,34 @@ export default function PyTorchPage({
             {error ? (
               <p className="text-xs text-red-600">{error}</p>
             ) : null}
+            <details className="rounded-lg border border-zinc-200 bg-white px-4 py-3 text-[12px] text-zinc-600">
+              <summary className="cursor-pointer font-semibold text-zinc-900">
+                Preprocessing Notes
+              </summary>
+              <div className="mt-3 flex flex-col gap-2">
+                <p>
+                  <strong>Categorical Encoding:</strong> Text columns with &le; 20 unique values are
+                  automatically One-Hot Encoded.
+                </p>
+                <p>
+                  <strong>High Cardinality &amp; IDs:</strong> Text columns with &gt; 20 unique values
+                  or ID-like names are dropped to prevent feature explosion.
+                </p>
+                <p>
+                  <strong>Date Parsing:</strong> Dates and timestamps are extracted into Year, Month,
+                  and Day numeric features.
+                </p>
+                <p>
+                  <strong>Missing Values:</strong> Missing numeric values are imputed using the column
+                  median to maintain robustness against outliers.
+                </p>
+                <p>
+                  <strong>Feature Scaling:</strong> All features are standardized to zero mean and unit
+                  variance (StandardScaler) before analysis. This prevents large-range features from
+                  dominating algorithms like PCA.
+                </p>
+              </div>
+            </details>
           </div>
 
           <section className="rounded-xl border border-zinc-200 bg-white p-4">
