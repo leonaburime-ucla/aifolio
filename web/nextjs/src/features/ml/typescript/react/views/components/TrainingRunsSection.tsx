@@ -1,0 +1,88 @@
+import DataTable from "@/core/views/components/Datatable/DataTable";
+import {
+  TRAINING_RUN_COLUMNS,
+} from "@/features/ml/typescript/utils/trainingRuns.util";
+import type { TrainingRunsSectionProps } from "@/features/ml/__types__/typescript/react/views/trainingRunsSection.types";
+import { useTrainingRunsSectionModel } from "@/features/ml/typescript/react/hooks/useTrainingRunsSectionModel.hooks";
+
+export function TrainingRunsSection({
+  trainingRuns,
+  copyRunsStatus,
+  isTraining = false,
+  isStopRequested = false,
+  onCopyTrainingRuns,
+  onClearTrainingRuns,
+  onStopTrainingRuns,
+  onDistillFromRun,
+  onSeeDistilledFromRun,
+  isDistillationSupportedForRun,
+  distillingTeacherKey = null,
+  distilledByTeacher = {},
+}: TrainingRunsSectionProps) {
+  const { trainingTableHeight, cellRenderers } = useTrainingRunsSectionModel({
+    trainingRuns,
+    onDistillFromRun,
+    onSeeDistilledFromRun,
+    isDistillationSupportedForRun,
+    distillingTeacherKey,
+    distilledByTeacher,
+  });
+
+  return (
+    <div className="mt-4 border-t border-zinc-200 pt-4">
+      <div className="mb-2 flex items-center justify-between">
+        <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+          Training Runs
+        </p>
+        <div className="flex items-center gap-2">
+          {copyRunsStatus ? (
+            <span className="text-xs text-zinc-500">{copyRunsStatus}</span>
+          ) : null}
+          <button
+            type="button"
+            className="rounded-md border border-zinc-300 bg-white px-2 py-1 text-xs font-medium text-zinc-700 disabled:cursor-not-allowed disabled:text-zinc-400"
+            onClick={onCopyTrainingRuns}
+            disabled={trainingRuns.length === 0}
+          >
+            Copy Results
+          </button>
+          <button
+            type="button"
+            className="rounded-md bg-zinc-900 px-2 py-1 text-xs font-medium text-white disabled:cursor-not-allowed disabled:bg-zinc-400"
+            onClick={onClearTrainingRuns}
+            disabled={trainingRuns.length === 0}
+          >
+            Clear Runs
+          </button>
+          <button
+            type="button"
+            className="rounded-md bg-red-600 px-2 py-1 text-xs font-medium text-white transition-opacity disabled:cursor-not-allowed disabled:bg-red-300"
+            onClick={onStopTrainingRuns}
+            disabled={!isTraining || isStopRequested}
+            aria-busy={isStopRequested}
+          >
+            {isStopRequested ? "Stop Requested..." : "Stop Training Runs"}
+          </button>
+        </div>
+      </div>
+      {isStopRequested ? (
+        <p className="mb-2 text-xs text-amber-700">
+          Stop requested. Current run will finish, then remaining runs are canceled.
+        </p>
+      ) : null}
+      {trainingRuns.length === 0 ? (
+        <p className="text-xs text-zinc-500">
+          No runs yet. Train once to populate the results table.
+        </p>
+      ) : (
+        <DataTable
+          rows={trainingRuns}
+          columns={[...TRAINING_RUN_COLUMNS]}
+          cellRenderers={cellRenderers}
+          height={trainingTableHeight}
+          maxWidth={980}
+        />
+      )}
+    </div>
+  );
+}
