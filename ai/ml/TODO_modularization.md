@@ -79,6 +79,28 @@
 - [ ] Nightly/manual CI: run `slow_matrix`.
 - [ ] Persist matrix reports under `ai/ml/reports/` for trend tracking.
 
+## Phase 6: Docs
+- [ ] Add backend architecture docs for the evolving split between ML runtime code, agent code, and server transport.
+- [ ] Document the new package boundaries and public import surfaces as flat modules are converted into packages.
+- [ ] Add contributor guidance for writing fast unit tests vs runtime-heavy smoke tests.
+- [ ] Document CI/test execution expectations, including what remains intentionally xfailed during modularization.
+
+## Phase 7: Folder Split (`ai/` → `backend/`) Migration
+- [ ] Publish migration ADR defining final folder targets:
+  - [ ] `backend/ml` for model runtimes + core training utilities.
+  - [ ] `backend/agents` for orchestration, planning, and domain agents.
+  - [ ] `backend/server` for FastAPI routes and transport adapters.
+- [x] Add staged compatibility namespace package at `ai/python/backend/`:
+  - [x] `backend.agents` export shims.
+  - [x] `backend.server` export shims.
+  - [x] `backend.ml` export shims for dataset APIs.
+- [ ] Add import policy checks so new code prefers `backend.*` imports.
+- [ ] Move one module group at a time with green tests per move:
+  - [ ] Move `langgraph_agents/*` into `backend/agents/*`.
+  - [ ] Move `server.py` and `server_ml.py` into `backend/server/*`.
+  - [ ] Move `ml_data.py` and related loaders into `backend/ml/*`.
+- [ ] Remove legacy flat imports only after full cutover and CI stability.
+
 ## Initial Suspect Areas for PyTorch Failure Investigation
 - [ ] `handle_train_request` validation + coercion path for baseline mode.
 - [ ] Training loop edge case: batch-size/test-size causing zero valid updates.
