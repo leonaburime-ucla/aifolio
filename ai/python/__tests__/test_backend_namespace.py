@@ -13,13 +13,10 @@ def test_backend_namespace_exports_core_aliases():
     import backend.agents as agents
     import backend.ml as ml
     import backend.server as server_ns
-    import langgraph_agents.coordinator as legacy_coordinator
-    import ml_data as legacy_ml
-    import server as legacy_server
 
-    assert agents.coordinator_agent is legacy_coordinator.coordinator_agent
-    assert ml.load_ml_dataset is legacy_ml.load_ml_dataset
-    assert server_ns.app is legacy_server.app
+    assert callable(agents.coordinator_agent)
+    assert callable(ml.load_ml_dataset)
+    assert server_ns.app is not None
 
 
 def test_backend_module_aliases_import_without_errors():
@@ -29,4 +26,3 @@ def test_backend_module_aliases_import_without_errors():
     import backend.ml.data  # noqa: F401
     import backend.server.http  # noqa: F401
     import backend.server.ml  # noqa: F401
-

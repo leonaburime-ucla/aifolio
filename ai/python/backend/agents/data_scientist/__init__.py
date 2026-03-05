@@ -1,7 +1,12 @@
-"""Compatibility exports for ``backend.agents.data_scientist``."""
+"""Data scientist agent package facade."""
 
-import sys
+from . import dataset_io as ds_datasets
+from . import planner as ds_planner
+from . import service as _service
 
-from langgraph_agents import data_scientist as _legacy_module
+for _name in dir(_service):
+    if _name.startswith("__"):
+        continue
+    globals()[_name] = getattr(_service, _name)
 
-sys.modules[__name__] = _legacy_module
+del _name
