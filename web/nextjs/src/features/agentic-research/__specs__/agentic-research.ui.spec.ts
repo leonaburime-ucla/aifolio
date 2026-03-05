@@ -9,7 +9,7 @@ export const agenticResearchUiSpec = {
   version: AGENTIC_RESEARCH_UI_SPEC_VERSION,
   status: "draft",
   lastUpdated: "2026-02-23",
-  surfaces: ["DatasetCombobox", "AgenticResearchFrontendTools"],
+  surfaces: ["DatasetCombobox", "AgenticResearchAiTools"],
   controlledContracts: [
     {
       component: "DatasetCombobox",

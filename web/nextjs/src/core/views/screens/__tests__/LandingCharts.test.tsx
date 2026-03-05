@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
-import type { ChartSpec } from "@/features/ai/types/chart.types";
+import type { ChartSpec } from "@/features/ai-chat/__types__/typescript/chart.types";
 import LandingCharts from "@/core/views/screens/LandingCharts";
 
-vi.mock("@/features/recharts/views/components/ChartRenderer", () => ({
+vi.mock("@/features/recharts/typescript/react/views/components/ChartRenderer", () => ({
   default: ({ spec }: { spec: ChartSpec }) => (
     <div data-testid="chart-renderer">{spec.id}</div>
   ),
@@ -14,6 +14,7 @@ describe("LandingCharts", () => {
     const orchestrator = () => ({
       chartSpecs: [],
       removeChartSpec: vi.fn(),
+      clearChartSpecs: vi.fn(),
     });
 
     render(<LandingCharts orchestrator={orchestrator} />);
@@ -35,6 +36,7 @@ describe("LandingCharts", () => {
         } satisfies ChartSpec,
       ],
       removeChartSpec,
+      clearChartSpecs: vi.fn(),
     }));
 
     render(<LandingCharts orchestrator={orchestrator} />);

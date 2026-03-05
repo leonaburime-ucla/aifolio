@@ -1,8 +1,9 @@
 import type {
   TensorflowDistillRequest,
   TensorflowTrainRequest,
-  TensorflowTrainingMode,
 } from "@/features/ml/__types__/typescript/api/tensorflowApi.types";
+export type { TensorflowTrainingMode } from "@/features/ml/__types__/typescript/api/tensorflowApi.types";
+import type { TensorflowTrainingMode } from "@/features/ml/__types__/typescript/api/tensorflowApi.types";
 import type { MlTaskType } from "@/features/ml/__types__/typescript/config/datasetTrainingDefaults.types";
 import type { SweepCombination } from "@/features/ml/__types__/typescript/validators/trainingSweep.types";
 import type {

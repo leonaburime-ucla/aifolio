@@ -1,0 +1,11 @@
+"use client";
+
+import { useAgUiPageQuerySync } from "@/features/ag-ui-chat/typescript/react/hooks/useAgUiPageQuerySync.hooks";
+
+/**
+ * Applies `/ag-ui?page=<alias>` query param to workspace tab state.
+ */
+export default function AgUiPageQuerySync() {
+  useAgUiPageQuerySync();
+  return null;
+}

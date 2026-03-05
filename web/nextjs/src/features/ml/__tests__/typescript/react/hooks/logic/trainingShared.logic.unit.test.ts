@@ -1,3 +1,4 @@
+import { act } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import {
   createReloadSweepValuesHandler,
@@ -5,7 +6,7 @@ import {
   handleApplyOptimalParams,
   handleCopyTrainingRuns,
   handleFindOptimalParams,
-} from "@/features/ml/typescript/react/hooks/logic/trainingShared.logic";
+} from "@/features/ml/typescript/logic/trainingShared.logic";
 
 function buildNumericUi() {
   return {
@@ -54,6 +55,30 @@ describe("trainingShared.logic", () => {
     expect(ui.setBatchSizesInput).toHaveBeenCalledWith("64");
     expect(ui.setDropoutsInput).toHaveBeenCalledWith("0.1");
     expect(ui.setRunSweepEnabled).toHaveBeenCalledWith(false);
+  });
+
+  it("restores saved numeric values when sweep is disabled with a saved snapshot", () => {
+    const ui = buildNumericUi();
+    ui.savedNumericInputs = {
+      epochValuesInput: "77",
+      batchSizesInput: "128",
+      learningRatesInput: "0.002",
+      testSizesInput: "0.3",
+      hiddenDimsInput: "256",
+      numHiddenLayersInput: "4",
+      dropoutsInput: "0.2",
+    };
+
+    const toggle = createToggleRunSweepHandler({ ui, defaultEpochs: 99 });
+    toggle(false);
+
+    expect(ui.setEpochValuesInput).toHaveBeenCalledWith("77");
+    expect(ui.setBatchSizesInput).toHaveBeenCalledWith("128");
+    expect(ui.setLearningRatesInput).toHaveBeenCalledWith("0.002");
+    expect(ui.setTestSizesInput).toHaveBeenCalledWith("0.3");
+    expect(ui.setHiddenDimsInput).toHaveBeenCalledWith("256");
+    expect(ui.setNumHiddenLayersInput).toHaveBeenCalledWith("4");
+    expect(ui.setDropoutsInput).toHaveBeenCalledWith("0.2");
   });
 
   it("reloads sweep values", () => {
@@ -198,6 +223,25 @@ describe("trainingShared.logic", () => {
     expect(setCopyRunsStatus).toHaveBeenCalledWith("Copied");
   });
 
+  it("copies explicit distill_action values without replacing them", async () => {
+    const runtime = {
+      schedule: vi.fn((callback: () => void) => callback()),
+      writeClipboardText: vi.fn(async () => undefined),
+    };
+    const setCopyRunsStatus = vi.fn();
+
+    await handleCopyTrainingRuns(
+      {
+        trainingRuns: [{ completed_at: "now", result: "completed", distill_action: "Queued" }],
+        setCopyRunsStatus,
+      },
+      { runtime }
+    );
+
+    const copiedTsv = String(runtime.writeClipboardText.mock.calls[0]?.[0] ?? "");
+    expect(copiedTsv).toContain("Queued");
+  });
+
   it("no-ops copy for empty runs and sets failure status on clipboard error", async () => {
     const setCopyRunsStatus = vi.fn();
 
@@ -240,5 +284,57 @@ describe("trainingShared.logic", () => {
     );
 
     expect(setCopyRunsStatus).toHaveBeenCalledWith("Copy failed");
+  });
+
+  it("uses default runtime clipboard success path", async () => {
+    vi.useFakeTimers();
+    const originalNavigator = globalThis.navigator;
+    const writeText = vi.fn(async () => undefined);
+    Object.defineProperty(globalThis, "navigator", {
+      value: { clipboard: { writeText } },
+      configurable: true,
+    });
+    const setCopyRunsStatus = vi.fn();
+
+    await handleCopyTrainingRuns({
+      trainingRuns: [{ completed_at: "now", result: "completed" }],
+      setCopyRunsStatus,
+    });
+
+    expect(writeText).toHaveBeenCalledTimes(1);
+    expect(setCopyRunsStatus).toHaveBeenCalledWith("Copied");
+    act(() => {
+      vi.runAllTimers();
+    });
+    Object.defineProperty(globalThis, "navigator", {
+      value: originalNavigator,
+      configurable: true,
+    });
+    vi.useRealTimers();
+  });
+
+  it("uses default runtime clipboard unavailable branch", async () => {
+    vi.useFakeTimers();
+    const originalNavigator = globalThis.navigator;
+    Object.defineProperty(globalThis, "navigator", {
+      value: {},
+      configurable: true,
+    });
+    const setCopyRunsStatus = vi.fn();
+
+    await handleCopyTrainingRuns({
+      trainingRuns: [{ completed_at: "now", result: "completed" }],
+      setCopyRunsStatus,
+    });
+
+    expect(setCopyRunsStatus).toHaveBeenCalledWith("Copy failed");
+    act(() => {
+      vi.runAllTimers();
+    });
+    Object.defineProperty(globalThis, "navigator", {
+      value: originalNavigator,
+      configurable: true,
+    });
+    vi.useRealTimers();
   });
 });

@@ -7,77 +7,31 @@ import {
   usePytorchTrainingIntegration,
   type PytorchIntegrationArgs,
   type PytorchTrainingMode,
-} from "@/features/ml/hooks/usePytorchTraining.hooks";
-import { FieldHelp } from "@/features/ml/views/components/FieldHelp";
-import { TrainingRunsSection } from "@/features/ml/views/components/TrainingRunsSection";
+} from "@/features/ml/typescript/react/hooks/usePytorchTraining.hooks";
+import { FieldHelp } from "@/features/ml/typescript/react/views/components/FieldHelp";
+import { TrainingRunsSection } from "@/features/ml/typescript/react/views/components/TrainingRunsSection";
 import {
   DistillMetricsModal,
   OptimalParamsModal,
-} from "@/features/ml/views/components/MlTrainingModals";
+} from "@/features/ml/typescript/react/views/components/MlTrainingModals";
 import {
   ModelPreviewModal,
-} from "@/features/ml/views/components/ModelPreviewModal";
+} from "@/features/ml-model-ui/typescript/react/views/components/ModelPreviewModal";
 import {
   runPytorchDistillation,
   runPytorchTraining,
-} from "@/features/ml/orchestrators/pytorchTraining.orchestrator";
-
-type ModeExplainer = {
-  what: string;
-  why: string;
-  distillationNote: string;
-};
-
-const PYTORCH_MODE_EXPLAINERS: Record<PytorchTrainingMode, ModeExplainer> = {
-  mlp_dense: {
-    what:
-      "Neural Net (dense network): learns nonlinear feature interactions using hidden layers with backpropagation.",
-    why:
-      "Flexible general-purpose model that captures complex interactions a linear baseline can miss, and works well as your default deep tabular learner.",
-    distillationNote: "Supported.",
-  },
-  linear_glm_baseline: {
-    what:
-      "Linear/GLM baseline: a single linear head (logistic or linear regression) with no hidden stack.",
-    why:
-      "Fastest and easiest to interpret, making it ideal for benchmarking and sanity checks before moving to more complex models.",
-    distillationNote: "Supported.",
-  },
-  tabresnet: {
-    what:
-      "TabResNet (Residual MLP): a dense network with residual skip connections between hidden blocks.",
-    why:
-      "Supports deeper tabular networks with better gradient flow and training stability than a plain dense stack.",
-    distillationNote: "Supported.",
-  },
-  imbalance_aware: {
-    what:
-      "Imbalance-aware classifier: neural net training with class-weighted loss so minority classes matter more.",
-    why:
-      "Useful when target classes are skewed (for example 95/5 splits).",
-    distillationNote:
-      "Not supported yet because current distillation flow assumes standard unweighted teacher objectives.",
-  },
-  calibrated_classifier: {
-    what:
-      "Calibrated classifier (label-smoothed): classification training with label smoothing to reduce overconfident probabilities.",
-    why:
-      "Produces more conservative probability outputs that can improve confidence calibration in production decisions.",
-    distillationNote:
-      "Not supported yet because the current distillation objective does not preserve calibration-specific behavior.",
-  },
-  tree_teacher_distillation: {
-    what:
-      "Tree-teacher distillation: first trains a tree ensemble teacher, then trains a compact neural student to mimic the teacher and the target labels.",
-    why:
-      "Combines strong tabular tree patterns with a deployable neural student.",
-    distillationNote:
-      "This mode already includes teacher-student training, so separate post-run distillation is not supported.",
-  },
-};
+} from "@/features/ml/typescript/react/orchestrators/pytorchTraining.orchestrator";
+import {
+  distillPytorchModel,
+  trainPytorchModel,
+} from "@/features/ml/typescript/api/pytorchApi";
+import { useMlDatasetOrchestrator } from "@/features/ml/typescript/react/orchestrators/mlDataset.orchestrator";
+import { useMlTrainingRunsAdapter } from "@/features/ml/typescript/react/state/adapters/mlTrainingRuns.adapter";
+import { PYTORCH_MODE_EXPLAINERS } from "@/features/ml/typescript/config/trainingModeExplainers";
+import { usePytorchFormBridge } from "@/features/ml/typescript/react/ai/tools/usePytorchFormBridge.tools";
 
 type PyTorchPageProps = {
-  orchestrator?: (args?: PytorchIntegrationArgs) => ReturnType<typeof usePytorchTrainingIntegration>;
+  orchestrator?: (args: PytorchIntegrationArgs) => ReturnType<typeof usePytorchTrainingIntegration>;
 };
 
 /** PyTorch training page wired through the Orc-BASH integration hook. */
@@ -166,9 +120,37 @@ export default function PyTorchPage({
     distillModelPath,
     distillComparison,
   } = orchestrator({
+    useDatasetState: useMlDatasetOrchestrator,
+    useTrainingRunsState: useMlTrainingRunsAdapter,
+    trainModel: trainPytorchModel,
+    distillModel: distillPytorchModel,
     runTraining: runPytorchTraining,
     runDistillation: runPytorchDistillation,
   });
+
+  usePytorchFormBridge({
+    trainingMode,
+    setTrainingMode,
+    setTargetColumn,
+    setTask,
+    runSweepEnabled,
+    toggleRunSweep,
+    setEpochValuesInput,
+    setBatchSizesInput,
+    setLearningRatesInput,
+    setTestSizesInput,
+    setHiddenDimsInput,
+    setNumHiddenLayersInput,
+    setDropoutsInput,
+    setExcludeColumnsInput,
+    setDateColumnsInput,
+    autoDistillEnabled,
+    setAutoDistillEnabled,
+    onTrainClick,
+  });
+  const hasSelectedDataset = typeof selectedDatasetId === "string" && selectedDatasetId.trim().length > 0;
+  const isTrainDisabled =
+    isTraining || isDistilling || !hasSelectedDataset || plannedRunCount === 0;
 
   return (
     <div className="flex min-h-screen flex-row bg-white text-zinc-900">
@@ -230,6 +212,8 @@ export default function PyTorchPage({
               <label className="flex flex-col gap-1 text-xs text-zinc-600">
                 <span>Select the machine learning architecture to run for this dataset.</span>
                 <select
+                  id="pytorch-training-mode"
+                  data-ai-field="pytorch_training_mode"
                   className="rounded-md border border-zinc-300 px-2 py-1 text-sm text-zinc-900"
                   value={trainingMode}
                   onChange={(event) => setTrainingMode(event.target.value as PytorchTrainingMode)}
@@ -279,6 +263,8 @@ export default function PyTorchPage({
                   <FieldHelp text="Prediction target (label). This column is removed from model inputs and is what the model learns to predict." />
                 </span>
                 <select
+                  id="pytorch-target-column"
+                  data-ai-field="pytorch_target_column"
                   className="rounded-md border border-zinc-300 px-2 py-1 text-sm text-zinc-900"
                   value={targetColumn}
                   onChange={(event) => setTargetColumn(event.target.value)}
@@ -299,6 +285,8 @@ export default function PyTorchPage({
                   <FieldHelp text="auto infers classification vs regression from target values. Set explicitly when auto inference might be ambiguous." />
                 </span>
                 <select
+                  id="pytorch-task"
+                  data-ai-field="pytorch_task"
                   className="rounded-md border border-zinc-300 px-2 py-1 text-sm text-zinc-900"
                   value={task}
                   onChange={(event) =>
@@ -316,6 +304,8 @@ export default function PyTorchPage({
                   <FieldHelp text="Number of full passes over training data. Higher can improve fit but may overfit. Range: 1-500." />
                 </span>
                 <input
+                  id="pytorch-epoch-values"
+                  data-ai-field="pytorch_epoch_values"
                   className="rounded-md border border-zinc-300 px-2 py-1 text-sm text-zinc-900"
                   value={epochValuesInput}
                   onChange={(event) => setEpochValuesInput(event.target.value)}
@@ -328,6 +318,8 @@ export default function PyTorchPage({
                   <FieldHelp text="Rows processed per optimizer step. Larger batches are faster but can generalize differently. Range: 1-200." />
                 </span>
                 <input
+                  id="pytorch-batch-sizes"
+                  data-ai-field="pytorch_batch_sizes"
                   className="rounded-md border border-zinc-300 px-2 py-1 text-sm text-zinc-900"
                   value={batchSizesInput}
                   onChange={(event) => setBatchSizesInput(event.target.value)}
@@ -340,6 +332,8 @@ export default function PyTorchPage({
                   <FieldHelp text="Optimizer step size. Too high can diverge, too low can train slowly. Valid range: >0 and <=1." />
                 </span>
                 <input
+                  id="pytorch-learning-rates"
+                  data-ai-field="pytorch_learning_rates"
                   className="rounded-md border border-zinc-300 px-2 py-1 text-sm text-zinc-900"
                   value={learningRatesInput}
                   onChange={(event) => setLearningRatesInput(event.target.value)}
@@ -352,6 +346,8 @@ export default function PyTorchPage({
                   <FieldHelp text="Fraction held out for evaluation. Example 0.2 means 20% test split. Valid range: >0 and <1." />
                 </span>
                 <input
+                  id="pytorch-test-sizes"
+                  data-ai-field="pytorch_test_sizes"
                   className="rounded-md border border-zinc-300 px-2 py-1 text-sm text-zinc-900"
                   value={testSizesInput}
                   onChange={(event) => setTestSizesInput(event.target.value)}
@@ -364,6 +360,8 @@ export default function PyTorchPage({
                   <FieldHelp text="Width of each hidden layer in the deep branch. Larger values increase model capacity and cost. Range: 8-500." />
                 </span>
                 <input
+                  id="pytorch-hidden-dims"
+                  data-ai-field="pytorch_hidden_dims"
                   className="rounded-md border border-zinc-300 px-2 py-1 text-sm text-zinc-900 disabled:bg-zinc-100"
                   value={hiddenDimsInput}
                   onChange={(event) => setHiddenDimsInput(event.target.value)}
@@ -377,6 +375,8 @@ export default function PyTorchPage({
                   <FieldHelp text="Number of hidden layers in the deep branch. More layers can model complex patterns but may overfit. Range: 1-15." />
                 </span>
                 <input
+                  id="pytorch-hidden-layers"
+                  data-ai-field="pytorch_num_hidden_layers"
                   className="rounded-md border border-zinc-300 px-2 py-1 text-sm text-zinc-900 disabled:bg-zinc-100"
                   value={numHiddenLayersInput}
                   onChange={(event) => setNumHiddenLayersInput(event.target.value)}
@@ -390,6 +390,8 @@ export default function PyTorchPage({
                   <FieldHelp text="Dropout probability per hidden layer (0 to 0.9). Helps regularization; too high can underfit." />
                 </span>
                 <input
+                  id="pytorch-dropouts"
+                  data-ai-field="pytorch_dropouts"
                   className="rounded-md border border-zinc-300 px-2 py-1 text-sm text-zinc-900 disabled:bg-zinc-100"
                   value={dropoutsInput}
                   onChange={(event) => setDropoutsInput(event.target.value)}
@@ -403,6 +405,8 @@ export default function PyTorchPage({
                   <FieldHelp text="Columns to drop from training features (for example IDs) as they are simply noise. Comma-separated list." />
                 </span>
                 <input
+                  id="pytorch-exclude-columns"
+                  data-ai-field="pytorch_exclude_columns"
                   className="rounded-md border border-zinc-300 px-2 py-1 text-sm text-zinc-900"
                   value={resolvedExcludeColumnsInput}
                   onChange={(event) => setExcludeColumnsInput(event.target.value)}
@@ -418,6 +422,8 @@ export default function PyTorchPage({
                   <FieldHelp text="Columns parsed as dates and expanded into engineered numeric features (month/day/week/cyclical terms)." />
                 </span>
                 <input
+                  id="pytorch-date-columns"
+                  data-ai-field="pytorch_date_columns"
                   className="rounded-md border border-zinc-300 px-2 py-1 text-sm text-zinc-900"
                   value={resolvedDateColumnsInput}
                   onChange={(event) => setDateColumnsInput(event.target.value)}
@@ -458,7 +464,7 @@ export default function PyTorchPage({
                   type="button"
                   className="rounded-md bg-zinc-900 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-400 disabled:shadow-none"
                   onClick={onTrainClick}
-                  disabled={isTraining || isDistilling || !selectedDatasetId || plannedRunCount === 0}
+                  disabled={isTrainDisabled}
                 >
                   {isTraining
                     ? `Training ${trainingProgress.current}/${trainingProgress.total}...`
@@ -518,12 +524,14 @@ export default function PyTorchPage({
                 <div>
                   <label className="inline-flex items-center gap-2 text-sm font-medium text-zinc-700">
                     <input
+                      id="pytorch-run-sweep"
+                      data-ai-field="pytorch_run_sweep"
                       type="checkbox"
                       className="h-4 w-4 accent-zinc-900"
                       checked={runSweepEnabled}
                       onChange={(event) => toggleRunSweep(event.target.checked)}
                     />
-                    Run Sweep
+                    Set Sweep Values
                     <FieldHelp text="A sweep runs multiple training experiments with different parameter combinations so you can compare results and find better-performing settings." />
                   </label>
                   <div className="mt-2 flex items-center gap-3">
@@ -535,13 +543,15 @@ export default function PyTorchPage({
                     >
                       Reload
                     </button>
-                    <span className="text-[11px] text-zinc-500">Toggle ON to use sweep values. Use Reload for a fresh random sweep.</span>
+                    <span className="text-[11px] text-zinc-500">Toggle ON to apply sweep values. Use Reload for a fresh random sweep.</span>
                   </div>
                 </div>
 
                 <div className="border-t border-zinc-100 pt-5">
                   <label className="inline-flex items-start gap-2 text-xs text-zinc-600">
                     <input
+                      id="pytorch-auto-distill"
+                      data-ai-field="pytorch_auto_distill"
                       type="checkbox"
                       className="mt-0.5 h-4 w-4 accent-zinc-900"
                       checked={autoDistillEnabled}

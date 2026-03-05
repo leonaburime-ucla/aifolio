@@ -54,4 +54,20 @@ describe("useTrainingRunsSectionModel", () => {
     render(<div>{notAvailable.current.cellRenderers.distill_action(null, row)}</div>);
     expect(screen.getByText("Not Available")).toBeInTheDocument();
   });
+
+  it("renders a disabled distilling state for the active teacher row", () => {
+    const row = { run_id: "teacher-9", model_id: "m9", result: "completed", training_mode: "mlp_dense" };
+    const onDistillFromRun = vi.fn();
+
+    const { result } = renderHook(() =>
+      useTrainingRunsSectionModel({
+        trainingRuns: [row],
+        onDistillFromRun,
+        distillingTeacherKey: "teacher-9",
+      })
+    );
+
+    render(<div>{result.current.cellRenderers.distill_action(null, row)}</div>);
+    expect(screen.getByRole("button", { name: "Distilling..." })).toBeDisabled();
+  });
 });

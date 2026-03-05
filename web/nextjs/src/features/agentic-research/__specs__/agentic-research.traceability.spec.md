@@ -9,11 +9,11 @@ Last updated: `2026-02-23`
 
 | Requirement | Modules/Functions | Scenarios | Tests |
 |---|---|---|---|
-| REQ-001 | `hooks/useAgenticResearch.hooks.ts#useAgenticResearchLogic(loadManifest)` | AC-001 | `agenticResearchOrchestrator.wiring.test.ts` |
-| REQ-002 | `hooks/useAgenticResearch.hooks.ts#useAgenticResearchLogic(loadDataset)` | AC-002 | `useAgenticResearch.logic.test.ts` |
-| REQ-003 | `orchestrators/agenticResearchOrchestrator.ts#useAgenticResearchOrchestrator` | AC-003 | `agenticResearchOrchestrator.wiring.test.ts` |
-| REQ-004 | `views/components/AgenticResearchFrontendTools.tsx` | AC-004 | `agenticResearchFrontendTools.test.tsx` |
-| REQ-005 | `state/zustand/agenticResearchChartStore.ts#addChartSpec` | AC-005 | `agenticResearchChartStore.test.ts` |
+| REQ-001 | `typescript/logic/agenticResearchManifest.logic.ts#resolveDefaultDatasetId` | AC-001 | `__tests__/typescript/unit/req-001.default-dataset-selection.unit.test.ts` |
+| REQ-002 | `typescript/logic/agenticResearchDataset.logic.ts#applyDatasetLoadReset` + `typescript/react/hooks/useAgenticResearch.hooks.ts#loadDataset` | AC-002 | `__tests__/typescript/unit/req-002.dataset-reset-on-load.unit.test.ts` |
+| REQ-003 | `typescript/logic/agenticResearchChart.logic.ts#resolveActiveChartSpec` | AC-003 | `__tests__/typescript/unit/req-003.active-chart-precedence.unit.test.ts` |
+| REQ-004 | `typescript/ai/tools/chartTools.ts` + `typescript/ai/tools/datasetTools.ts` | AC-004 | `__tests__/typescript/unit/req-004.invalid-tool-error-codes.unit.test.ts` |
+| REQ-005 | `typescript/logic/agenticResearchChartStore.logic.ts#addChartSpecDedupPrepend` | AC-005 | `__tests__/typescript/unit/req-005.chart-dedupe-prepend.unit.test.ts` |
 
 ## Gap Check
 

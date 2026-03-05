@@ -1,6 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { useMlDatasetOrchestrator } from "@/features/ml/typescript/react/orchestrators/mlDatasetOrchestrator";
+import { useMlDatasetOrchestrator } from "@/features/ml/typescript/react/orchestrators/mlDataset.orchestrator";
 import type {
   MlDatasetActions,
   MlDatasetState,

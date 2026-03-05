@@ -49,6 +49,7 @@ describe("trainingUiShared", () => {
   it("parses numeric values including x10^ scientific notation", () => {
     expect(parseNumericValue({ value: 1.25 })).toBe(1.25);
     expect(parseNumericValue({ value: "1.2x10^3" })).toBe(1200);
+    expect(parseNumericValue({ value: "   " })).toBeNull();
     expect(parseNumericValue({ value: "nope" })).toBeNull();
   });
 

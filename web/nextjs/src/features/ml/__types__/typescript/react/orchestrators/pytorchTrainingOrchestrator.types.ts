@@ -1,8 +1,9 @@
 import type {
   PytorchDistillRequest,
   PytorchTrainRequest,
-  PytorchTrainingMode,
 } from "@/features/ml/__types__/typescript/api/pytorchApi.types";
+export type { PytorchTrainingMode } from "@/features/ml/__types__/typescript/api/pytorchApi.types";
+import type { PytorchTrainingMode } from "@/features/ml/__types__/typescript/api/pytorchApi.types";
 import type { MlTaskType } from "@/features/ml/__types__/typescript/config/datasetTrainingDefaults.types";
 import type { SweepCombination } from "@/features/ml/__types__/typescript/validators/trainingSweep.types";
 import type {

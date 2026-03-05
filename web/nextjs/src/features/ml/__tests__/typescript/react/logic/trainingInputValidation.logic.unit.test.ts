@@ -4,7 +4,7 @@ import {
   resolveTeacherRunKey,
   splitColumnInput,
   validateTrainingSetup,
-} from "@/features/ml/typescript/react/logic/trainingInputValidation.logic";
+} from "@/features/ml/typescript/logic/trainingInputValidation.logic";
 
 describe("trainingInputValidation.logic", () => {
   it("splits and normalizes comma-delimited column input", () => {
@@ -37,6 +37,14 @@ describe("trainingInputValidation.logic", () => {
         tableColumns: ["col1"],
       })
     ).toBe("col1");
+
+    expect(
+      resolveTargetColumn({
+        targetColumn: "",
+        defaultTargetColumn: "",
+        tableColumns: [],
+      })
+    ).toBe("");
   });
 
   it("validates training setup and returns first error", () => {

@@ -1,18 +1,18 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
-import type { ChartSpec } from "@/features/ai/types/chart.types";
-import AgenticResearchPage from "@/core/views/screens/AgenticResearchPage";
+import type { ChartSpec } from "@/features/ai-chat/__types__/typescript/chart.types";
+import AgenticResearchPageScreen from "@/screens/AgenticResearchPage/views/AgenticResearchPageScreen";
 
 const chatSidebarSpy = vi.fn();
 
-vi.mock("@/features/ai/views/components/ChatSidebar", () => ({
+vi.mock("@/features/ai-chat/typescript/react/views/components/ChatSidebar", () => ({
   default: (props: { chatOrchestrator: unknown }) => {
     chatSidebarSpy(props);
     return <div data-testid="chat-sidebar" />;
   },
 }));
 
-vi.mock("@/features/recharts/views/components/ChartRenderer", () => ({
+vi.mock("@/features/recharts/typescript/react/views/components/ChartRenderer", () => ({
   default: ({ spec }: { spec: ChartSpec }) => (
     <div data-testid="chart-renderer">{spec.id}</div>
   ),
@@ -24,7 +24,7 @@ vi.mock("@/core/views/components/Datatable/DataTable", () => ({
   ),
 }));
 
-vi.mock("@/features/agentic-research/views/components/DatasetCombobox", () => ({
+vi.mock("@/features/agentic-research/typescript/react/views/components/DatasetCombobox", () => ({
   default: () => <div data-testid="dataset-combobox" />,
 }));
 
@@ -62,7 +62,7 @@ describe("AgenticResearchPage", () => {
     const chatOrchestrator = vi.fn();
 
     render(
-      <AgenticResearchPage
+      <AgenticResearchPageScreen
         pageOrchestrator={pageOrchestrator}
         chatOrchestrator={chatOrchestrator as never}
       />

@@ -117,6 +117,8 @@ describe("usePytorchTraining.hooks", () => {
         trainingRuns: [],
         prependTrainingRun: vi.fn(),
         ui,
+        trainModel: vi.fn(async () => ({ status: "ok" })),
+        distillModel: vi.fn(async () => ({ status: "ok" })),
         runTraining: vi.fn(),
         runDistillation: vi.fn(),
       })
@@ -141,6 +143,8 @@ describe("usePytorchTraining.hooks", () => {
         trainingRuns: [],
         prependTrainingRun: vi.fn(),
         ui,
+        trainModel: vi.fn(async () => ({ status: "ok" })),
+        distillModel: vi.fn(async () => ({ status: "ok" })),
         runTraining,
         runDistillation: vi.fn(),
       })
@@ -176,6 +180,8 @@ describe("usePytorchTraining.hooks", () => {
         trainingRuns: [{ run_id: "r1", result: "completed", metric_name: "accuracy", metric_score: 0.9, training_mode: "mlp_dense" }],
         prependTrainingRun: vi.fn(),
         ui,
+        trainModel: vi.fn(async () => ({ status: "ok" })),
+        distillModel: vi.fn(async () => ({ status: "ok" })),
         runTraining,
         runDistillation: vi.fn(),
         runtime: { notifySuccess, notifyError, schedule, writeClipboardText },
@@ -241,6 +247,8 @@ describe("usePytorchTraining.hooks", () => {
         trainingRuns: [],
         prependTrainingRun,
         ui,
+        trainModel: vi.fn(async () => ({ status: "ok" })),
+        distillModel: vi.fn(async () => ({ status: "ok" })),
         runTraining: vi.fn(),
         runDistillation,
       })
@@ -307,6 +315,8 @@ describe("usePytorchTraining.hooks", () => {
         ],
         prependTrainingRun: vi.fn(),
         ui,
+        trainModel: vi.fn(async () => ({ status: "ok" })),
+        distillModel: vi.fn(async () => ({ status: "ok" })),
         runTraining: vi.fn(),
         runDistillation: vi.fn(),
       })
@@ -330,6 +340,8 @@ describe("usePytorchTraining.hooks", () => {
         trainingRuns: [],
         prependTrainingRun: vi.fn(),
         ui,
+        trainModel: vi.fn(async () => ({ status: "ok" })),
+        distillModel: vi.fn(async () => ({ status: "ok" })),
         runTraining: vi.fn(),
         runDistillation,
       })
@@ -378,6 +390,125 @@ describe("usePytorchTraining.hooks", () => {
     expect(ui2.setTrainingError).toHaveBeenCalledWith("distill failed");
   });
 
+  it("returns early for supported mode when dataset is missing", async () => {
+    const runDistillation = vi.fn();
+    const ui = createUi();
+    const { result } = renderHook(() =>
+      usePytorchLogic({
+        dataset: createDataset({ selectedDatasetId: null }),
+        trainingRuns: [],
+        prependTrainingRun: vi.fn(),
+        ui,
+        trainModel: vi.fn(async () => ({ status: "ok" })),
+        distillModel: vi.fn(async () => ({ status: "ok" })),
+        runTraining: vi.fn(),
+        runDistillation,
+      })
+    );
+
+    await act(async () => {
+      await result.current.onDistillFromRun({
+        result: "completed",
+        run_id: "teacher-no-dataset",
+        model_id: "teacher-model-no-dataset",
+        training_mode: "mlp_dense",
+      });
+    });
+
+    expect(runDistillation).not.toHaveBeenCalled();
+  });
+
+  it("falls back to current ui mode when teacher training mode is missing", async () => {
+    const ui = createUi({ trainingMode: "mlp_dense" });
+    const runDistillation = vi.fn(async () => ({
+      status: "ok",
+      metrics: {},
+      modelId: "student-a",
+      modelPath: "/tmp/student-a",
+      runId: "distill-a",
+      teacherModelSizeBytes: null,
+      studentModelSizeBytes: null,
+      teacherInputDim: null,
+      teacherOutputDim: null,
+      studentInputDim: null,
+      studentOutputDim: null,
+      sizeSavedBytes: null,
+      sizeSavedPercent: null,
+      teacherParamCount: null,
+      studentParamCount: null,
+      paramSavedCount: null,
+      paramSavedPercent: null,
+      distilledRun: { result: "distilled" },
+    }));
+    const { result } = renderHook(() =>
+      usePytorchLogic({
+        dataset: createDataset(),
+        trainingRuns: [],
+        prependTrainingRun: vi.fn(),
+        ui,
+        trainModel: vi.fn(async () => ({ status: "ok" })),
+        distillModel: vi.fn(async () => ({ status: "ok" })),
+        runTraining: vi.fn(),
+        runDistillation,
+      })
+    );
+
+    await act(async () => {
+      await result.current.onDistillFromRun({
+        result: "completed",
+        run_id: "teacher-missing-mode",
+        model_id: "teacher-model",
+      });
+    });
+
+    const payload = runDistillation.mock.calls[0]?.[0];
+    expect(payload.trainingMode).toBe("mlp_dense");
+  });
+
+  it("uses linear-baseline deep sweep defaults when building combinations", async () => {
+    const ui = createUi({
+      trainingMode: "linear_glm_baseline",
+      epochValuesInput: "10",
+      testSizesInput: "0.2",
+      learningRatesInput: "0.001",
+      batchSizesInput: "32",
+    });
+    const runTraining = vi.fn(async () => ({
+      stopped: false,
+      completed: 0,
+      total: 0,
+      completedTeacherRuns: [],
+      failedRuns: 0,
+      firstFailureMessage: null,
+    }));
+    const { result } = renderHook(() =>
+      usePytorchLogic({
+        dataset: createDataset(),
+        trainingRuns: [],
+        prependTrainingRun: vi.fn(),
+        ui,
+        trainModel: vi.fn(async () => ({ status: "ok" })),
+        distillModel: vi.fn(async () => ({ status: "ok" })),
+        runTraining,
+        runDistillation: vi.fn(),
+      })
+    );
+
+    await act(async () => {
+      await result.current.onTrainClick();
+    });
+
+    const trainingProblem = runTraining.mock.calls[0]?.[0];
+    expect(trainingProblem.isLinearBaselineMode).toBe(true);
+    expect(trainingProblem.combinations).toEqual([
+      expect.objectContaining({
+        hiddenDim: 0,
+        numHiddenLayers: 0,
+        dropout: 0,
+      }),
+    ]);
+  });
+
   it("exposes sweep/optimizer helpers and distillation support predicate", () => {
     const ui = createUi();
     const { result } = renderHook(() =>
@@ -386,6 +517,8 @@ describe("usePytorchTraining.hooks", () => {
         trainingRuns: [{ result: "completed", metric_name: "accuracy", metric_score: 0.9, training_mode: "mlp_dense" }],
         prependTrainingRun: vi.fn(),
         ui,
+        trainModel: vi.fn(async () => ({ status: "ok" })),
+        distillModel: vi.fn(async () => ({ status: "ok" })),
         runTraining: vi.fn(),
         runDistillation: vi.fn(),
         runtime: {
@@ -407,6 +540,7 @@ describe("usePytorchTraining.hooks", () => {
     expect(ui.setRunSweepEnabled).toHaveBeenCalled();
     expect(result.current.isDistillationSupportedForRun({ training_mode: "mlp_dense" })).toBe(true);
     expect(result.current.isDistillationSupportedForRun({ training_mode: "unknown" })).toBe(false);
+    expect(result.current.isDistillationSupportedForRun({})).toBe(false);
   });
 
   it("uses default runtime for toasts and clipboard error fallback", async () => {
@@ -418,6 +552,8 @@ describe("usePytorchTraining.hooks", () => {
         trainingRuns: [{ run_id: "r1", result: "completed", metric_name: "accuracy", metric_score: 0.9 }],
         prependTrainingRun: vi.fn(),
         ui,
+        trainModel: vi.fn(async () => ({ status: "ok" })),
+        distillModel: vi.fn(async () => ({ status: "ok" })),
         runTraining: vi.fn(async () => ({
           stopped: false,
           completed: 1,
@@ -452,6 +588,8 @@ describe("usePytorchTraining.hooks", () => {
         trainingRuns: [],
         prependTrainingRun: vi.fn(),
         ui,
+        trainModel: vi.fn(async () => ({ status: "ok" })),
+        distillModel: vi.fn(async () => ({ status: "ok" })),
         runTraining: vi.fn(async (_problem, deps) => {
           deps.onProgress(1, 3);
           return {
@@ -473,6 +611,62 @@ describe("usePytorchTraining.hooks", () => {
 
     expect(ui.setTrainingProgress).toHaveBeenCalledWith({ current: 1, total: 3 });
     expect(ui.setTrainingError).toHaveBeenCalledWith("Training stopped after 1/3 run(s).");
+  });
+
+  it("updates shouldContinue when stop is requested during an active run", async () => {
+    const ui = createUi({ isTraining: true });
+    let capturedDeps:
+      | {
+          shouldContinue: () => boolean;
+          onProgress: (current: number, total: number) => void;
+        }
+      | null = null;
+    let releaseRun = () => undefined;
+    const waitForRelease = new Promise<void>((resolve) => {
+      releaseRun = resolve;
+    });
+
+    const { result } = renderHook(() =>
+      usePytorchLogic({
+        dataset: createDataset(),
+        trainingRuns: [],
+        prependTrainingRun: vi.fn(),
+        ui,
+        trainModel: vi.fn(async () => ({ status: "ok" })),
+        distillModel: vi.fn(async () => ({ status: "ok" })),
+        runTraining: vi.fn(async (_problem, deps) => {
+          capturedDeps = deps;
+          await waitForRelease;
+          return {
+            stopped: true,
+            completed: 0,
+            total: 1,
+            completedTeacherRuns: [],
+            failedRuns: 0,
+            firstFailureMessage: null,
+          };
+        }),
+        runDistillation: vi.fn(),
+      })
+    );
+
+    let trainPromise: Promise<void> | null = null;
+    await act(async () => {
+      trainPromise = result.current.onTrainClick();
+    });
+
+    expect(capturedDeps).not.toBeNull();
+    expect(capturedDeps?.shouldContinue()).toBe(true);
+
+    act(() => {
+      result.current.onStopTrainingRuns();
+    });
+    expect(capturedDeps?.shouldContinue()).toBe(false);
+
+    await act(async () => {
+      releaseRun();
+      await trainPromise;
+    });
   });
 
   it("runs supported auto-distillation from training outcomes", async () => {
@@ -513,6 +707,8 @@ describe("usePytorchTraining.hooks", () => {
         trainingRuns: [],
         prependTrainingRun: vi.fn(),
         ui,
+        trainModel: vi.fn(async () => ({ status: "ok" })),
+        distillModel: vi.fn(async () => ({ status: "ok" })),
         runTraining: vi.fn(async () => ({
           stopped: false,
           completed: 1,
@@ -551,6 +747,8 @@ describe("usePytorchTraining.hooks", () => {
         trainingRuns: [],
         prependTrainingRun: vi.fn(),
         ui,
+        trainModel: vi.fn(async () => ({ status: "ok" })),
+        distillModel: vi.fn(async () => ({ status: "ok" })),
         runTraining: vi.fn(),
         runDistillation: vi.fn(),
       })
@@ -585,6 +783,8 @@ describe("usePytorchTraining.hooks", () => {
         trainingRuns: [{ run_id: "r1", result: "completed" }],
         prependTrainingRun: vi.fn(),
         ui,
+        trainModel: vi.fn(async () => ({ status: "ok" })),
+        distillModel: vi.fn(async () => ({ status: "ok" })),
         runTraining: vi.fn(),
         runDistillation: vi.fn(),
       })
@@ -596,5 +796,104 @@ describe("usePytorchTraining.hooks", () => {
 
     expect(writeText).toHaveBeenCalledTimes(1);
     expect(ui.setCopyRunsStatus).toHaveBeenCalledWith("Copied");
+  });
+
+  it("normalizes n/a teacher references before distillation request", async () => {
+    const runDistillation = vi.fn(async () => ({
+      status: "ok",
+      metrics: {},
+      modelId: null,
+      modelPath: null,
+      runId: null,
+      teacherModelSizeBytes: null,
+      studentModelSizeBytes: null,
+      teacherInputDim: null,
+      teacherOutputDim: null,
+      studentInputDim: null,
+      studentOutputDim: null,
+      sizeSavedBytes: null,
+      sizeSavedPercent: null,
+      teacherParamCount: null,
+      studentParamCount: null,
+      paramSavedCount: null,
+      paramSavedPercent: null,
+      distilledRun: {
+        result: "distilled",
+      },
+    }));
+    const ui = createUi();
+    const { result } = renderHook(() =>
+      usePytorchLogic({
+        dataset: createDataset(),
+        trainingRuns: [],
+        prependTrainingRun: vi.fn(),
+        ui,
+        trainModel: vi.fn(async () => ({ status: "ok" })),
+        distillModel: vi.fn(async () => ({ status: "ok" })),
+        runTraining: vi.fn(),
+        runDistillation,
+      })
+    );
+
+    await act(async () => {
+      await result.current.onDistillFromRun({
+        result: "completed",
+        run_id: "teacher-3",
+        model_id: "n/a",
+        model_path: "n/a",
+        training_mode: "mlp_dense",
+      });
+    });
+
+    const distillPayload = runDistillation.mock.calls[0]?.[0];
+    expect(distillPayload).toEqual(
+      expect.objectContaining({
+        teacher: expect.objectContaining({
+          runId: "teacher-3",
+          modelId: undefined,
+          modelPath: undefined,
+        }),
+      })
+    );
+
+    await act(async () => {
+      await result.current.onDistillFromRun({
+        result: "completed",
+        run_id: "n/a",
+        model_id: "teacher-model-4",
+        model_path: "n/a",
+        training_mode: "mlp_dense",
+      });
+    });
+
+    const secondDistillPayload = runDistillation.mock.calls[1]?.[0];
+    expect(secondDistillPayload).toEqual(
+      expect.objectContaining({
+        teacher: expect.objectContaining({
+          runId: undefined,
+          modelId: "teacher-model-4",
+          modelPath: undefined,
+        }),
+      })
+    );
+
+    await act(async () => {
+      await result.current.onDistillFromRun({
+        result: "completed",
+        model_path: "/tmp/teacher-model-5",
+        training_mode: "mlp_dense",
+      });
+    });
+
+    const thirdDistillPayload = runDistillation.mock.calls[2]?.[0];
+    expect(thirdDistillPayload).toEqual(
+      expect.objectContaining({
+        teacher: expect.objectContaining({
+          runId: undefined,
+          modelId: undefined,
+          modelPath: "/tmp/teacher-model-5",
+        }),
+      })
+    );
   });
 });

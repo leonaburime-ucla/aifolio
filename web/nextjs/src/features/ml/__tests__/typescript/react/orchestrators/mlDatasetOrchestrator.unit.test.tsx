@@ -1,6 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { useMlDatasetOrchestrator } from "@/features/ml/typescript/react/orchestrators/mlDatasetOrchestrator";
+import { useMlDatasetOrchestrator } from "@/features/ml/typescript/react/orchestrators/mlDataset.orchestrator";
 import type {
   MlDatasetActions,
   MlDatasetState,
@@ -90,6 +90,45 @@ describe("useMlDatasetOrchestrator", () => {
     expect(harness.actions.setDatasetOptions).toHaveBeenCalledWith(options);
     expect(harness.actions.setSelectedDatasetId).toHaveBeenCalledWith("d1.csv");
     expect(harness.actions.setManifestLoaded).toHaveBeenCalledWith(true);
+  });
+
+  it("reloadManifest preserves an already-selected dataset id", async () => {
+    const harness = createDatasetHarness({ selectedDatasetId: "existing.csv" });
+    const options = [{ id: "d1.csv", label: "d1.csv", description: "dataset 1" }];
+    const loadDatasetOptions = vi.fn(async () => options);
+
+    const { result } = renderHook(() =>
+      useMlDatasetOrchestrator({
+        useDatasetState: harness.useDatasetState,
+        loadDatasetOptions,
+        autoLoad: false,
+      })
+    );
+
+    await act(async () => {
+      await result.current.reloadManifest();
+    });
+
+    expect(harness.actions.setSelectedDatasetId).toHaveBeenCalledWith("existing.csv");
+  });
+
+  it("reloadManifest sets null selected id when no options are returned", async () => {
+    const harness = createDatasetHarness({ selectedDatasetId: null });
+    const loadDatasetOptions = vi.fn(async () => []);
+
+    const { result } = renderHook(() =>
+      useMlDatasetOrchestrator({
+        useDatasetState: harness.useDatasetState,
+        loadDatasetOptions,
+        autoLoad: false,
+      })
+    );
+
+    await act(async () => {
+      await result.current.reloadManifest();
+    });
+
+    expect(harness.actions.setSelectedDatasetId).toHaveBeenCalledWith(null);
   });
 
   it("reloadManifest skips when already loaded or currently loading", async () => {
@@ -183,6 +222,35 @@ describe("useMlDatasetOrchestrator", () => {
     );
   });
 
+  it("reloadDataset falls back to empty rows/columns when payload omits both", async () => {
+    const harness = createDatasetHarness({
+      selectedDatasetId: "empty.csv",
+    });
+    const loadDatasetRows = vi.fn(async () => ({}));
+
+    const { result } = renderHook(() =>
+      useMlDatasetOrchestrator({
+        useDatasetState: harness.useDatasetState,
+        loadDatasetRows,
+        autoLoad: false,
+      })
+    );
+
+    await act(async () => {
+      await result.current.reloadDataset();
+    });
+
+    expect(harness.actions.setDatasetCacheEntry).toHaveBeenCalledWith(
+      "empty.csv",
+      expect.objectContaining({
+        columns: [],
+        rows: [],
+        rowCount: 0,
+        totalRowCount: 0,
+      })
+    );
+  });
+
   it("handles dataset/manifest load errors and missing selected dataset", async () => {
     const harness = createDatasetHarness({ selectedDatasetId: null });
     const loadDatasetOptions = vi.fn(async () => {
@@ -235,6 +303,48 @@ describe("useMlDatasetOrchestrator", () => {
 
     expect(harness.actions.setError).toHaveBeenCalledWith("Failed to load ML datasets.");
     expect(harness.actions.setError).toHaveBeenCalledWith("Failed to load dataset rows.");
+  });
+
+  it("maps non-Error dataset row failures to default error copy", async () => {
+    const harness = createDatasetHarness({ selectedDatasetId: "fresh.csv" });
+    const loadDatasetRows = vi.fn(async () => {
+      throw "bad-rows";
+    });
+
+    const { result } = renderHook(() =>
+      useMlDatasetOrchestrator({
+        useDatasetState: harness.useDatasetState,
+        loadDatasetRows,
+        autoLoad: false,
+      })
+    );
+
+    await act(async () => {
+      await result.current.reloadDataset();
+    });
+
+    expect(harness.actions.setError).toHaveBeenCalledWith("Failed to load dataset rows.");
+  });
+
+  it("maps Error dataset row failures to explicit error messages", async () => {
+    const harness = createDatasetHarness({ selectedDatasetId: "fresh.csv" });
+    const loadDatasetRows = vi.fn(async () => {
+      throw new Error("rows exploded");
+    });
+
+    const { result } = renderHook(() =>
+      useMlDatasetOrchestrator({
+        useDatasetState: harness.useDatasetState,
+        loadDatasetRows,
+        autoLoad: false,
+      })
+    );
+
+    await act(async () => {
+      await result.current.reloadDataset();
+    });
+
+    expect(harness.actions.setError).toHaveBeenCalledWith("rows exploded");
   });
 
   it("auto-loads manifest + dataset effects when enabled", async () => {

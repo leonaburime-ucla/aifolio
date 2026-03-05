@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   formatPercentLabel,
   hasModelArtifacts,
-} from "@/features/ml/typescript/react/logic/mlTrainingModals.logic";
+} from "@/features/ml/typescript/logic/mlTrainingModals.logic";
 
 describe("mlTrainingModals.logic", () => {
   it("formats numeric percentages", () => {

@@ -3,7 +3,7 @@ import {
   buildDistillationComparison,
   buildEnrichedDistilledRun,
   resolveDistilledModalPayload,
-} from "@/features/ml/typescript/react/hooks/logic/distillationView.logic";
+} from "@/features/ml/typescript/logic/distillationView.logic";
 
 describe("distillationView.logic", () => {
   it("builds comparison and quality delta for higher-is-better metrics", () => {
@@ -134,6 +134,46 @@ describe("distillationView.logic", () => {
     expect(row.distill_teacher_hidden_dim).toBe(128);
   });
 
+  it("writes n/a defaults for missing comparison metadata", () => {
+    const row = buildEnrichedDistilledRun({
+      distilledRun: { run_id: "student-2" },
+      teacherKey: "teacher-2",
+      comparison: {
+        metricName: "accuracy",
+        teacherMetricValue: null,
+        studentMetricValue: null,
+        qualityDelta: null,
+        higherIsBetter: false,
+        teacherTrainingMode: null,
+        studentTrainingMode: null,
+        teacherHiddenDim: null,
+        studentHiddenDim: null,
+        teacherNumHiddenLayers: null,
+        studentNumHiddenLayers: null,
+        teacherInputDim: null,
+        studentInputDim: null,
+        teacherOutputDim: null,
+        studentOutputDim: null,
+        teacherModelSizeBytes: null,
+        studentModelSizeBytes: null,
+        sizeSavedBytes: null,
+        sizeSavedPercent: null,
+        teacherParamCount: null,
+        studentParamCount: null,
+        paramSavedCount: null,
+        paramSavedPercent: null,
+      },
+      teacherMetricName: "accuracy",
+      teacherMetricValue: null,
+      studentMetricValue: null,
+      qualityDelta: null,
+    });
+
+    expect(row.distill_teacher_training_mode).toBe("n/a");
+    expect(row.distill_student_training_mode).toBe("n/a");
+    expect(row.distill_higher_is_better).toBe("0");
+  });
+
   it("resolves snapshot, fallback, and missing payload states", () => {
     const snapshot = resolveDistilledModalPayload({
       teacherKey: "teacher-1",
@@ -178,19 +218,56 @@ describe("distillationView.logic", () => {
       snapshotsByTeacher: {},
       trainingRuns: [
         {
+          result: "completed",
+          teacher_ref_key: "teacher-2",
+        },
+        {
           result: "distilled",
           teacher_ref_key: "teacher-2",
           model_id: "m2",
           model_path: "/tmp/m2",
           metric_name: undefined,
           metric_score: "0.86",
-          distill_higher_is_better: "1",
+          distill_higher_is_better: "0",
+          distill_teacher_training_mode: undefined,
+          distill_student_training_mode: undefined,
         },
       ],
     });
     expect(fallback.status).toBe("fallback");
     if (fallback.status === "fallback") {
       expect(fallback.comparison.metricName).toBe("accuracy");
+      expect(fallback.comparison.higherIsBetter).toBe(false);
+      expect(fallback.metrics.test_metric_value).toBe(0.86);
+    }
+
+    const fallbackWithNonNumericMetric = resolveDistilledModalPayload({
+      teacherKey: "teacher-3",
+      snapshotsByTeacher: {},
+      trainingRuns: [
+        {
+          result: "distilled",
+          teacher_ref_key: undefined,
+        },
+        {
+          result: "distilled",
+          teacher_ref_key: "other-teacher",
+        },
+        {
+          result: "distilled",
+          teacher_ref_key: "teacher-3",
+          model_id: undefined,
+          model_path: undefined,
+          metric_name: "loss",
+          metric_score: "n/a",
+        },
+      ],
+    });
+    expect(fallbackWithNonNumericMetric.status).toBe("fallback");
+    if (fallbackWithNonNumericMetric.status === "fallback") {
+      expect(fallbackWithNonNumericMetric.metrics.test_metric_value).toBeUndefined();
+      expect(fallbackWithNonNumericMetric.modelId).toBe("n/a");
+      expect(fallbackWithNonNumericMetric.modelPath).toBe("n/a");
     }
 
     const missing = resolveDistilledModalPayload({

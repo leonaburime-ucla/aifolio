@@ -137,6 +137,27 @@ describe("tensorflowApi", () => {
     expect(clearScheduledTimeout).toHaveBeenCalledWith(999);
   });
 
+  it("returns request failure with message when distill throws a non-abort Error", async () => {
+    const fetchImpl = vi.fn(async () => {
+      throw new Error("tf backend unavailable");
+    });
+
+    const result = await distillTensorflowModel(
+      { dataset_id: "d1.csv", target_column: "target" },
+      {
+        fetchImpl: fetchImpl as unknown as typeof fetch,
+        scheduleTimeout: vi.fn(() => 222 as unknown as ReturnType<typeof setTimeout>),
+        clearScheduledTimeout: vi.fn(),
+      }
+    );
+
+    expect(result).toEqual({
+      status: "error",
+      code: "TENSORFLOW_DISTILL_REQUEST_FAILED",
+      error: "tf backend unavailable",
+    });
+  });
+
   it("uses default distill failure messages for response and non-Error throws", async () => {
     const failed = await distillTensorflowModel(
       { dataset_id: "d1.csv", target_column: "target" },

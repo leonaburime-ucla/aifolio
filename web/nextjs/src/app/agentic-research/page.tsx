@@ -1,5 +1,5 @@
-import AgenticResearchPage from "@/core/views/screens/AgenticResearchPage";
+import AgenticResearchPageScreen from "@/screens/AgenticResearchPage/views/AgenticResearchPageScreen";
 
 export default function AgenticResearch() {
-  return <AgenticResearchPage />;
+  return <AgenticResearchPageScreen />;
 }

@@ -4,7 +4,7 @@ import {
   hasTeacherModelReference,
   hasValidSweepInputs,
   isCompletedRunForMode,
-} from "@/features/ml/typescript/react/logic/trainingHookDecisions.logic";
+} from "@/features/ml/typescript/logic/trainingHookDecisions.logic";
 
 const valid = {
   epochsValidation: { ok: true as const, values: [60, 80] },
@@ -82,6 +82,12 @@ describe("trainingHookDecisions.logic", () => {
         validations: valid,
       })
     ).toBe(4);
+    expect(
+      calculatePlannedRunCount({
+        isLinearBaselineMode: false,
+        validations: { ...valid, epochsValidation: { ok: false as const, error: "bad" } },
+      })
+    ).toBe(0);
   });
 
   it("matches completed runs for active mode with numeric metrics", () => {
@@ -115,6 +121,12 @@ describe("trainingHookDecisions.logic", () => {
         mode: "mlp_dense",
       })
     ).toBe(false);
+    expect(
+      isCompletedRunForMode({
+        run: { result: "completed", training_mode: "mlp_dense", metric_score: "0.5" },
+        mode: "mlp_dense",
+      })
+    ).toBe(true);
   });
 
   it("validates teacher model references", () => {

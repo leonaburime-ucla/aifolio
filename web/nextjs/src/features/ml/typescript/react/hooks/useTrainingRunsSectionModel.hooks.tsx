@@ -1,19 +1,17 @@
 import { useMemo } from "react";
-import { calcTrainingTableHeight } from "@/features/ml/typescript/utils/trainingRuns.util";
-import { buildDistillActionModel } from "@/features/ml/typescript/react/logic/trainingRunsSection.logic";
 import type { TrainingRunRow } from "@/features/ml/__types__/typescript/utils/trainingRuns.types";
+import { DEFAULT_TRAINING_RUNS_SECTION_MODEL_DEPS } from "@/features/ml/typescript/react/hooks/useTrainingRunsSectionModel.dependencies";
 import type {
+  TrainingRunsCellRenderers,
+  UseTrainingRunsSectionModelDeps,
   UseTrainingRunsSectionModelParams,
   UseTrainingRunsSectionModelResult,
 } from "@/features/ml/__types__/typescript/react/hooks/trainingRunsSection.hooks.types";
 
-type TrainingRunsCellRenderers = {
-  distill_action: (_value: unknown, row: TrainingRunRow) => JSX.Element;
-};
-
 /**
  * Builds derived layout and cell-render behavior for the training runs table.
  * @param params - Required parameters.
+ * @param deps - Optional pure dependency overrides.
  * @returns View-model values for `TrainingRunsSection`.
  */
 export function useTrainingRunsSectionModel({
@@ -23,16 +21,21 @@ export function useTrainingRunsSectionModel({
   isDistillationSupportedForRun,
   distillingTeacherKey = null,
   distilledByTeacher = {},
-}: UseTrainingRunsSectionModelParams): UseTrainingRunsSectionModelResult {
+}: UseTrainingRunsSectionModelParams,
+deps?: Partial<UseTrainingRunsSectionModelDeps>): UseTrainingRunsSectionModelResult {
+  const injected = useMemo(
+    () => ({ ...DEFAULT_TRAINING_RUNS_SECTION_MODEL_DEPS, ...(deps ?? {}) }),
+    [deps]
+  );
   const trainingTableHeight = useMemo(
-    () => calcTrainingTableHeight({ rowsCount: trainingRuns.length }),
-    [trainingRuns.length]
+    () => injected.calcTrainingTableHeight({ rowsCount: trainingRuns.length }),
+    [injected, trainingRuns.length]
   );
 
   const cellRenderers = useMemo<TrainingRunsCellRenderers>(() => {
     return {
       distill_action: (_value: unknown, row: TrainingRunRow) => {
-        const action = buildDistillActionModel({
+        const action = injected.buildDistillActionModel({
           row,
           isDistillationSupportedForRun,
           distillingTeacherKey,
@@ -76,6 +79,7 @@ export function useTrainingRunsSectionModel({
       },
     };
   }, [
+    injected,
     distillingTeacherKey,
     distilledByTeacher,
     isDistillationSupportedForRun,

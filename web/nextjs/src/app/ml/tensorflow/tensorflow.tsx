@@ -7,109 +7,31 @@ import {
   useTensorflowTrainingIntegration,
   type TensorflowIntegrationArgs,
   type TensorflowTrainingMode,
-} from "@/features/ml/hooks/useTensorflowTraining.hooks";
-import { FieldHelp } from "@/features/ml/views/components/FieldHelp";
-import { TrainingRunsSection } from "@/features/ml/views/components/TrainingRunsSection";
+} from "@/features/ml/typescript/react/hooks/useTensorflowTraining.hooks";
+import { FieldHelp } from "@/features/ml/typescript/react/views/components/FieldHelp";
+import { TrainingRunsSection } from "@/features/ml/typescript/react/views/components/TrainingRunsSection";
 import {
   DistillMetricsModal,
   OptimalParamsModal,
-} from "@/features/ml/views/components/MlTrainingModals";
+} from "@/features/ml/typescript/react/views/components/MlTrainingModals";
 import {
   ModelPreviewModal,
-} from "@/features/ml/views/components/ModelPreviewModal";
+} from "@/features/ml-model-ui/typescript/react/views/components/ModelPreviewModal";
 import {
   runTensorflowDistillation,
   runTensorflowTraining,
-} from "@/features/ml/orchestrators/tensorflowTraining.orchestrator";
-
-type ModeExplainer = {
-  what: string;
-  why: string;
-  distillationNote: string;
-};
-
-const TENSORFLOW_MODE_EXPLAINERS: Record<TensorflowTrainingMode, ModeExplainer> = {
-  mlp_dense: {
-    what:
-      "Neural Net (dense network): learns nonlinear feature interactions using hidden layers with backpropagation.",
-    why:
-      "Flexible general-purpose model that captures complex interactions a linear baseline can miss, and works well as your default deep tabular learner.",
-    distillationNote: "Supported.",
-  },
-  linear_glm_baseline: {
-    what:
-      "Linear/GLM baseline: a single linear head (logistic or linear regression) with no hidden stack.",
-    why:
-      "Fastest and easiest to interpret, making it ideal for benchmarking and sanity checks before moving to more complex models.",
-    distillationNote: "Supported.",
-  },
-  wide_and_deep: {
-    what:
-      "Wide & Deep: combines a linear branch and deep branch, then merges both signals into one prediction.",
-    why:
-      "Balances memorization (wide) and generalization (deep), which is often stronger than either branch alone on mixed tabular feature sets.",
-    distillationNote: "Supported.",
-  },
-  imbalance_aware: {
-    what:
-      "Imbalance-aware classifier: neural net training with class-weighted loss so minority classes matter more.",
-    why:
-      "Useful when target classes are highly skewed.",
-    distillationNote:
-      "Not supported yet because current distillation flow assumes standard unweighted teacher objectives.",
-  },
-  quantile_regression: {
-    what:
-      "Quantile regression: predicts a target quantile (for example P80) using pinball loss instead of mean-squared error.",
-    why:
-      "Adds uncertainty-aware forecasting by targeting distribution tails instead of only the mean.",
-    distillationNote:
-      "Not supported yet because current distillation focuses on point-estimate regression/classification targets.",
-  },
-  calibrated_classifier: {
-    what:
-      "Calibrated classifier (label-smoothed): classification training with label smoothing to reduce overconfident probabilities.",
-    why:
-      "Produces more conservative probability outputs that can improve confidence calibration in production decisions.",
-    distillationNote:
-      "Not supported yet because the current distillation objective does not preserve calibration-specific behavior.",
-  },
-  entity_embeddings: {
-    what:
-      "Entity embeddings model: learns dense latent feature representations before prediction instead of relying only on raw one-hot patterns.",
-    why:
-      "Can compress sparse categorical structure into compact learned factors that improve generalization on high-cardinality tabular data.",
-    distillationNote:
-      "Not supported yet because the distillation path currently assumes the standard feature-to-head student architecture, not embedding-projection-specific teacher behavior.",
-  },
-  autoencoder_head: {
-    what:
-      "Autoencoder + head: learns a compressed latent representation and jointly reconstructs inputs while predicting the target.",
-    why:
-      "Adds a representation-learning objective that can improve robustness and signal extraction from noisy tabular features.",
-    distillationNote:
-      "Not supported yet because this is a multi-output training objective (prediction + reconstruction), while distillation currently expects a single supervised output path.",
-  },
-  multi_task_learning: {
-    what:
-      "Multi-task learning: shared trunk with a primary prediction head plus an auxiliary head trained jointly.",
-    why:
-      "Shared representation from related objectives can improve generalization compared with single-task training.",
-    distillationNote:
-      "Not supported yet because the current distillation objective is single-head, and this mode trains main + auxiliary heads jointly.",
-  },
-  time_aware_tabular: {
-    what:
-      "Time-aware tabular model: applies a temporal gating path over date-expanded features before deep prediction layers.",
-    why:
-      "Helps the model focus on temporal structure in ordered/date-derived features beyond plain static tabular treatment.",
-    distillationNote:
-      "Not supported yet because this mode adds temporal gating branches that are not represented in the current distillation student template.",
-  },
-};
+} from "@/features/ml/typescript/react/orchestrators/tensorflowTraining.orchestrator";
+import {
+  distillTensorflowModel,
+  trainTensorflowModel,
+} from "@/features/ml/typescript/api/tensorflowApi";
+import { useMlDatasetOrchestrator } from "@/features/ml/typescript/react/orchestrators/mlDataset.orchestrator";
+import { useMlTrainingRunsAdapter } from "@/features/ml/typescript/react/state/adapters/mlTrainingRuns.adapter";
+import { TENSORFLOW_MODE_EXPLAINERS } from "@/features/ml/typescript/config/trainingModeExplainers";
+import { useTensorflowFormBridge } from "@/features/ml/typescript/react/ai/tools/useTensorflowFormBridge.tools";
 
 type TensorFlowPageProps = {
-  orchestrator?: (args?: TensorflowIntegrationArgs) => ReturnType<typeof useTensorflowTrainingIntegration>;
+  orchestrator?: (args: TensorflowIntegrationArgs) => ReturnType<typeof useTensorflowTrainingIntegration>;
 };
 
 /** TensorFlow training page wired through the Orc-BASH integration hook. */
@@ -198,9 +120,37 @@ export default function TensorFlowPage({
     distillModelPath,
     distillComparison,
   } = orchestrator({
+    useDatasetState: useMlDatasetOrchestrator,
+    useTrainingRunsState: useMlTrainingRunsAdapter,
+    trainModel: trainTensorflowModel,
+    distillModel: distillTensorflowModel,
     runTraining: runTensorflowTraining,
     runDistillation: runTensorflowDistillation,
   });
+
+  useTensorflowFormBridge({
+    trainingMode,
+    setTrainingMode,
+    setTargetColumn,
+    setTask,
+    runSweepEnabled,
+    toggleRunSweep,
+    setEpochValuesInput,
+    setBatchSizesInput,
+    setLearningRatesInput,
+    setTestSizesInput,
+    setHiddenDimsInput,
+    setNumHiddenLayersInput,
+    setDropoutsInput,
+    setExcludeColumnsInput,
+    setDateColumnsInput,
+    autoDistillEnabled,
+    setAutoDistillEnabled,
+    onTrainClick,
+  });
+  const hasSelectedDataset = typeof selectedDatasetId === "string" && selectedDatasetId.trim().length > 0;
+  const isTrainDisabled =
+    isTraining || isDistilling || !hasSelectedDataset || plannedRunCount === 0;
 
   return (
     <div className="flex min-h-screen flex-row bg-white text-zinc-900">
@@ -283,6 +233,7 @@ export default function TensorFlowPage({
               <label className="flex flex-col gap-1 text-xs text-zinc-600">
                 <span>Select the machine learning architecture to run for this dataset.</span>
                 <select
+                  data-ai-field="tensorflow_training_mode"
                   className="rounded-md border border-zinc-300 px-2 py-1 text-sm text-zinc-900"
                   value={trainingMode}
                   onChange={(event) => setTrainingMode(event.target.value as TensorflowTrainingMode)}
@@ -332,6 +283,7 @@ export default function TensorFlowPage({
                   <FieldHelp text="Prediction target (label). This column is removed from model inputs and is what the model learns to predict." />
                 </span>
                 <select
+                  data-ai-field="tensorflow_target_column"
                   className="rounded-md border border-zinc-300 px-2 py-1 text-sm text-zinc-900"
                   value={targetColumn}
                   onChange={(event) => setTargetColumn(event.target.value)}
@@ -511,7 +463,7 @@ export default function TensorFlowPage({
                   type="button"
                   className="rounded-md bg-zinc-900 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-400 disabled:shadow-none"
                   onClick={onTrainClick}
-                  disabled={isTraining || isDistilling || !selectedDatasetId || plannedRunCount === 0}
+                  disabled={isTrainDisabled}
                 >
                   {isTraining
                     ? `Training ${trainingProgress.current}/${trainingProgress.total}...`
@@ -571,12 +523,13 @@ export default function TensorFlowPage({
                 <div>
                   <label className="inline-flex items-center gap-2 text-sm font-medium text-zinc-700">
                     <input
+                      data-ai-field="tensorflow_run_sweep"
                       type="checkbox"
                       className="h-4 w-4 accent-zinc-900"
                       checked={runSweepEnabled}
                       onChange={(event) => toggleRunSweep(event.target.checked)}
                     />
-                    Run Sweep
+                    Set Sweep Values
                     <FieldHelp text="A sweep runs multiple training experiments with different parameter combinations so you can compare results and find better-performing settings." />
                   </label>
                   <div className="mt-2 flex items-center gap-3">
@@ -588,13 +541,14 @@ export default function TensorFlowPage({
                     >
                       Reload
                     </button>
-                    <span className="text-[11px] text-zinc-500">Toggle ON to use sweep values. Use Reload for a fresh random sweep.</span>
+                    <span className="text-[11px] text-zinc-500">Toggle ON to apply sweep values. Use Reload for a fresh random sweep.</span>
                   </div>
                 </div>
 
                 <div className="border-t border-zinc-100 pt-5">
                   <label className="inline-flex items-start gap-2 text-xs text-zinc-600">
                     <input
+                      data-ai-field="tensorflow_auto_distill"
                       type="checkbox"
                       className="mt-0.5 h-4 w-4 accent-zinc-900"
                       checked={autoDistillEnabled}

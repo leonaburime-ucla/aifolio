@@ -1,0 +1,62 @@
+import { useEffect, useCallback } from "react";
+import { parseCopilotAssistantPayload } from "@/features/ag-ui-chat/typescript/logic/copilotAssistantPayload.util";
+import { useCopilotChartActionsAdapter } from "@/features/recharts/typescript/react/ai/state/adapters/chartActions.adapter";
+import type {
+  CopilotAssistantMessageOrchestrator,
+  CopilotAssistantMessageOrchestratorDeps,
+} from "@/features/ag-ui-chat/__types__/typescript/react/orchestrators/copilotAssistantMessageOrchestrator.types";
+
+/**
+ * Orchestrator hook for processing Copilot assistant payload messages.
+ *
+ * @param deps Optional dependency overrides for chart action adapter injection.
+ * @returns Orchestrator API for processing assistant payload content.
+ */
+export function useCopilotAssistantMessageOrchestrator({
+  useChartActionsPort = useCopilotChartActionsAdapter,
+}: CopilotAssistantMessageOrchestratorDeps = {}): CopilotAssistantMessageOrchestrator {
+  const { addChartSpec } = useChartActionsPort();
+
+  const processAssistantPayload = useCallback(
+    (rawContent: string) => {
+      if (!rawContent) return;
+
+      const payload = parseCopilotAssistantPayload(rawContent);
+      if (!payload?.chartSpec) return;
+
+      if (Array.isArray(payload.chartSpec)) {
+        payload.chartSpec.forEach((spec) => addChartSpec(spec));
+        console.log("[copilot-assistant-legacy] chart_specs_added", {
+          count: payload.chartSpec.length,
+          ids: payload.chartSpec.map((spec) => spec.id),
+          types: payload.chartSpec.map((spec) => spec.type),
+        });
+        return;
+      }
+
+      addChartSpec(payload.chartSpec);
+      console.log("[copilot-assistant-legacy] chart_spec_added", {
+        id: payload.chartSpec.id,
+        type: payload.chartSpec.type,
+      });
+    },
+    [addChartSpec]
+  );
+
+  return { processAssistantPayload };
+}
+
+/**
+ * Effect hook that invokes orchestrator payload processing on content change.
+ *
+ * @param rawContent Raw assistant message content.
+ * @param orchestrator Orchestrator implementation with payload processing method.
+ */
+export function useCopilotAssistantPayloadEffect(
+  rawContent: string,
+  orchestrator: CopilotAssistantMessageOrchestrator
+): void {
+  useEffect(() => {
+    orchestrator.processAssistantPayload(rawContent);
+  }, [rawContent, orchestrator]);
+}

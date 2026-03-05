@@ -13,7 +13,22 @@ export type UseTrainingRunsSectionModelParams = Pick<
 
 export type UseTrainingRunsSectionModelResult = {
   trainingTableHeight: number;
-  cellRenderers: {
-    distill_action: (_value: unknown, row: TrainingRunRow) => unknown;
+  cellRenderers: TrainingRunsCellRenderers;
+};
+
+export type TrainingRunsCellRenderers = {
+  distill_action: (_value: unknown, row: TrainingRunRow) => unknown;
+};
+
+export type UseTrainingRunsSectionModelDeps = {
+  calcTrainingTableHeight: (args: { rowsCount: number }) => number;
+  buildDistillActionModel: (args: {
+    row: TrainingRunRow;
+    isDistillationSupportedForRun?: (row: TrainingRunRow) => boolean;
+    distillingTeacherKey: string | null;
+    distilledByTeacher: Record<string, string>;
+  }) => {
+    kind: "student_model" | "not_available" | "show_distilled" | "distill";
+    isDistillingThisRow: boolean;
   };
 };

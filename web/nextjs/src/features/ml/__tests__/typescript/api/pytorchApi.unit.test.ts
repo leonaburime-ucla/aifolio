@@ -140,6 +140,27 @@ describe("pytorchApi", () => {
     expect(clearScheduledTimeout).toHaveBeenCalledWith(999);
   });
 
+  it("returns request failure with message when distill throws a non-abort Error", async () => {
+    const fetchImpl = vi.fn(async () => {
+      throw new Error("service unavailable");
+    });
+
+    const result = await distillPytorchModel(
+      { dataset_id: "d1.csv", target_column: "target" },
+      {
+        fetchImpl: fetchImpl as unknown as typeof fetch,
+        scheduleTimeout: vi.fn(() => 111 as unknown as ReturnType<typeof setTimeout>),
+        clearScheduledTimeout: vi.fn(),
+      }
+    );
+
+    expect(result).toEqual({
+      status: "error",
+      code: "PYTORCH_DISTILL_REQUEST_FAILED",
+      error: "service unavailable",
+    });
+  });
+
   it("uses default distill failure messages for response and non-Error throws", async () => {
     const failed = await distillPytorchModel(
       { dataset_id: "d1.csv", target_column: "target" },

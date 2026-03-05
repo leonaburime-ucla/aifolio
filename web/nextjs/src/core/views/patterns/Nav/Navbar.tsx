@@ -29,20 +29,21 @@ export default function Navbar() {
               Machine Learning
               <span className="text-xs">▾</span>
             </button>
-            <div className="invisible absolute left-0 mt-2 w-48 rounded-lg border border-zinc-200 bg-white p-2 text-sm text-zinc-700 shadow-lg opacity-0 transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
-              <Link
-                href="/ml/pytorch"
-                className="block rounded-md px-3 py-2 transition hover:bg-zinc-100"
-              >
-                PyTorch
-              </Link>
-              <Link
-                href="/ml/tensorflow"
-                className="block rounded-md px-3 py-2 transition hover:bg-zinc-100"
-              >
-                TensorFlow
-              </Link>
-
+            <div className="invisible absolute left-0 top-full pt-2 opacity-0 transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+              <div className="w-48 rounded-lg border border-zinc-200 bg-white p-2 text-sm text-zinc-700 shadow-lg">
+                <Link
+                  href="/ml/pytorch"
+                  className="block rounded-md px-3 py-2 transition hover:bg-zinc-100"
+                >
+                  PyTorch
+                </Link>
+                <Link
+                  href="/ml/tensorflow"
+                  className="block rounded-md px-3 py-2 transition hover:bg-zinc-100"
+                >
+                  TensorFlow
+                </Link>
+              </div>
             </div>
           </div>
           <Link

@@ -1,7 +1,7 @@
 "use client";
 
-import ChartRenderer from "@/features/recharts/views/components/ChartRenderer";
-import { useChartOrchestrator } from "@/features/recharts/orchestrators/chartOrchestrator";
+import ChartRenderer from "@/features/recharts/typescript/react/views/components/ChartRenderer";
+import { useChartOrchestrator } from "@/features/recharts/typescript/react/orchestrators/chartOrchestrator";
 
 type LandingChartsProps = {
   orchestrator?: typeof useChartOrchestrator;

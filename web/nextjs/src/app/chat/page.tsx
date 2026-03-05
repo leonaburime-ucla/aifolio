@@ -1,6 +1,5 @@
-import LandingPage from "@/core/views/screens/LandingPage";
+import LandingPageScreen from "@/screens/LandingPage/views/LandingPageScreen";
 
 export default function ChatPage() {
-  return <LandingPage />;
+  return <LandingPageScreen />;
 }
-

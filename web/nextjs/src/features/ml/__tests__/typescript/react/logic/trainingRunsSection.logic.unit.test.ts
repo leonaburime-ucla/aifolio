@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildDistillActionModel,
   resolveTeacherKey,
-} from "@/features/ml/typescript/react/logic/trainingRunsSection.logic";
+} from "@/features/ml/typescript/logic/trainingRunsSection.logic";
 
 describe("trainingRunsSection.logic", () => {
   it("resolves teacher key preferring run_id, then model_id, then model_path", () => {
@@ -49,5 +49,13 @@ describe("trainingRunsSection.logic", () => {
 
     expect(action.kind).toBe("distill");
     expect(action.isDistillingThisRow).toBe(true);
+  });
+
+  it("treats rows without result/teacher key as not available", () => {
+    const action = buildDistillActionModel({
+      row: { run_id: "n/a", model_id: "n/a", model_path: "n/a" },
+    });
+
+    expect(action.kind).toBe("not_available");
   });
 });

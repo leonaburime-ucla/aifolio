@@ -11,16 +11,16 @@ export const ML_WINE_DATASET_OPTIONS: MlDatasetOption[] = [
   {
     id: "customer_churn_telco.csv",
     label: "customer_churn_telco.csv",
-    description: "CSV dataset from ai/ml/data",
+    description: "CSV dataset from backend/data/ml_data",
   },
   {
     id: "house_prices_ames.csv",
     label: "house_prices_ames.csv",
-    description: "CSV dataset from ai/ml/data",
+    description: "CSV dataset from backend/data/ml_data",
   },
 ];
 
-export const DEFAULT_ML_DATASET_ID = ML_WINE_DATASET_OPTIONS[0]?.id ?? null;
+export const DEFAULT_ML_DATASET_ID = ML_WINE_DATASET_OPTIONS[0].id;
 
 /**
  * Fetches available ML datasets and maps response rows to normalized option objects.
@@ -44,8 +44,8 @@ export async function fetchMlDatasetOptions(
     id: entry.id,
     label: entry.label ?? entry.id,
     description: entry.format
-      ? `${entry.format.toUpperCase()} dataset from ai/ml/data`
-      : "Dataset from ai/ml/data",
+      ? `${entry.format.toUpperCase()} dataset from backend/data/ml_data`
+      : "Dataset from backend/data/ml_data",
   }));
 }
 

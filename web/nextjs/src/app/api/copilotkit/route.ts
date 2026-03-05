@@ -1,4 +1,4 @@
-import { createCopilotAppRouterHandler } from "@/features/copilot-chat/adapters/copilotRuntime.adapter";
+import { createCopilotAppRouterHandler } from "@/features/ag-ui-chat/typescript/api/copilotRuntime.adapter";
 
 /**
  * Next.js App Router endpoint consumed by Copilot React UI.

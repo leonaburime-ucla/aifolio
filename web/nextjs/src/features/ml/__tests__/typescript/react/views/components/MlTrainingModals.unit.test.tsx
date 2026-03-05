@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import type { ReactNode } from "react";
 
@@ -118,6 +118,27 @@ describe("MlTrainingModals", () => {
     expect(applyButtons.at(-1)).toBeDisabled();
     expect(screen.getByText("model-x")).toBeInTheDocument();
     expect(screen.getByText("/tmp/model-x")).toBeInTheDocument();
+  });
+
+  it("renders model_path fallback as n/a when only model id is available", () => {
+    render(
+      <DistillMetricsModal
+        isOpen
+        onClose={vi.fn()}
+        distillMetrics={null}
+        distillModelId="model-only"
+        distillModelPath={null}
+        distillComparison={null}
+      />
+    );
+
+    const modelIdLabel = screen.getByText("model-only");
+    const modelContainer = modelIdLabel.closest("div");
+    expect(modelContainer).not.toBeNull();
+    const scoped = within(modelContainer as HTMLElement);
+    expect(scoped.getByText(/model_path:/i)).toBeInTheDocument();
+    expect(scoped.getByText("n/a")).toBeInTheDocument();
+    expect(screen.queryByText("/tmp/model-only")).toBeNull();
   });
 
   it("renders numeric size/param percentages when available", () => {

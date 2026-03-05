@@ -1,0 +1,17 @@
+[run]
+source =
+    ai/python
+    ai/ml
+omit =
+    */__tests__/*
+    */test_*.py
+    */__init__.py
+
+[report]
+show_missing = True
+skip_covered = True
+precision = 0
+sort = Cover
+
+[html]
+directory = htmlcov

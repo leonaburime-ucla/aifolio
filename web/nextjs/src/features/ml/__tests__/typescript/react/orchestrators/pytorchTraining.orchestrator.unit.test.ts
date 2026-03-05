@@ -3,6 +3,11 @@ import {
   runPytorchDistillation,
   runPytorchTraining,
 } from "@/features/ml/typescript/react/orchestrators/pytorchTraining.orchestrator";
+import {
+  defaultFormatters,
+  defaultSweepCombination,
+  defaultTeacherConfig,
+} from "@/features/ml/__tests__/typescript/test-utils/trainingOrchestrator.test-utils";
 
 describe("pytorchTraining.orchestrator", () => {
   const baseProblem = {
@@ -13,17 +18,7 @@ describe("pytorchTraining.orchestrator", () => {
     isLinearBaselineMode: false,
     excludeColumns: [],
     dateColumns: [],
-    combinations: [
-      {
-        epochs: 60,
-        testSize: 0.2,
-        learningRate: 0.001,
-        batchSize: 64,
-        hiddenDim: 128,
-        numHiddenLayers: 2,
-        dropout: 0.1,
-      },
-    ],
+    combinations: [defaultSweepCombination],
   };
 
   it("runs training combinations and records completed + failed runs", async () => {
@@ -77,8 +72,7 @@ describe("pytorchTraining.orchestrator", () => {
         trainModel,
         prependTrainingRun,
         onProgress,
-        formatCompletedAt: () => "01/01/26 00:00:00",
-        formatMetricNumber: ({ value }) => String(value ?? "n/a"),
+        ...defaultFormatters,
       }
     );
 
@@ -103,8 +97,7 @@ describe("pytorchTraining.orchestrator", () => {
           .mockResolvedValueOnce({ status: "error" }),
         prependTrainingRun,
         onProgress: vi.fn(),
-        formatCompletedAt: () => "01/01/26 00:00:00",
-        formatMetricNumber: ({ value }) => String(value ?? "n/a"),
+        ...defaultFormatters,
       }
     );
 
@@ -131,8 +124,7 @@ describe("pytorchTraining.orchestrator", () => {
         })),
         prependTrainingRun,
         onProgress: vi.fn(),
-        formatCompletedAt: () => "01/01/26 00:00:00",
-        formatMetricNumber: ({ value }) => String(value ?? "n/a"),
+        ...defaultFormatters,
       }
     );
 
@@ -162,8 +154,7 @@ describe("pytorchTraining.orchestrator", () => {
         })),
         prependTrainingRun,
         onProgress: vi.fn(),
-        formatCompletedAt: () => "01/01/26 00:00:00",
-        formatMetricNumber: ({ value }) => String(value ?? "n/a"),
+        ...defaultFormatters,
       }
     );
 
@@ -192,8 +183,7 @@ describe("pytorchTraining.orchestrator", () => {
         trainModel: vi.fn(async () => ({ status: "ok" })),
         prependTrainingRun,
         onProgress: vi.fn(),
-        formatCompletedAt: () => "01/01/26 00:00:00",
-        formatMetricNumber: ({ value }) => String(value ?? "n/a"),
+        ...defaultFormatters,
         shouldContinue: () => {
           calls += 1;
           return calls === 1;
@@ -216,20 +206,11 @@ describe("pytorchTraining.orchestrator", () => {
         saveDistilledModel: false,
         excludeColumns: [],
         dateColumns: [],
-        teacher: {
-          hidden: 128,
-          layers: 2,
-          dropout: 0.1,
-          epochs: 60,
-          batch: 64,
-          learningRate: 0.001,
-          testSize: 0.2,
-        },
+        teacher: { ...defaultTeacherConfig },
       },
       {
         distillModel: vi.fn(async () => ({ status: "error", error: "distill failed" })),
-        formatCompletedAt: () => "01/01/26 00:00:00",
-        formatMetricNumber: ({ value }) => String(value ?? "n/a"),
+        ...defaultFormatters,
       }
     );
 
@@ -246,20 +227,11 @@ describe("pytorchTraining.orchestrator", () => {
         saveDistilledModel: false,
         excludeColumns: [],
         dateColumns: [],
-        teacher: {
-          hidden: 128,
-          layers: 2,
-          dropout: 0.1,
-          epochs: 60,
-          batch: 64,
-          learningRate: 0.001,
-          testSize: 0.2,
-        },
+        teacher: { ...defaultTeacherConfig },
       },
       {
         distillModel: vi.fn(async () => ({ status: "error" })),
-        formatCompletedAt: () => "01/01/26 00:00:00",
-        formatMetricNumber: ({ value }) => String(value ?? "n/a"),
+        ...defaultFormatters,
       }
     );
 
@@ -308,8 +280,7 @@ describe("pytorchTraining.orchestrator", () => {
       },
       {
         distillModel,
-        formatCompletedAt: () => "01/01/26 00:00:00",
-        formatMetricNumber: ({ value }) => String(value ?? "n/a"),
+        ...defaultFormatters,
       }
     );
 
@@ -340,23 +311,14 @@ describe("pytorchTraining.orchestrator", () => {
         saveDistilledModel: false,
         excludeColumns: [],
         dateColumns: [],
-        teacher: {
-          hidden: 128,
-          layers: 2,
-          dropout: 0.1,
-          epochs: 60,
-          batch: 64,
-          learningRate: 0.001,
-          testSize: 0.2,
-        },
+        teacher: { ...defaultTeacherConfig },
       },
       {
         distillModel: vi.fn(async () => ({
           status: "ok",
           metrics: {},
         })),
-        formatCompletedAt: () => "01/01/26 00:00:00",
-        formatMetricNumber: ({ value }) => String(value ?? "n/a"),
+        ...defaultFormatters,
       }
     );
 
@@ -372,5 +334,30 @@ describe("pytorchTraining.orchestrator", () => {
     expect(result.distilledRun.model_id).toBe("n/a");
     expect(result.distilledRun.model_path).toBe("n/a");
     expect(result.distilledRun.run_id).toBe("n/a");
+  });
+
+  it("supports successful distillation when metrics are omitted", async () => {
+    const result = await runPytorchDistillation(
+      {
+        datasetId: "d1.csv",
+        targetColumn: "target",
+        task: "classification",
+        trainingMode: "mlp_dense",
+        saveDistilledModel: false,
+        excludeColumns: [],
+        dateColumns: [],
+        teacher: { ...defaultTeacherConfig },
+      },
+      {
+        distillModel: vi.fn(async () => ({ status: "ok" })),
+        ...defaultFormatters,
+      }
+    );
+
+    expect(result.status).toBe("ok");
+    if (result.status === "ok") {
+      expect(result.metrics).toEqual({});
+      expect(result.distilledRun.metric_name).toBe("n/a");
+    }
   });
 });

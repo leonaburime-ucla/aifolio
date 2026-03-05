@@ -20,6 +20,12 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Architecture Rule
+
+- `features/*` are vertical slices and must not depend directly on other features.
+- `screens/*` is the composition layer for route/page wiring across multiple features.
+- Shared contracts/primitives should live in neutral shared/core modules.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

@@ -129,7 +129,7 @@ function getParamSpecs(
   { runs }: { runs: ParsedRun[] },
   {}: EmptyOptions = {}
 ): ParamSpec[] {
-  const keys: Array<{ key: ParamKey; type: "int" | "float"; floor?: number; ceil?: number }> = [
+  const keys: Array<{ key: ParamKey; type: "int" | "float"; floor: number; ceil: number }> = [
     { key: "epochs", type: "int", floor: 1, ceil: 500 },
     { key: "learning_rate", type: "float", floor: 1e-5, ceil: 1 },
     { key: "test_size", type: "float", floor: 0.001, ceil: 0.999 },
@@ -148,13 +148,13 @@ function getParamSpecs(
     const paddedMax = observedMax + span * 0.2;
     const min = clamp({
       value: paddedMin,
-      min: entry.floor ?? paddedMin,
-      max: entry.ceil ?? paddedMax,
+      min: entry.floor,
+      max: entry.ceil,
     });
     const max = clamp({
       value: paddedMax,
-      min: entry.floor ?? paddedMin,
-      max: entry.ceil ?? paddedMax,
+      min: entry.floor,
+      max: entry.ceil,
     });
     return {
       key: entry.key,
@@ -214,7 +214,7 @@ export function findOptimalParamsFromRuns(
     const candidate = {} as HyperParams;
     for (const spec of specs) {
       const goodValues = goodRuns.map((run) => run[spec.key]);
-      const badValues = badRuns.length > 0 ? badRuns.map((run) => run[spec.key]) : goodValues;
+      const badValues = badRuns.map((run) => run[spec.key]);
       const goodMu = mean({ values: goodValues });
       const goodSigma = Math.max(std({ values: goodValues }), (spec.max - spec.min) * 0.08, EPS);
       const badMu = mean({ values: badValues });

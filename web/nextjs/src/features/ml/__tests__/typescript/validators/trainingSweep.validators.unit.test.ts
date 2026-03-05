@@ -22,6 +22,14 @@ describe("trainingSweep.validators", () => {
     expect(validateTestSizes({ raw: "1" }).ok).toBe(false);
     expect(validateLearningRates({ raw: "0.001,0.01" })).toEqual({ ok: true, values: [0.001, 0.01] });
     expect(validateLearningRates({ raw: "0" }).ok).toBe(false);
+    expect(validateTestSizes({ raw: "abc" })).toEqual({
+      ok: false,
+      error: "Invalid number: abc",
+    });
+    expect(validateLearningRates({ raw: "" })).toEqual({
+      ok: false,
+      error: "Provide at least one value.",
+    });
   });
 
   it("validates integer sweep fields", () => {
@@ -31,12 +39,28 @@ describe("trainingSweep.validators", () => {
     expect(validateHiddenDims({ raw: "7" }).ok).toBe(false);
     expect(validateNumHiddenLayers({ raw: "2,3" })).toEqual({ ok: true, values: [2, 3] });
     expect(validateNumHiddenLayers({ raw: "16" }).ok).toBe(false);
+    expect(validateBatchSizes({ raw: "" })).toEqual({
+      ok: false,
+      error: "Provide at least one value.",
+    });
+    expect(validateHiddenDims({ raw: "abc" })).toEqual({
+      ok: false,
+      error: "Invalid number: abc",
+    });
+    expect(validateNumHiddenLayers({ raw: "abc" })).toEqual({
+      ok: false,
+      error: "Invalid number: abc",
+    });
   });
 
   it("validates dropouts", () => {
     expect(validateDropouts({ raw: "0,0.2,0.9" })).toEqual({ ok: true, values: [0, 0.2, 0.9] });
     expect(validateDropouts({ raw: "-0.1" }).ok).toBe(false);
     expect(validateDropouts({ raw: "1" }).ok).toBe(false);
+    expect(validateDropouts({ raw: "" })).toEqual({
+      ok: false,
+      error: "Provide at least one value.",
+    });
   });
 
   it("builds cartesian sweep combinations", () => {

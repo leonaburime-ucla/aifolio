@@ -16,7 +16,7 @@ export const agenticResearchOrchestratorSpec = {
   ],
   inputContract: {
     useStatePort: "UseAgenticResearchStatePort (optional, default adapter)",
-    useChartStatePort: "UseAgenticResearchChartStatePort (optional, default adapter)",
+    useChartPort: "UseAgenticResearchChartActionsPort (optional, default adapter)",
   },
   outputContract: {
     required: [

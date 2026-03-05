@@ -3,6 +3,11 @@ import {
   runTensorflowDistillation,
   runTensorflowTraining,
 } from "@/features/ml/typescript/react/orchestrators/tensorflowTraining.orchestrator";
+import {
+  defaultFormatters,
+  defaultSweepCombination,
+  defaultTeacherConfig,
+} from "@/features/ml/__tests__/typescript/test-utils/trainingOrchestrator.test-utils";
 
 describe("tensorflowTraining.orchestrator", () => {
   const baseProblem = {
@@ -13,17 +18,7 @@ describe("tensorflowTraining.orchestrator", () => {
     isLinearBaselineMode: false,
     excludeColumns: [],
     dateColumns: [],
-    combinations: [
-      {
-        epochs: 60,
-        testSize: 0.2,
-        learningRate: 0.001,
-        batchSize: 64,
-        hiddenDim: 128,
-        numHiddenLayers: 2,
-        dropout: 0.1,
-      },
-    ],
+    combinations: [defaultSweepCombination],
   };
 
   it("stops early when shouldContinue is false", async () => {
@@ -52,8 +47,7 @@ describe("tensorflowTraining.orchestrator", () => {
         trainModel: vi.fn(async () => ({ status: "ok" })),
         prependTrainingRun: vi.fn(),
         onProgress: vi.fn(),
-        formatCompletedAt: () => "01/01/26 00:00:00",
-        formatMetricNumber: ({ value }) => String(value ?? "n/a"),
+        ...defaultFormatters,
         shouldContinue: () => false,
       }
     );
@@ -87,8 +81,7 @@ describe("tensorflowTraining.orchestrator", () => {
           }),
         prependTrainingRun,
         onProgress,
-        formatCompletedAt: () => "01/01/26 00:00:00",
-        formatMetricNumber: ({ value }) => String(value ?? "n/a"),
+        ...defaultFormatters,
       }
     );
 
@@ -110,8 +103,7 @@ describe("tensorflowTraining.orchestrator", () => {
         trainModel: vi.fn(async () => ({ status: "error" })),
         prependTrainingRun,
         onProgress: vi.fn(),
-        formatCompletedAt: () => "01/01/26 00:00:00",
-        formatMetricNumber: ({ value }) => String(value ?? "n/a"),
+        ...defaultFormatters,
       }
     );
 
@@ -126,6 +118,61 @@ describe("tensorflowTraining.orchestrator", () => {
     );
   });
 
+  it("fills n/a defaults when successful training response omits metrics and identifiers", async () => {
+    const prependTrainingRun = vi.fn();
+    const result = await runTensorflowTraining(
+      {
+        ...baseProblem,
+      },
+      {
+        trainModel: vi.fn(async () => ({ status: "ok" })),
+        prependTrainingRun,
+        onProgress: vi.fn(),
+        ...defaultFormatters,
+      }
+    );
+
+    expect(result.failedRuns).toBe(0);
+    expect(prependTrainingRun).toHaveBeenCalledWith(
+      expect.objectContaining({
+        metric_name: "n/a",
+        metric_score: "n/a",
+        train_loss: "n/a",
+        test_loss: "n/a",
+        model_id: "n/a",
+        model_path: "n/a",
+        run_id: "n/a",
+      })
+    );
+  });
+
+  it("stores n/a deep-layer fields for successful linear-baseline runs", async () => {
+    const prependTrainingRun = vi.fn();
+    await runTensorflowTraining(
+      {
+        ...baseProblem,
+        isLinearBaselineMode: true,
+      },
+      {
+        trainModel: vi.fn(async () => ({
+          status: "ok",
+          metrics: { test_metric_name: "accuracy", test_metric_value: 0.8 },
+        })),
+        prependTrainingRun,
+        onProgress: vi.fn(),
+        ...defaultFormatters,
+      }
+    );
+
+    expect(prependTrainingRun).toHaveBeenCalledWith(
+      expect.objectContaining({
+        hidden_dim: "n/a",
+        num_hidden_layers: "n/a",
+        dropout: "n/a",
+      })
+    );
+  });
+
   it("builds successful distillation output", async () => {
     const result = await runTensorflowDistillation(
       {
@@ -136,15 +183,7 @@ describe("tensorflowTraining.orchestrator", () => {
         saveDistilledModel: false,
         excludeColumns: [],
         dateColumns: [],
-        teacher: {
-          hidden: 128,
-          layers: 2,
-          dropout: 0.1,
-          epochs: 60,
-          batch: 64,
-          learningRate: 0.001,
-          testSize: 0.2,
-        },
+        teacher: { ...defaultTeacherConfig },
       },
       {
         distillModel: vi.fn(async () => ({
@@ -154,8 +193,7 @@ describe("tensorflowTraining.orchestrator", () => {
           model_path: "/tmp/student-1",
           metrics: { test_metric_name: "accuracy", test_metric_value: 0.88 },
         })),
-        formatCompletedAt: () => "01/01/26 00:00:00",
-        formatMetricNumber: ({ value }) => String(value ?? "n/a"),
+        ...defaultFormatters,
       }
     );
 
@@ -188,8 +226,7 @@ describe("tensorflowTraining.orchestrator", () => {
       },
       {
         distillModel: vi.fn(async () => ({ status: "error" })),
-        formatCompletedAt: () => "01/01/26 00:00:00",
-        formatMetricNumber: ({ value }) => String(value ?? "n/a"),
+        ...defaultFormatters,
       }
     );
     expect(err).toEqual({ status: "error", error: "Distillation failed." });
@@ -216,8 +253,7 @@ describe("tensorflowTraining.orchestrator", () => {
       },
       {
         distillModel,
-        formatCompletedAt: () => "01/01/26 00:00:00",
-        formatMetricNumber: ({ value }) => String(value ?? "n/a"),
+        ...defaultFormatters,
       }
     );
     expect(distillModel).toHaveBeenCalledWith(
@@ -233,6 +269,31 @@ describe("tensorflowTraining.orchestrator", () => {
     if (ok.status === "ok") {
       expect(ok.distilledRun.metric_name).toBe("n/a");
       expect(ok.distilledRun.model_id).toBe("n/a");
+    }
+  });
+
+  it("supports successful distillation when metrics are omitted", async () => {
+    const result = await runTensorflowDistillation(
+      {
+        datasetId: "d1.csv",
+        targetColumn: "target",
+        task: "classification",
+        trainingMode: "wide_and_deep",
+        saveDistilledModel: false,
+        excludeColumns: [],
+        dateColumns: [],
+        teacher: { ...defaultTeacherConfig },
+      },
+      {
+        distillModel: vi.fn(async () => ({ status: "ok" })),
+        ...defaultFormatters,
+      }
+    );
+
+    expect(result.status).toBe("ok");
+    if (result.status === "ok") {
+      expect(result.metrics).toEqual({});
+      expect(result.distilledRun.metric_name).toBe("n/a");
     }
   });
 });

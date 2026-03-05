@@ -4,7 +4,7 @@ import { formatMetricNumber } from "@/features/ml/typescript/utils/trainingRuns.
 import {
   formatPercentLabel,
   hasModelArtifacts,
-} from "@/features/ml/typescript/react/logic/mlTrainingModals.logic";
+} from "@/features/ml/typescript/logic/mlTrainingModals.logic";
 import type {
   DistillMetricsModalProps,
   OptimalParamsModalProps,

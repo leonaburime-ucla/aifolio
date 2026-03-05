@@ -1,0 +1,31 @@
+"use client";
+
+import { CopilotKit } from "@copilotkit/react-core";
+import "@copilotkit/react-ui/styles.css";
+import type { CopilotChatProviderProps } from "@/features/ag-ui-chat/__types__/typescript/react/views/copilotChatProvider.types";
+import { getCopilotClientConfig } from "@/features/ag-ui-chat/typescript/config/copilotRuntime.config";
+import { CopilotEffectsProvider } from "@/features/ag-ui-chat/typescript/react/views/providers/CopilotEffectsProvider";
+
+/**
+ * Feature-local Copilot provider.
+ *
+ * This keeps Copilot wiring inside the `copilot-chat` vertical slice so
+ * the feature can be reused or moved without touching generic core providers.
+ *
+ * Includes CopilotEffectsProvider which consolidates all "invisible" side-effects:
+ * - Frontend tool registrations (useCopilotAction)
+ * - Chart bridge (message to store sync)
+ * - Message persistence (localStorage)
+ */
+export default function CopilotChatProvider({
+  children,
+}: CopilotChatProviderProps) {
+  const config = getCopilotClientConfig();
+  return (
+    <CopilotKit runtimeUrl={config.runtimeUrl} agent={config.agent}>
+      <CopilotEffectsProvider>
+        {children}
+      </CopilotEffectsProvider>
+    </CopilotKit>
+  );
+}
