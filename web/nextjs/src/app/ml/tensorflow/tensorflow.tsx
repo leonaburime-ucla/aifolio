@@ -501,7 +501,7 @@ export default function TensorFlowPage({
                   <span className="font-semibold text-zinc-700">What is it:</span> A method for optimizing expensive black-box functions by using a probabilistic model to choose promising parameter settings.
                 </p>
                 <p className="mb-3 mt-1 text-xs text-zinc-600">
-                  <span className="font-semibold text-zinc-700">How it works:</span> Uses completed runs to suggest the next promising hyperparameter combination. Requires at least 5 completed runs for the specific algorithm.
+                  <span className="font-semibold text-zinc-700">How it works:</span> Uses completed runs to suggest the next promising hyperparameter combination. <span className="font-bold text-blue-600">Requires at least 5 completed runs for the specific algorithm.</span>
                 </p>
                 <div className="flex items-center gap-2">
                   <button

@@ -58,7 +58,7 @@ export default function AgUiPage() {
         </div>
       </main>
 
-      <div className="h-full w-[420px] shrink-0 overflow-hidden">
+      <div className="flex h-full w-[420px] shrink-0 flex-col overflow-y-auto">
         <CopilotChatProvider>
           <AgUiPageQuerySync />
           <AgUiTabSwitchTool />

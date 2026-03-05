@@ -31,7 +31,7 @@ export default function CopilotSidebar({
         <AgUiModelSelector />
       </div>
       <CopilotChat
-        className="h-full"
+        className="min-h-0 flex-1 overflow-y-auto"
         labels={{ title: "AI Chat", initial: "Ask a question to get started." }}
         AssistantMessage={isAgUiMode ? CopilotAssistantMessage : CopilotAssistantMessageLegacy}
       />
