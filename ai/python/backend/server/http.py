@@ -1,4 +1,7 @@
 """Compatibility module for ``backend.server.http`` imports."""
 
-from server import *  # noqa: F403
+import sys
 
+import server as _legacy_module
+
+sys.modules[__name__] = _legacy_module

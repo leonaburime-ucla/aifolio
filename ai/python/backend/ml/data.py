@@ -1,4 +1,7 @@
 """Compatibility module for ``backend.ml.data`` imports."""
 
-from ml_data import *  # noqa: F403
+import sys
 
+import ml_data as _legacy_module
+
+sys.modules[__name__] = _legacy_module

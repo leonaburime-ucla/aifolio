@@ -1,4 +1,7 @@
 """Compatibility module for ``backend.agents.coordinator`` imports."""
 
-from langgraph_agents.coordinator import *  # noqa: F403
+import sys
 
+from langgraph_agents import coordinator as _legacy_module
+
+sys.modules[__name__] = _legacy_module

@@ -1036,11 +1036,11 @@ def run_data_scientist_analysis(
     Returns:
         Dict with message and chartSpec (single or list).
     """
-    from ml_data import load_ml_dataset
+    import backend.ml.data as ml_data
     started_at = time.perf_counter()
     print(f"[ds] analysis:start dataset_id={dataset_id} model={model_id}")
     
-    loaded = load_ml_dataset(dataset_id, row_limit=row_limit)
+    loaded = ml_data.load_ml_dataset(dataset_id, row_limit=row_limit)
     if loaded.get("status") != "ok":
         return {"message": "Dataset not found.", "chartSpec": None}
         

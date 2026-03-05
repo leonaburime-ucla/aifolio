@@ -1,4 +1,7 @@
 """Compatibility module for ``backend.agents.langsmith`` imports."""
 
-from langgraph_agents.langsmith import *  # noqa: F403
+import sys
 
+from langgraph_agents import langsmith as _legacy_module
+
+sys.modules[__name__] = _legacy_module

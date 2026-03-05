@@ -10,7 +10,7 @@ for path in (str(APP_ROOT), str(PROJECT_ROOT)):
     if path not in sys.path:
         sys.path.append(path)
 
-from langgraph_agents.data_scientist import run_data_scientist_analysis
+from backend.agents.data_scientist import run_data_scientist_analysis
 
 
 ALGORITHMS_WITH_DATASET = [
@@ -64,4 +64,3 @@ def test_data_scientist_tool_returns_chartspec(tool_name: str, dataset_id: str):
         assert chart.get("xKey"), f"{tool_name}: missing xKey"
         assert isinstance(chart.get("yKeys"), list) and chart.get("yKeys"), f"{tool_name}: missing yKeys"
         assert isinstance(chart.get("data"), list), f"{tool_name}: missing data array"
-

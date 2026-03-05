@@ -8,8 +8,8 @@ for path in (str(APP_ROOT), str(PROJECT_ROOT)):
     if path not in sys.path:
         sys.path.append(path)
 
-from ml_data import list_ml_datasets
-from langgraph_agents.data_scientist import _build_numeric_matrix
+from backend.agents.data_scientist import _build_numeric_matrix
+from backend.ml import list_ml_datasets
 
 
 def test_ml_manifest_exposes_preprocessing_config():
@@ -40,4 +40,3 @@ def test_build_numeric_matrix_drops_configured_numeric_id_and_expands_dates():
     assert "Date_year" in feature_names
     assert "Date_month" in feature_names
     assert "Date_day" in feature_names
-

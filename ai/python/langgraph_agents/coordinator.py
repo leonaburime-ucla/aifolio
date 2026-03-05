@@ -17,7 +17,8 @@ from pathlib import Path
 from typing import Any, Dict, List, TypedDict
 
 from google_gemini import DEFAULT_MODEL_ID
-from langgraph_agents.data_scientist import run_data_scientist_analysis
+from backend.agents.analyst import interpret_analysis
+from backend.agents.data_scientist import run_data_scientist_analysis
 
 SAMPLE_DATA_DIR = Path(__file__).resolve().parent.parent / "sample_data"
 DATASETS_MANIFEST_PATH = SAMPLE_DATA_DIR / "datasets.json"
@@ -52,7 +53,69 @@ def _load_dataset_metadata(dataset_id: str) -> Dict[str, Any]:
         "files": {"names": names_path} if names_path else {},
         "excerpts": {"names": names_excerpt} if names_excerpt else {},
     }
-from langgraph_agents.analyst import interpret_analysis
+
+
+def _normalize_charts(charts: Any) -> list[dict[str, Any]]:
+    """Normalize chart payloads to the list shape expected downstream."""
+    if isinstance(charts, dict):
+        return [charts]
+    if isinstance(charts, list):
+        return charts
+    return []
+
+
+def _resolve_dataset_label(dataset_id: str, ds_result: Dict[str, Any]) -> str:
+    """Prefer the chart-level dataset label when the DS result exposes one."""
+    charts = _normalize_charts(ds_result.get("chartSpec"))
+    if charts:
+        return charts[0].get("meta", {}).get("datasetLabel") or dataset_id
+    return dataset_id
+
+
+def _parse_conversation_history(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Drop empty chat messages and normalize role/content history records."""
+    conversation_history = []
+    for msg in messages:
+        role = msg.get("role", "user")
+        content = msg.get("content", "")
+        if content:
+            conversation_history.append({"role": role, "content": content})
+    return conversation_history
+
+
+def _build_langsmith_metadata() -> Dict[str, Any]:
+    """Return the temporary disabled LangSmith payload used by the UI."""
+    return {
+        "enabled": False,
+        "note": "Temporarily disabled for performance during Agentic UI iteration.",
+    }
+
+
+def _build_response_payload(
+    state: CoordinatorState,
+    ds_result: Dict[str, Any],
+    analyst: Dict[str, Any],
+) -> Dict[str, Any]:
+    """Assemble the frontend response contract from the coordinator state."""
+    charts = _normalize_charts(ds_result.get("chartSpec"))
+    findings = analyst.get("findings", [])
+    langsmith = _build_langsmith_metadata()
+    response_message = (
+        f"[Data Scientist] {ds_result.get('message', '')}\n\n"
+        f"[Analyst] {analyst.get('analyst_summary', '')}\n\n"
+        "[LangSmith] disabled (temporarily for performance)."
+    )
+    return {
+        "message": response_message,
+        "chartSpec": charts,
+        "data": {
+            "dataset": state.get("dataset_label", state.get("dataset_id")),
+            "tool_summary": ds_result.get("message", ""),
+            "langsmith": langsmith,
+        },
+        "findings": findings if isinstance(findings, list) else [],
+        "observability": {"langsmith": langsmith},
+    }
 
 
 class CoordinatorState(TypedDict, total=False):
@@ -98,11 +161,7 @@ def _data_scientist_node(state: CoordinatorState) -> CoordinatorState:
         conversation_history=conversation_history,
     )
     # Resolve a display label for downstream messaging.
-    dataset_label = (
-        ds_result.get("chartSpec", [{}])[0].get("meta", {}).get("datasetLabel")
-        if ds_result.get("chartSpec")
-        else dataset_id
-    )
+    dataset_label = _resolve_dataset_label(dataset_id, ds_result)
     # Return updated state snapshot.
     return {
         **state,
@@ -118,9 +177,7 @@ def _analyst_node(state: CoordinatorState) -> CoordinatorState:
     # Pull DS result.
     ds_result = state.get("data_scientist_result", {})
     # Normalize chart payload to a list.
-    charts = ds_result.get("chartSpec") or []
-    if isinstance(charts, dict):
-        charts = [charts]
+    charts = _normalize_charts(ds_result.get("chartSpec"))
     # Run Analyst interpretation with conversation history for follow-ups.
     analyst = interpret_analysis(
         user_request=state.get("user_message", ""),
@@ -147,38 +204,7 @@ def _format_response_node(state: CoordinatorState) -> CoordinatorState:
     ds_result = state.get("data_scientist_result", {})
     # Pull analyst result.
     analyst = state.get("analyst_result", {})
-    # Normalize charts to list.
-    charts = ds_result.get("chartSpec")
-    if isinstance(charts, dict):
-        charts = [charts]
-    # Pull analyst findings list.
-    findings = analyst.get("findings", [])
-    chart_count = len(charts) if isinstance(charts, list) else 0
-    findings_count = len(findings) if isinstance(findings, list) else 0
-    # Pull LangSmith observability metadata.
-    langsmith = {
-        "enabled": False,
-        "note": "Temporarily disabled for performance during Agentic UI iteration.",
-    }
-    langsmith_line = "[LangSmith] disabled (temporarily for performance)."
-    # Build chat text with explicit role sections for readability.
-    response_message = (
-        f"[Data Scientist] {ds_result.get('message', '')}\n\n"
-        f"[Analyst] {analyst.get('analyst_summary', '')}\n\n"
-        f"{langsmith_line}"
-    )
-    # Build structured response contract consumed by frontend.
-    response = {
-        "message": response_message,
-        "chartSpec": charts,
-        "data": {
-            "dataset": state.get("dataset_label", state.get("dataset_id")),
-            "tool_summary": ds_result.get("message", ""),
-            "langsmith": langsmith,
-        },
-        "findings": findings,
-        "observability": {"langsmith": langsmith},
-    }
+    response = _build_response_payload(state, ds_result, analyst)
     # Return state with final response.
     return {**state, "response": response}
 
@@ -189,10 +215,7 @@ def _coordinator_pipeline(initial_state: CoordinatorState) -> CoordinatorState:
     state_after_analyst = _analyst_node(state_after_ds)
     state_with_observability: CoordinatorState = {
         **state_after_analyst,
-        "langsmith": {
-            "enabled": False,
-            "note": "Temporarily disabled for performance during Agentic UI iteration.",
-        },
+        "langsmith": _build_langsmith_metadata(),
     }
     return _format_response_node(state_with_observability)
 
@@ -210,12 +233,7 @@ def coordinator_agent(payload: Dict[str, Any]) -> Dict[str, Any]:
     """
     # Extract conversation history from payload (sent by client for follow-ups).
     messages = payload.get("messages", [])
-    conversation_history = []
-    for msg in messages:
-        role = msg.get("role", "user")
-        content = msg.get("content", "")
-        if content:
-            conversation_history.append({"role": role, "content": content})
+    conversation_history = _parse_conversation_history(messages)
 
     # Initialize graph state from request payload.
     initial_state: CoordinatorState = {

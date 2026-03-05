@@ -1,10 +1,12 @@
+import json
+import time
 from typing import Any, Dict, List, Optional, TypedDict
 
 from dotenv import load_dotenv
+from fastapi.responses import JSONResponse
 from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage, AIMessage
+from backend.agents import configure_langsmith, record_run
 from google_gemini import DEFAULT_MODEL_ID, ensure_google_api_key_in_env, get_model
-from langgraph_agents.langsmith import configure_langsmith
-from langgraph_agents.status import record_run
 
 configure_langsmith()
 
@@ -33,6 +35,7 @@ class ChatPayload(TypedDict, total=False):
     messages: list
     tools: list
     context: list
+    response_mode: str
 
 
 def _format_tools_for_prompt(payload: ChatPayload) -> str:
@@ -104,35 +107,58 @@ def formatMessage(payload: ChatPayload) -> ChatState:
     return {"messages": [human_msg]}
 
 
+def _build_system_prompt(payload: ChatPayload) -> str:
+    """Assemble the model system prompt for the current chat request."""
+    tools_text = _format_tools_for_prompt(payload)
+    context_text = _format_context_for_prompt(payload)
+    response_mode = str(payload.get("response_mode") or "full").strip().lower()
+    base_prompt = (
+        "You are a helpful assistant. Reply ONLY in valid JSON with this exact shape:\n"
+        '{ "message": string, "chartSpec": ChartSpec | ChartSpec[] | null, "actions": { "name": string, "args": object }[] }\n'
+        "Do not wrap JSON in markdown or code fences.\n"
+        "Do not include any extra keys at the top level.\n"
+        "If the user asks for charting, populate chartSpec with one or more entries.\n"
+        "ChartSpec fields: { id, title, description?, type, xKey, yKeys, xLabel?, yLabel?, zKey?, colorKey?, errorKeys?, data, unit?, currency?, timeframe?, source?, meta? }.\n"
+        "Allowed chart types: 'line'|'area'|'bar'|'scatter'|'histogram'|'density'|'roc'|'pr'|'errorbar'|'heatmap'|'box'|'biplot'|'dendrogram'.\n"
+        "Prefer those chart types and avoid unsupported UI types.\n"
+        "If multiple charts are needed, return chartSpec as an array.\n"
+        "If no chart is needed, set chartSpec to null.\n"
+        "Use `actions` for frontend tools when appropriate.\n"
+        "For compound requests, include multiple actions in execution order.\n"
+        "Example: for 'run sweep with autodistill and then train it', emit:\n"
+        '[{"name":"set_pytorch_form_fields","args":{"fields":{"set_sweep_values":true,"auto_distill":true}}},{"name":"start_pytorch_training_runs","args":{}}]\n'
+        "When a request contains 'then', treat it as ordered steps and do not collapse to a single action.\n"
+        "When the user asks to start/run/train PyTorch from the current UI state and `start_pytorch_training_runs` is available, prefer:\n"
+        '{"name":"start_pytorch_training_runs","args":{}}\n'
+        "Do not enable `set_sweep_values` (or legacy `run_sweep`) unless the user explicitly asks for sweep/hyperparameter sweep.\n"
+        "Use `train_pytorch_model` only when the user explicitly provides `dataset_id` and `target_column` values.\n"
+        "If the user asks to navigate/open/go to a page and `navigate_to_page` is available, add an action like:\n"
+        '{"name":"navigate_to_page","args":{"route":"/agentic-research"}}\n'
+        "If no tool action is needed, return actions as an empty array.\n"
+        "\nAvailable frontend tools:\n"
+        f"{tools_text}\n"
+        "\nAdditional app context:\n"
+        f"{context_text}"
+    )
+    if response_mode == "actions_only":
+        return (
+            base_prompt
+            + "\nPLANNING MODE:\n"
+            "- Return ONLY tool actions needed to satisfy the user request.\n"
+            "- Keep `message` short and operational (or empty string).\n"
+            "- Always set `chartSpec` to null in this mode.\n"
+            "- Do not include analysis prose in this mode.\n"
+            "- If no tool action is needed, return actions as [].\n"
+        )
+    return base_prompt
+
+
 def run_chat(payload: ChatPayload) -> str:
     """
     Minimal chat call for server usage.
     """
     state = formatMessage(payload)
-    tools_text = _format_tools_for_prompt(payload)
-    context_text = _format_context_for_prompt(payload)
-    system_msg = SystemMessage(
-        content=(
-            "You are a helpful assistant. Reply ONLY in valid JSON with this exact shape:\n"
-            '{ "message": string, "chartSpec": ChartSpec | ChartSpec[] | null, "actions": { "name": string, "args": object }[] }\n'
-            "Do not wrap JSON in markdown or code fences.\n"
-            "Do not include any extra keys at the top level.\n"
-            "If the user asks for charting, populate chartSpec with one or more entries.\n"
-            "ChartSpec fields: { id, title, description?, type, xKey, yKeys, xLabel?, yLabel?, zKey?, colorKey?, errorKeys?, data, unit?, currency?, timeframe?, source?, meta? }.\n"
-            "Allowed chart types: 'line'|'area'|'bar'|'scatter'|'histogram'|'density'|'roc'|'pr'|'errorbar'|'heatmap'|'box'|'biplot'|'dendrogram'.\n"
-            "Prefer those chart types and avoid unsupported UI types.\n"
-            "If multiple charts are needed, return chartSpec as an array.\n"
-            "If no chart is needed, set chartSpec to null.\n"
-            "Use `actions` for frontend tools when appropriate.\n"
-            "If the user asks to navigate/open/go to a page and `navigate_to_page` is available, add an action like:\n"
-            '{"name":"navigate_to_page","args":{"route":"/agentic-research"}}\n'
-            "If no tool action is needed, return actions as an empty array.\n"
-            "\nAvailable frontend tools:\n"
-            f"{tools_text}\n"
-            "\nAdditional app context:\n"
-            f"{context_text}"
-        )
-    )
+    system_msg = SystemMessage(content=_build_system_prompt(payload))
     messages = [system_msg] + state["messages"]
     model_id = payload.get("model") or DEFAULT_MODEL_ID
     result = get_model(model_id).invoke(messages)
@@ -206,16 +232,3 @@ def run_chat_response(payload: dict):
                 "detail": msg,
             },
         )
-
-# Configure it with what the point of the project is 
-# to better answer questions
-
-# Import tools from scikit-learn so the agent can use it
-
-# Install memory so the agent can remember the conversation 
-# I dont have sessions so need to keep track of the user another
-# way and send that info on each request
-import time
-import json
-from fastapi.responses import JSONResponse
-from typing import Any, Dict, Optional

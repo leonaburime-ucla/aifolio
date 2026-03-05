@@ -7,17 +7,17 @@ from langgraph_agents.data_scientist import (
     load_sample_dataset,
     run_data_scientist_analysis,
 )
-from langgraph_agents.langsmith import get_trace_report
+from langgraph_agents.langsmith import configure_langsmith, get_trace_report
 from langgraph_agents.status import get_status, record_run
 
 __all__ = [
     "coordinator_agent",
     "get_status",
     "record_run",
+    "configure_langsmith",
     "get_trace_report",
     "run_data_scientist_analysis",
     "list_sample_datasets",
     "load_sample_dataset",
     "interpret_analysis",
 ]
-

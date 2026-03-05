@@ -10,8 +10,8 @@ for path in (str(PYTHON_ROOT), str(AI_ROOT)):
     if path not in sys.path:
         sys.path.append(path)
 
-import ml_data
-from langgraph_agents import data_scientist
+import backend.ml.data as ml_data
+from backend.agents import data_scientist
 svc = data_scientist._service
 
 
