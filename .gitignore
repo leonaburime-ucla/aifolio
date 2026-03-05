@@ -5,6 +5,9 @@ dist/
 build/
 out/
 coverage/
+.coverage
+.coverage.*
+htmlcov/
 
 # Environment & secrets
 .env
