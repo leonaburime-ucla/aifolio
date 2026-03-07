@@ -28,7 +28,7 @@ export type MlDatasetViewModel = {
   setSelectedDatasetId: (datasetId: string | null) => void;
   isLoading: boolean;
   error: string | null;
-  tableRows: Record<string, unknown>[];
+  tableRows: Array<Record<string, string | number | null>>;
   tableColumns: string[];
   rowCount: number;
   totalRowCount: number;

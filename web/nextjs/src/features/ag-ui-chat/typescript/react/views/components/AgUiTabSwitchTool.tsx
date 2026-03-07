@@ -3,7 +3,6 @@
 import { useCopilotAction } from "@copilotkit/react-core";
 import { useRouter } from "next/navigation";
 import type {
-  AgUiTabSwitchArgs,
   CopilotActionParameter,
 } from "@/features/ag-ui-chat/__types__/typescript/react/views/copilotTools.types";
 import { SWITCH_AG_UI_TAB_TOOL } from "@/features/ag-ui-chat/typescript/config/frontendTools.config";
@@ -31,7 +30,8 @@ export default function AgUiTabSwitchTool() {
       name: SWITCH_AG_UI_TAB_TOOL,
       description: "Switch the active /ag-ui workspace tab without leaving the AG-UI page.",
       parameters: SWITCH_AG_UI_TAB_PARAMETERS,
-      handler: ({ tab }: AgUiTabSwitchArgs) => {
+      handler: (args: Record<string, unknown>) => {
+        const tab = typeof args.tab === "string" ? args.tab : "";
         const result = handleSwitchAgUiTab(tab);
         if (result.status === "ok") {
           setActiveTab(result.tab);
@@ -39,7 +39,7 @@ export default function AgUiTabSwitchTool() {
         }
         return result;
       },
-    },
+    } as Parameters<typeof useCopilotAction>[0],
     [router, setActiveTab]
   );
 

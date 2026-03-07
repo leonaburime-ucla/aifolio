@@ -5,9 +5,19 @@ import type {
   TrainTensorflowModelArgs,
 } from "@/features/ml/__types__/typescript/ai/agUi/mlTrainingTooling.types";
 
+export type CopilotActionParameterType =
+  | "string"
+  | "number"
+  | "boolean"
+  | "object"
+  | "string[]"
+  | "number[]"
+  | "boolean[]"
+  | "object[]";
+
 export type CopilotActionParameter = {
   name: string;
-  type: string;
+  type: CopilotActionParameterType;
   required: boolean;
   description: string;
 };

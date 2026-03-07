@@ -9,8 +9,9 @@ export function ModelPreviewModal({
   onClose,
   framework,
   mode,
+  modalPreviewHook = useModelPreviewModel
 }: ModelPreviewModalProps) {
-  const { graph, data } = useModelPreviewModel({ framework, mode });
+  const { graph, data } = modalPreviewHook({ framework, mode });
 
   return (
     <Modal

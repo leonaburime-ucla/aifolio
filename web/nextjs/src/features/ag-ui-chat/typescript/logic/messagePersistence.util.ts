@@ -66,7 +66,7 @@ export function toPersistableMessages(messages: unknown[]): unknown[] {
         if (id.startsWith("coagent-state-render-")) return null;
         return { id, type, role, content };
       })
-      .filter((entry): entry is Record<string, unknown> => entry !== null);
+      .filter((entry) => entry !== null);
 
     // Keep one record per message id to avoid persistence churn from
     // streaming/status snapshots of the same logical message.

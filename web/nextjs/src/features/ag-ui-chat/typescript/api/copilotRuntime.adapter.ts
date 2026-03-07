@@ -18,13 +18,16 @@ import { getCopilotServerConfig } from "@/features/ag-ui-chat/typescript/config/
  */
 export function createCopilotAppRouterHandler() {
   const config = getCopilotServerConfig();
-  const runtime = new CopilotRuntime({
+  const runtimeParams = {
     agents: {
+      // Bridge duplicate @ag-ui/client type instances across Copilot packages.
       [config.agent]: new LangGraphHttpAgent({
         url: `${config.backendBaseUrl}${config.backendAguiPath}`,
       }),
     },
-  });
+  } as unknown as ConstructorParameters<typeof CopilotRuntime>[0];
+
+  const runtime = new CopilotRuntime(runtimeParams);
 
   const { handleRequest } = copilotRuntimeNextJSAppRouterEndpoint({
     runtime,

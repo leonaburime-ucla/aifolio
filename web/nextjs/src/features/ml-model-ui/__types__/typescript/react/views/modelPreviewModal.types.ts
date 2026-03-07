@@ -21,6 +21,10 @@ export type ModelPreviewModalProps = {
   onClose: () => void;
   framework: ModelPreviewFramework;
   mode: ModelPreviewMode;
+  modalPreviewHook?: (args: {
+    framework: ModelPreviewFramework;
+    mode: ModelPreviewMode;
+  }) => ModelPreviewModel;
 };
 
 export type GraphModel = {

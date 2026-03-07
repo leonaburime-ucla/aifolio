@@ -60,17 +60,26 @@ type FrameworkActionBundle<TTrainArgs, TRandomizeArgs> = {
 
 function useRegisterFrameworkCopilotActions(
   actions: {
-    startTrainingRuns: Parameters<typeof useCopilotAction>[0];
-    trainModel: Parameters<typeof useCopilotAction>[0];
-    setFormFields: Parameters<typeof useCopilotAction>[0];
-    randomizeFormFields: Parameters<typeof useCopilotAction>[0];
+    startTrainingRuns: unknown;
+    trainModel: unknown;
+    setFormFields: unknown;
+    randomizeFormFields: unknown;
   },
   deps: readonly unknown[]
 ): void {
-  useCopilotAction(actions.startTrainingRuns, deps);
-  useCopilotAction(actions.trainModel, []);
-  useCopilotAction(actions.setFormFields, deps);
-  useCopilotAction(actions.randomizeFormFields, deps);
+  useCopilotAction(
+    actions.startTrainingRuns as Parameters<typeof useCopilotAction>[0],
+    [...deps]
+  );
+  useCopilotAction(actions.trainModel as Parameters<typeof useCopilotAction>[0], []);
+  useCopilotAction(
+    actions.setFormFields as Parameters<typeof useCopilotAction>[0],
+    [...deps]
+  );
+  useCopilotAction(
+    actions.randomizeFormFields as Parameters<typeof useCopilotAction>[0],
+    [...deps]
+  );
 }
 
 /**
@@ -190,17 +199,17 @@ export function useCopilotFrontendTools(runtime: CopilotFrontendToolsRuntime = {
   });
 
   useCopilotAction(
-    actions.addChartSpec,
+    actions.addChartSpec as Parameters<typeof useCopilotAction>[0],
     [activeTab, addAgenticChartSpec, addGlobalChartSpec]
   );
 
   useCopilotAction(
-    actions.clearCharts,
+    actions.clearCharts as Parameters<typeof useCopilotAction>[0],
     [activeTab, clearAgenticCharts, clearGlobalCharts]
   );
 
   useCopilotAction(
-    actions.navigateToPage,
+    actions.navigateToPage as Parameters<typeof useCopilotAction>[0],
     [router]
   );
 

@@ -11,27 +11,15 @@ import {
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { type ReactNode, useMemo, useRef, useState } from "react";
 
-type ResearchRow = {
-  id: string;
-  dataset: string;
-  rows: number;
-  updatedAt: string;
-  status: "ready" | "processing" | "error";
-  owner: string;
-  source: string;
-  sizeMb: number;
-  tags: string;
-};
-
 type GenericRow = Record<string, string | number | null>;
 
 /**
  * Build fake rows for UI prototyping.
  * Uses predictable values so you can verify scrolling + virtualization.
  */
-const data: ResearchRow[] = Array.from({ length: 1200 }, (_, index) => {
+const data: GenericRow[] = Array.from({ length: 1200 }, (_, index) => {
   const id = `ds-${String(index + 1).padStart(4, "0")}`;
-  const status: ResearchRow["status"] =
+  const status: "ready" | "processing" | "error" =
     index % 12 === 0 ? "error" : index % 5 === 0 ? "processing" : "ready";
   return {
     id,
@@ -50,7 +38,7 @@ const data: ResearchRow[] = Array.from({ length: 1200 }, (_, index) => {
  * Column definitions for TanStack Table.
  * Includes a checkbox column to prove per-row action wiring.
  */
-const researchColumns: ColumnDef<ResearchRow>[] = [
+const researchColumns: ColumnDef<GenericRow>[] = [
   {
     id: "select",
     header: "",
@@ -58,9 +46,9 @@ const researchColumns: ColumnDef<ResearchRow>[] = [
       <input
         type="checkbox"
         onChange={(event) => {
-          console.log("Row selected:", row.original.id, event.target.checked);
+          console.log("Row selected:", String(row.original.id ?? ""), event.target.checked);
         }}
-        aria-label={`Select ${row.original.dataset}`}
+        aria-label={`Select ${String(row.original.dataset ?? "")}`}
       />
     ),
   },
@@ -80,7 +68,7 @@ const researchColumns: ColumnDef<ResearchRow>[] = [
     header: "Status",
     accessorKey: "status",
     cell: (info) => {
-      const value = info.getValue<ResearchRow["status"]>();
+      const value = info.getValue<string>();
       const base =
         "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium";
       if (value === "ready") {
