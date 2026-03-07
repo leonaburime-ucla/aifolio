@@ -21,7 +21,6 @@ export default function CopilotAssistantMessage({
     const parsed = parseCopilotAssistantPayload(message.content);
     console.log("[agui-debug] assistant_message.received", {
       id: message.id,
-      type: message.type,
       role: message.role,
       status: message.status,
       rawContentPreview: message.content.slice(0, 500),

@@ -1,6 +1,6 @@
 "use client";
 
-import ChatSidebar from "@/features/ai-chat/typescript/react/views/components/ChatSidebar";
+import dynamic from "next/dynamic";
 import { useAgenticResearchChatOrchestrator } from "@/screens/AgenticResearchPage/chat/orchestrators/agenticResearchChatOrchestrator";
 import type { ChatOrchestrator } from "@/features/ai-chat/typescript/react/orchestrators/chatOrchestrator";
 import ChartRenderer from "@/features/recharts/typescript/react/views/components/ChartRenderer";
@@ -15,6 +15,11 @@ type AgenticResearchPageProps = {
   showChatSidebar?: boolean;
   algorithmsAccordionInitiallyOpen?: boolean;
 };
+
+const ChatSidebar = dynamic(
+  () => import("@/features/ai-chat/typescript/react/views/components/ChatSidebar"),
+  { ssr: false }
+);
 
 export default function AgenticResearchPageScreen({
   pageOrchestrator = useAgenticResearchOrchestrator,

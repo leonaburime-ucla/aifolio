@@ -1,7 +1,16 @@
-import LandingCharts from "@/core/views/screens/LandingCharts";
-import LandingChatSidebar from "@/screens/LandingPage/chat/views/LandingChatSidebar";
+"use client";
 
-export default async function LandingPageScreen() {
+import LandingCharts from "@/core/views/screens/LandingCharts";
+import dynamic from "next/dynamic";
+
+const LandingChatSidebar = dynamic(
+  // Prevent SSR for chat sidebar because nested chat hooks touch `window`.
+  // Without this, prerendering `/chat` fails on the server.
+  () => import("@/screens/LandingPage/chat/views/LandingChatSidebar"),
+  { ssr: false }
+);
+
+export default function LandingPageScreen() {
   return (
     <div className="flex min-h-screen flex-row bg-zinc-50 text-zinc-900">
       <main className="min-w-0 flex-1 py-10">

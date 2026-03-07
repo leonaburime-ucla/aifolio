@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import CopilotSidebar from "@/features/ag-ui-chat/typescript/react/views/components/CopilotSidebar";
 import CopilotChatProvider from "@/features/ag-ui-chat/typescript/react/views/providers/CopilotChatProvider";
 import AgUiWorkspace from "@/features/ag-ui-chat/typescript/react/views/components/AgUiWorkspace";
@@ -54,13 +55,17 @@ export default function AgUiPage() {
               </p>
             </div>
           </details>
-          <AgUiWorkspace />
+          <Suspense fallback={null}>
+            <AgUiWorkspace />
+          </Suspense>
         </div>
       </main>
 
       <div className="flex h-full w-[420px] shrink-0 flex-col overflow-y-auto">
         <CopilotChatProvider>
-          <AgUiPageQuerySync />
+          <Suspense fallback={null}>
+            <AgUiPageQuerySync />
+          </Suspense>
           <AgUiTabSwitchTool />
           <AgUiCopilotReadableContext />
           <CopilotSidebar mode="ag-ui" />
