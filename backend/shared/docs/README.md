@@ -1,34 +1,33 @@
-# AI Python Workspace
+# Backend Python Workspace
 
-This repo’s Python stack lives under `ai/` and hosts FastAPI + LangGraph agents and ML experiments.
+This repo’s Python backend stack lives in `backend/` and hosts FastAPI routes, agent helpers, and ML runtimes.
 
-## Structure (relative to repo root)
+## Structure (relative to `backend/`)
 
-- `ai/lang_agents/` – FastAPI app + LangGraph orchestration.
-- `ai/machine-learning/` – notebooks or scripts for model experiments.
-- `ai/.venv/` – shared virtualenv for all Python tooling.
+- `server/` – FastAPI app routes and HTTP integration layer.
+- `agents/` – agent orchestration/status logic.
+- `shared/` – provider and AG-UI support code.
+- `ml/` – framework runtimes and shared training/predict helpers.
+- `.venv/` – shared virtualenv for all Python tooling.
 
 ## Usage
 
 ```bash
-cd ai
 source .venv/bin/activate
-cd machine-learning
 python -c "import torch, tensorflow as tf; print(torch.__version__, tf.__version__)"
 ```
 
-The shared virtual environment lives at `ai/.venv` so both `ai/machine-learning` and `ai/lang_agents` can reuse the same packages without duplicating installs.
+The shared virtual environment lives at `backend/.venv` so all backend modules (`server`, `agents`, `ml`) can reuse the same packages without duplication.
 
 ## Quick reminder (activate the venv)
 
 ```bash
-source ai/.venv/bin/activate
+source .venv/bin/activate
 ```
 
 ## Run FastAPI server (exact commands)
 
 ```bash
-source ai/.venv/bin/activate
-cd ai/python
+source .venv/bin/activate
 uvicorn server:app --reload
 ```

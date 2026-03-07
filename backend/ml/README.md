@@ -36,7 +36,7 @@ It is being migrated from monolithic framework files into modular framework/core
 
 ## API Integration
 
-`ai/python/server.py` imports framework adapters from:
+`server/http.py` imports framework adapters from:
 - `ml.frameworks.pytorch.*`
 - `ml.frameworks.tensorflow.*`
 

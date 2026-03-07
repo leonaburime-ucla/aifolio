@@ -7,6 +7,7 @@ service/handler modules while maintaining stable response envelopes.
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+import os
 import uvicorn
 import sys
 from pathlib import Path
@@ -81,9 +82,25 @@ except ModuleNotFoundError as exc:  # pragma: no cover
 TENSORFLOW_IMPORT_ERROR = TENSORFLOW_HANDLER_IMPORT_ERROR or TENSORFLOW_TRAINER_IMPORT_ERROR
 
 app = FastAPI(title="AI Portfolio", version="0.1.0")
+
+
+def _resolve_cors_origins() -> list[str]:
+    """Resolve allowed CORS origins for local + deployed frontend environments."""
+    default_origins = ["http://localhost:3000", "http://127.0.0.1:3000"]
+    configured = os.getenv("CORS_ALLOW_ORIGINS", "").strip()
+    frontend_url = os.getenv("FRONTEND_URL", "").strip()
+    dynamic_origins = [
+        origin.strip()
+        for origin in [*configured.split(","), frontend_url]
+        if origin and origin.strip()
+    ]
+    return list(dict.fromkeys([*default_origins, *dynamic_origins]))
+
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    # Keep local origins and allow production origins from env for Vercel deploys.
+    allow_origins=_resolve_cors_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
