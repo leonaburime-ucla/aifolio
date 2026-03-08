@@ -4,11 +4,14 @@ Centralizes model metadata, client configuration, and discovery logic.
 """
 from __future__ import annotations
 
+import logging
 import os
 from typing import Dict, List, Optional
 
 from google import genai
 from langchain_google_genai import ChatGoogleGenerativeAI
+
+logger = logging.getLogger(__name__)
 
 
 AVAILABLE_MODELS: Dict[str, str] = {
@@ -27,10 +30,10 @@ _MODEL_CACHE: Dict[str, ChatGoogleGenerativeAI] = {}
 _GENAI_CONFIGURED = False
 
 
-def ensure_google_api_key_in_env() -> str:
+def ensure_google_api_key_in_env() -> str | None:
     """
     Ensure GOOGLE_API_KEY is set in the environment.
-    Returns the resolved key to confirm what was used.
+    Returns the resolved key, or None if not found (logs a warning).
     """
     gemini_key = os.getenv("GEMINI_API_KEY")
     google_key = os.getenv("GOOGLE_API_KEY")
@@ -40,7 +43,8 @@ def ensure_google_api_key_in_env() -> str:
     if gemini_key:
         os.environ["GOOGLE_API_KEY"] = gemini_key
         return gemini_key
-    raise ValueError("Missing GOOGLE_API_KEY or GEMINI_API_KEY in environment")
+    logger.warning("Missing GOOGLE_API_KEY or GEMINI_API_KEY – LLM endpoints will fail.")
+    return None
 
 
 def configure_gemini_client() -> str:
