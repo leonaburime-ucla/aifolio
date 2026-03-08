@@ -1,0 +1,15 @@
+# Vercel-compatible subset of requirements.txt
+# Excludes heavy ML packages (tensorflow, scikit-learn) that exceed
+# the 500 MB Lambda ephemeral storage limit. The FastAPI server
+# gracefully degrades when these are missing (try/except guards).
+fastapi>=0.111.0
+uvicorn>=0.29.0
+langchain>=0.2.11
+langchain-google-genai>=1.0.3
+langgraph>=0.1.8
+python-dotenv>=1.0.1
+httpx>=0.27.0
+google-genai>=1.60.0
+ag-ui-protocol>=0.1.0
+openpyxl>=3.1.2
+xlrd>=2.0.1
