@@ -8,6 +8,7 @@ import type {
 import { SWITCH_AG_UI_TAB_TOOL } from "@/features/ag-ui-chat/typescript/config/frontendTools.config";
 import { useAgUiWorkspaceStateAdapter } from "@/features/ag-ui-chat/typescript/react/state/adapters/agUiWorkspaceState.adapter";
 import { handleSwitchAgUiTab } from "@/features/ag-ui-chat/typescript/logic/frontendTools.logic";
+import { formatSwitchAgUiTabToolResult } from "@/features/ag-ui-chat/typescript/logic/copilotToolResultPresentation.logic";
 
 const SWITCH_AG_UI_TAB_PARAMETERS: CopilotActionParameter[] = [
   {
@@ -37,7 +38,7 @@ export default function AgUiTabSwitchTool() {
           setActiveTab(result.tab);
           router.push("/ag-ui");
         }
-        return result;
+        return formatSwitchAgUiTabToolResult(result);
       },
     } as Parameters<typeof useCopilotAction>[0],
     [router, setActiveTab]

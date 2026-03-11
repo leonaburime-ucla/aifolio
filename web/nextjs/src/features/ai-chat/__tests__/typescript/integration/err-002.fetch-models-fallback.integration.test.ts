@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { FALLBACK_CHAT_MODELS } from "@/features/ai-chat/typescript/logic/modelSelection.logic";
 import { useChatLogic } from "@/features/ai-chat/typescript/react/hooks/useChat.hooks";
 import type { ChatDeps, ChatUiState } from "@/features/ai-chat/__types__/typescript/chat.types";
+import { DEFAULT_CHAT_LOGIC_DEPS } from "@/features/ai-chat/__tests__/fixtures/chatLogicDeps.fixture";
 
 describe("ERR-002 model fetch failure fallback", () => {
   it("applies deterministic fallback models when fetchModels throws", async () => {
@@ -47,6 +48,7 @@ describe("ERR-002 model fetch failure fallback", () => {
           throw new Error("timeout");
         }),
       },
+      logic: DEFAULT_CHAT_LOGIC_DEPS,
     };
 
     const { result } = renderHook(() => useChatLogic(uiState, deps));

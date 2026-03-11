@@ -23,6 +23,8 @@ export type SwitchAgUiTabResult =
 export type AddChartSpecHandler = (spec: ChartSpec) => void;
 
 export type {
+  ChangePytorchTargetColumnArgs,
+  ChangeTensorflowTargetColumnArgs,
   EnsureFrameworkTabArgs,
   MlFormBridge,
   MlFormPatch,

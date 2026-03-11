@@ -46,6 +46,10 @@ export async function ensureFrameworkTab({
   if (activeTab !== frameworkTab) {
     setActiveTab(frameworkTab);
     pushRoute(`/ag-ui?page=${frameworkTab}`);
-    await waitForFrameworkForm();
   }
+
+  // Always wait for the active framework surface, even when state already says
+  // the tab is selected. In AG-UI the tab body and global form bridge can lag
+  // behind store state during tool-chained switches and fresh mounts.
+  await waitForFrameworkForm();
 }

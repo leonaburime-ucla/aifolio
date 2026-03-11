@@ -2,6 +2,7 @@ import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { useChatLogic } from "@/features/ai-chat/typescript/react/hooks/useChat.hooks";
 import type { ChatDeps, ChatUiState } from "@/features/ai-chat/__types__/typescript/chat.types";
+import { DEFAULT_CHAT_LOGIC_DEPS } from "@/features/ai-chat/__tests__/fixtures/chatLogicDeps.fixture";
 
 describe("REQ-001/AC-001 submit ordering", () => {
   it("appends user input/message before sendMessage and sets sending=true before API call", async () => {
@@ -44,6 +45,7 @@ describe("REQ-001/AC-001 submit ordering", () => {
         sendMessage: vi.fn(async () => null),
         fetchModels: vi.fn(async () => null),
       },
+      logic: DEFAULT_CHAT_LOGIC_DEPS,
     };
 
     const { result } = renderHook(() => useChatLogic(uiState, deps));

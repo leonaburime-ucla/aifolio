@@ -44,7 +44,6 @@ describe("REQ-004 stable structured tool error codes", () => {
     const result = handleAgenticSetActiveDataset(
       "unknown",
       [{ id: "wine", label: "Wine" }],
-      vi.fn(),
       vi.fn()
     );
 

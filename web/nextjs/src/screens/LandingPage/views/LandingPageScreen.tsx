@@ -1,7 +1,14 @@
 "use client";
 
+import { useEffect } from "react";
 import LandingCharts from "@/core/views/screens/LandingCharts";
 import dynamic from "next/dynamic";
+
+const DEBUG_EFFECTS = process.env.NEXT_PUBLIC_DEBUG_EFFECTS === "1";
+
+function getDebugPath(): string {
+  return globalThis.location?.pathname ?? "";
+}
 
 const LandingChatSidebar = dynamic(
   // Prevent SSR for chat sidebar because nested chat hooks touch `window`.
@@ -10,14 +17,41 @@ const LandingChatSidebar = dynamic(
   { ssr: false }
 );
 
-export default function LandingPageScreen() {
+type LandingPageScreenProps = {
+  showSidebar?: boolean;
+  showTitle?: boolean;
+  horizontalPadding?: boolean;
+};
+
+export default function LandingPageScreen({
+  showSidebar = true,
+  showTitle = true,
+  horizontalPadding = true,
+}: LandingPageScreenProps) {
+  useEffect(() => {
+    if (DEBUG_EFFECTS) {
+      console.log("[page-debug] landing_page_mounted", {
+        path: getDebugPath(),
+        showSidebar,
+        showTitle,
+        horizontalPadding,
+      });
+    }
+  }, [horizontalPadding, showSidebar, showTitle]);
+
   return (
     <div className="flex min-h-screen flex-row bg-zinc-50 text-zinc-900">
       <main className="min-w-0 flex-1 py-10">
-        <div className="mx-auto flex max-w-5xl flex-col gap-8 px-6">
-          <p className="text-sm font-semibold uppercase tracking-widest text-zinc-500">
-            AI-driven Chart Dashboard
-          </p>
+        <div
+          className={`mx-auto flex max-w-5xl flex-col gap-8 ${
+            horizontalPadding ? "px-6" : "px-0"
+          }`}
+        >
+          {showTitle ? (
+            <p className="text-sm font-semibold uppercase tracking-widest text-zinc-500">
+              AI-driven Chart Dashboard
+            </p>
+          ) : null}
           <details className="rounded-2xl border border-zinc-200 bg-white/70 p-4 shadow-sm backdrop-blur-sm" open>
             <summary className="cursor-pointer text-sm font-semibold text-zinc-900">
               How to Use Page + Prompts to Try
@@ -43,9 +77,11 @@ export default function LandingPageScreen() {
         </div>
       </main>
 
-      <div className="sticky top-16 h-[calc(100vh-64px)] w-[360px] shrink-0 overflow-hidden">
-        <LandingChatSidebar />
-      </div>
+      {showSidebar ? (
+        <div className="sticky top-16 h-[calc(100vh-64px)] w-[360px] shrink-0 overflow-hidden">
+          <LandingChatSidebar />
+        </div>
+      ) : null}
     </div>
   );
 }

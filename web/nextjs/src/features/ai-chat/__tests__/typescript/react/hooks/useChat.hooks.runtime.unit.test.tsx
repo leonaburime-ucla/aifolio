@@ -2,6 +2,7 @@ import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { useChatLogic } from "@/features/ai-chat/typescript/react/hooks/useChat.hooks";
 import type { ChatDeps, ChatUiState } from "@/features/ai-chat/__types__/typescript/chat.types";
+import { DEFAULT_CHAT_LOGIC_DEPS } from "@/features/ai-chat/__tests__/fixtures/chatLogicDeps.fixture";
 
 describe("useChatLogic runtime deps", () => {
   it("uses injected now/createId for deterministic message ids", async () => {
@@ -44,6 +45,7 @@ describe("useChatLogic runtime deps", () => {
         sendMessage: vi.fn(async () => ({ message: "assistant", chartSpec: null })),
         fetchModels: vi.fn(async () => null),
       },
+      logic: DEFAULT_CHAT_LOGIC_DEPS,
     };
 
     const now = vi

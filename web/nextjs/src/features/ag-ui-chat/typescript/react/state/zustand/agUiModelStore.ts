@@ -11,9 +11,11 @@ export const useAgUiModelStore = create<AgUiModelStoreState>((set) => ({
     AG_UI_FALLBACK_MODELS[0]?.id ??
     null,
   isModelsLoading: false,
+  backendError: null,
   setModelOptions: (value) => set(() => ({ modelOptions: value })),
   setSelectedModelId: (value) => set(() => ({ selectedModelId: value })),
   setModelsLoading: (value) => set(() => ({ isModelsLoading: value })),
+  setBackendError: (value) => set(() => ({ backendError: value })),
 }));
 
 export type { AgUiModelStoreState };

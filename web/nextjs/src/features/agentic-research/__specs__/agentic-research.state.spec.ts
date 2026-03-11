@@ -25,7 +25,7 @@ export const agenticResearchStateSpec = {
     {
       action: "ar-set_active_dataset",
       before: "chartSpecs may be non-empty",
-      after: "chartSpecs=[] then selectedDatasetId=<requested id>",
+      after: "selectedDatasetId=<requested id> while existing chartSpecs remain unchanged",
     },
   ],
 } as const;

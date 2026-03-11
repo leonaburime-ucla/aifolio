@@ -8,17 +8,12 @@ import type {
   ChatStateActions,
   ChatUiState,
 } from "@/features/ai-chat/__types__/typescript/chat.types";
-import {
-  resolveFallbackModelSelection,
-  resolveFetchedModelSelection,
-} from "@/features/ai-chat/typescript/logic/modelSelection.logic";
-import {
-  buildChatHistoryWindow,
-  createAssistantChatMessage,
-  createUserChatMessage,
-  normalizeSubmissionValue,
-  shouldRestoreDraftValue,
-} from "@/features/ai-chat/typescript/logic/chatSubmission.logic";
+
+const DEBUG_EFFECTS = process.env.NEXT_PUBLIC_DEBUG_EFFECTS === "1";
+
+function getDebugPath(): string {
+  return globalThis.location?.pathname ?? "";
+}
 
 export type ChatLogicRuntimeDeps = {
   now?: () => number;
@@ -33,8 +28,9 @@ export type ChatLogicRuntimeDeps = {
 export function setFallbackModels(input: {
   actions: ChatStateActions;
   selectedModelId: string | null;
+  resolveFallbackModelSelection: ChatDeps["logic"]["resolveFallbackModelSelection"];
 }): void {
-  const selection = resolveFallbackModelSelection({
+  const selection = input.resolveFallbackModelSelection({
     selectedModelId: input.selectedModelId,
   });
 
@@ -53,8 +49,9 @@ export function setFetchedModels(input: {
   actions: ChatStateActions;
   selectedModelId: string | null;
   result: { currentModel: string | null; models: ChatModelOption[] };
+  resolveFetchedModelSelection: ChatDeps["logic"]["resolveFetchedModelSelection"];
 }): void {
-  const selection = resolveFetchedModelSelection({
+  const selection = input.resolveFetchedModelSelection({
     selectedModelId: input.selectedModelId,
     result: input.result,
   });
@@ -119,8 +116,11 @@ export function useChatUiState(): ChatUiState {
 /**
  * Business-facing chat actions that coordinate UI state, store actions, and API calls.
  *
+ * All logic functions (normalization, history, message creation) are injected
+ * through `deps.logic` per Orc-BASH convention — no direct logic imports.
+ *
  * @param uiState - Required local UI state object.
- * @param deps - Required injected state/actions/API dependencies.
+ * @param deps - Required injected state/actions/API/logic dependencies.
  * @returns Chat actions consumed by views.
  */
 export function useChatLogic(
@@ -154,11 +154,11 @@ export function useChatLogic(
    * @returns Promise that resolves when the submit lifecycle completes.
    */
   const submit = useCallback(async (): Promise<void> => {
-    const trimmed = normalizeSubmissionValue({ value: uiState.value });
+    const trimmed = deps.logic.normalizeSubmissionValue({ value: uiState.value });
     if (!trimmed) return;
 
     deps.actions.addInputToHistory(trimmed);
-    const history = buildChatHistoryWindow({
+    const history = deps.logic.buildChatHistoryWindow({
       messages: deps.state.messages,
       userContent: trimmed,
       attachments: uiState.attachments,
@@ -166,7 +166,7 @@ export function useChatLogic(
 
     const userTimestamp = now();
     deps.actions.addMessage({
-      ...createUserChatMessage({
+      ...deps.logic.createUserChatMessage({
         id: createId(userTimestamp),
         content: trimmed,
         createdAt: userTimestamp,
@@ -193,7 +193,7 @@ export function useChatLogic(
       if (assistantMessage) {
         const assistantTimestamp = now();
         deps.actions.addMessage({
-          ...createAssistantChatMessage({
+          ...deps.logic.createAssistantChatMessage({
             id: createId(assistantTimestamp),
             content: assistantMessage.message,
             createdAt: assistantTimestamp,
@@ -223,7 +223,7 @@ export function useChatLogic(
 
       const nextValue = deps.actions.moveHistoryCursor(direction);
       if (
-        shouldRestoreDraftValue({
+        deps.logic.shouldRestoreDraftValue({
           direction,
           historyCursor: deps.state.historyCursor,
           nextValue,
@@ -275,6 +275,7 @@ export function useChatLogic(
         setFallbackModels({
           actions: deps.actions,
           selectedModelId: deps.state.selectedModelId,
+          resolveFallbackModelSelection: deps.logic.resolveFallbackModelSelection,
         });
         return;
       }
@@ -286,24 +287,29 @@ export function useChatLogic(
           currentModel: result.currentModel,
           models: result.models,
         },
+        resolveFetchedModelSelection: deps.logic.resolveFetchedModelSelection,
       });
     } catch {
       setFallbackModels({
         actions: deps.actions,
         selectedModelId: deps.state.selectedModelId,
+        resolveFallbackModelSelection: deps.logic.resolveFallbackModelSelection,
       });
     } finally {
       deps.actions.setModelsLoading(false);
     }
   }, [deps]);
 
-  return {
-    submit,
-    handleHistory,
-    resetHistoryCursor,
-    setSelectedModelId,
-    refetchModels,
-  };
+  return useMemo(
+    () => ({
+      submit,
+      handleHistory,
+      resetHistoryCursor,
+      setSelectedModelId,
+      refetchModels,
+    }),
+    [submit, handleHistory, resetHistoryCursor, setSelectedModelId, refetchModels]
+  );
 }
 
 /**
@@ -316,15 +322,41 @@ export function useChatIntegration(deps: ChatDeps): ChatIntegration {
   const uiState = useChatUiState();
   const actions = useChatLogic(uiState, deps);
   const { state } = deps;
+  const initialModelBootstrapRequestedRef = useRef(false);
+  const refetchModelsRef = useRef(actions.refetchModels);
+
+  useEffect(() => {
+    if (DEBUG_EFFECTS) {
+      console.log("[chat-debug] refetch_models_ref_updated", {
+        path: getDebugPath(),
+      });
+    }
+    refetchModelsRef.current = actions.refetchModels;
+  }, [actions.refetchModels]);
 
   /**
    * Bootstraps model options once, only when model options are empty and not loading.
    * Prevents duplicate fetches while preserving lazy initialization.
    */
   useEffect(() => {
-    if (state.modelOptions.length > 0 || state.isModelsLoading) return;
-    actions.refetchModels();
-  }, [state.isModelsLoading, state.modelOptions.length, actions]);
+    if (DEBUG_EFFECTS) {
+      console.log("[chat-debug] bootstrap_models_effect", {
+        path: getDebugPath(),
+        modelOptionsLength: state.modelOptions.length,
+        isModelsLoading: state.isModelsLoading,
+        bootstrapRequested: initialModelBootstrapRequestedRef.current,
+      });
+    }
+    if (state.modelOptions.length > 0) {
+      initialModelBootstrapRequestedRef.current = false;
+      return;
+    }
+    if (state.isModelsLoading) return;
+    if (initialModelBootstrapRequestedRef.current) return;
+
+    initialModelBootstrapRequestedRef.current = true;
+    refetchModelsRef.current();
+  }, [state.isModelsLoading, state.modelOptions.length]);
 
   return useMemo(
     () => ({

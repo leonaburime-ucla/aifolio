@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { act, renderHook } from "@testing-library/react";
 import { useChatLogic } from "@/features/ai-chat/typescript/react/hooks/useChat.hooks";
 import type { ChatAssistantPayload, ChatDeps, ChatUiState } from "@/features/ai-chat/__types__/typescript/chat.types";
+import { DEFAULT_CHAT_LOGIC_DEPS } from "@/features/ai-chat/__tests__/fixtures/chatLogicDeps.fixture";
 
 function createDeferred<T>() {
   let resolve!: (value: T) => void;
@@ -58,6 +59,7 @@ describe("REQ-007 abort/unmount behavior", () => {
         sendMessage: vi.fn(() => deferred.promise),
         fetchModels: vi.fn(async () => null),
       },
+      logic: DEFAULT_CHAT_LOGIC_DEPS,
     };
 
     const { result, unmount } = renderHook(() => useChatLogic(uiState, deps));

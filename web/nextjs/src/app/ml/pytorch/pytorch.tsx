@@ -27,7 +27,9 @@ import {
 } from "@/features/ml/typescript/api/pytorchApi";
 import { useMlDatasetOrchestrator } from "@/features/ml/typescript/react/orchestrators/mlDataset.orchestrator";
 import { useMlTrainingRunsAdapter } from "@/features/ml/typescript/react/state/adapters/mlTrainingRuns.adapter";
-import { PYTORCH_MODE_EXPLAINERS } from "@/features/ml/typescript/config/trainingModeExplainers";
+import {
+  getPytorchModeExplainer,
+} from "@/features/ml/typescript/config/trainingModeExplainers";
 import { usePytorchFormBridge } from "@/features/ml/typescript/react/ai/tools/usePytorchFormBridge.tools";
 
 type PyTorchPageProps = {
@@ -129,6 +131,7 @@ export default function PyTorchPage({
   });
 
   usePytorchFormBridge({
+    setDatasetId: (nextDatasetId) => onDatasetChange(nextDatasetId),
     trainingMode,
     setTrainingMode,
     setTargetColumn,
@@ -151,6 +154,7 @@ export default function PyTorchPage({
   const hasSelectedDataset = typeof selectedDatasetId === "string" && selectedDatasetId.trim().length > 0;
   const isTrainDisabled =
     isTraining || isDistilling || !hasSelectedDataset || plannedRunCount === 0;
+  const modeExplainer = getPytorchModeExplainer(trainingMode);
 
   return (
     <div className="flex min-h-screen flex-row bg-white text-zinc-900">
@@ -174,34 +178,6 @@ export default function PyTorchPage({
             {error ? (
               <p className="text-xs text-red-600">{error}</p>
             ) : null}
-            <details className="rounded-lg border border-zinc-200 bg-white px-4 py-3 text-[12px] text-zinc-600">
-              <summary className="cursor-pointer font-semibold text-zinc-900">
-                Preprocessing Notes
-              </summary>
-              <div className="mt-3 flex flex-col gap-2">
-                <p>
-                  <strong>Categorical Encoding:</strong> Text columns with &le; 20 unique values are
-                  automatically One-Hot Encoded.
-                </p>
-                <p>
-                  <strong>High Cardinality &amp; IDs:</strong> Text columns with &gt; 20 unique values
-                  or ID-like names are dropped to prevent feature explosion.
-                </p>
-                <p>
-                  <strong>Date Parsing:</strong> Dates and timestamps are extracted into Year, Month,
-                  and Day numeric features.
-                </p>
-                <p>
-                  <strong>Missing Values:</strong> Missing numeric values are imputed using the column
-                  median to maintain robustness against outliers.
-                </p>
-                <p>
-                  <strong>Feature Scaling:</strong> All features are standardized to zero mean and unit
-                  variance (StandardScaler) before analysis. This prevents large-range features from
-                  dominating algorithms like PCA.
-                </p>
-              </div>
-            </details>
           </div>
 
           <section className="rounded-xl border border-zinc-200 bg-white p-4">
@@ -238,15 +214,15 @@ export default function PyTorchPage({
               <div className="md:col-span-2 rounded-md border border-blue-100 bg-blue-50 px-3 py-2 text-xs text-blue-900">
                 <p>
                   <span className="font-semibold">What it is:</span>{" "}
-                  {PYTORCH_MODE_EXPLAINERS[trainingMode].what}
+                  {modeExplainer.what}
                 </p>
                 <p className="mt-1">
                   <span className="font-semibold">Why it&apos;s unique:</span>{" "}
-                  {PYTORCH_MODE_EXPLAINERS[trainingMode].why}
+                  {modeExplainer.why}
                 </p>
                 <p className="mt-1">
                   <span className="font-semibold">Distillation Note:</span>{" "}
-                  {PYTORCH_MODE_EXPLAINERS[trainingMode].distillationNote}
+                  {modeExplainer.distillationNote}
                 </p>
               </div>
             </div>
@@ -592,6 +568,35 @@ export default function PyTorchPage({
               distilledByTeacher={distilledByTeacher}
             />
           </section>
+
+          <details className="rounded-lg border border-zinc-200 bg-white px-4 py-3 text-[12px] text-zinc-600">
+            <summary className="cursor-pointer font-semibold text-zinc-900">
+              Preprocessing Notes
+            </summary>
+            <div className="mt-3 flex flex-col gap-2">
+              <p>
+                <strong>Categorical Encoding:</strong> Text columns with &le; 20 unique values are
+                automatically One-Hot Encoded.
+              </p>
+              <p>
+                <strong>High Cardinality &amp; IDs:</strong> Text columns with &gt; 20 unique values
+                or ID-like names are dropped to prevent feature explosion.
+              </p>
+              <p>
+                <strong>Date Parsing:</strong> Dates and timestamps are extracted into Year, Month,
+                and Day numeric features.
+              </p>
+              <p>
+                <strong>Missing Values:</strong> Missing numeric values are imputed using the column
+                median to maintain robustness against outliers.
+              </p>
+              <p>
+                <strong>Feature Scaling:</strong> All features are standardized to zero mean and unit
+                variance (StandardScaler) before analysis. This prevents large-range features from
+                dominating algorithms like PCA.
+              </p>
+            </div>
+          </details>
 
           <details
             className="rounded-xl border border-zinc-200 bg-white p-4"

@@ -35,5 +35,6 @@ export function createChatDeps(
     state: input.state,
     actions: input.actions,
     api: input.api,
+    logic: input.logic,
   };
 }

@@ -60,7 +60,42 @@ def test_data_scientist_tool_returns_chartspec(tool_name: str, dataset_id: str):
 
     for chart in chart_spec:
         assert isinstance(chart, dict), f"{tool_name}: chart must be object"
+        assert isinstance(chart.get("id"), str) and chart.get("id"), f"{tool_name}: missing chart id"
         assert chart.get("type"), f"{tool_name}: missing chart type"
         assert chart.get("xKey"), f"{tool_name}: missing xKey"
         assert isinstance(chart.get("yKeys"), list) and chart.get("yKeys"), f"{tool_name}: missing yKeys"
         assert isinstance(chart.get("data"), list), f"{tool_name}: missing data array"
+
+    chart_ids = [chart["id"] for chart in chart_spec]
+    assert len(chart_ids) == len(set(chart_ids)), f"{tool_name}: chart ids must be unique within one response"
+
+
+@pytest.mark.parametrize(
+    ("tool_name", "dataset_id"),
+    [
+        ("pca_transform", "sales_forecasting_walmart.csv"),
+        ("nmf_decomposition", "sales_forecasting_walmart.csv"),
+        ("pls_regression", "sales_forecasting_walmart.csv"),
+        ("lasso_regression", "sales_forecasting_walmart.csv"),
+    ],
+)
+def test_data_scientist_chart_ids_change_between_runs(tool_name: str, dataset_id: str):
+    first = run_data_scientist_analysis(
+        message=f"Run {tool_name}",
+        dataset_id=dataset_id,
+        planned_tool_calls=[{"tool_name": tool_name, "tool_args": {}, "chart_kind": "none"}],
+        row_limit=120,
+    )
+    second = run_data_scientist_analysis(
+        message=f"Run {tool_name} again",
+        dataset_id=dataset_id,
+        planned_tool_calls=[{"tool_name": tool_name, "tool_args": {}, "chart_kind": "none"}],
+        row_limit=120,
+    )
+
+    first_ids = [chart["id"] for chart in first.get("chartSpec") or []]
+    second_ids = [chart["id"] for chart in second.get("chartSpec") or []]
+
+    assert first_ids, f"{tool_name}: expected chart ids in first response"
+    assert second_ids, f"{tool_name}: expected chart ids in second response"
+    assert first_ids != second_ids, f"{tool_name}: repeated runs should emit new chart ids"

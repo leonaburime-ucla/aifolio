@@ -1,4 +1,6 @@
 import type {
+  ChangePytorchTargetColumnArgs,
+  ChangeTensorflowTargetColumnArgs,
   PytorchFormBridge,
   PytorchFormPatch,
   PytorchRandomizeArgs,
@@ -39,6 +41,12 @@ const PYTORCH_FIELD_SELECTORS = {
   date_columns: '[data-ai-field="pytorch_date_columns"]',
   run_sweep: '[data-ai-field="pytorch_run_sweep"]',
   auto_distill: '[data-ai-field="pytorch_auto_distill"]',
+} as const;
+
+const TENSORFLOW_FIELD_SELECTORS = {
+  training_mode: '[data-ai-field="tensorflow_training_mode"]',
+  target_column: '[data-ai-field="tensorflow_target_column"]',
+  task: '[data-ai-field="tensorflow_task"]',
 } as const;
 
 const PYTORCH_MODES: PytorchTrainingMode[] = [
@@ -114,12 +122,41 @@ function randomItem<T>(values: T[]): T {
 }
 
 /**
- * Finds a PyTorch form control by selector in browser context.
+ * Picks a random subset size for sweep-like numeric fields.
+ *
+ * When `value_count` is provided, that explicit cardinality is respected
+ * (clamped to `[1, values.length]`). Otherwise we preserve the full profile
+ * list for balanced/aggressive randomization.
+ */
+function selectSweepValues(values: number[], valueCount?: number): number[] {
+  if (!values.length) return [];
+  if (typeof valueCount !== "number" || !Number.isFinite(valueCount)) {
+    // Default to one value so randomize does not silently explode into large sweeps
+    // when the model omits `value_count` for prompts like "one value each".
+    return [randomItem(values)];
+  }
+
+  const nextCount = Math.max(1, Math.min(values.length, Math.floor(valueCount)));
+  if (nextCount === values.length) return [...values];
+  if (nextCount === 1) return [randomItem(values)];
+
+  const pool = [...values];
+  const selected: number[] = [];
+  while (selected.length < nextCount && pool.length > 0) {
+    const index = Math.floor(Math.random() * pool.length);
+    const [picked] = pool.splice(index, 1);
+    selected.push(picked);
+  }
+  return selected;
+}
+
+/**
+ * Finds a form control by selector in browser context.
  *
  * @param selector CSS selector for the target control.
  * @returns Matching DOM element or `null`.
  */
-function findPytorchControl(selector: string): Element | null {
+function findControl(selector: string): Element | null {
   if (typeof document === "undefined") return null;
   return document.querySelector(selector);
 }
@@ -134,7 +171,7 @@ function findPytorchControl(selector: string): Element | null {
  */
 function setControlValue(selector: string, value: unknown): boolean {
   if (typeof document === "undefined") return false;
-  const element = findPytorchControl(selector);
+  const element = findControl(selector);
   if (!element) return false;
 
   if (element instanceof HTMLInputElement) {
@@ -162,18 +199,87 @@ function setControlValue(selector: string, value: unknown): boolean {
 }
 
 /**
- * Selects a random non-empty target-column option from the PyTorch form.
+ * Selects a random non-empty target-column option from the active form select.
  *
+ * The current value is excluded when alternatives exist so "pick a different
+ * target column" does not accidentally reselect the same option.
+ *
+ * @param selector Target-column select selector.
  * @returns Random target column id or `null` when unavailable.
  */
-function pickRandomTargetColumn(): string | null {
-  const select = findPytorchControl(PYTORCH_FIELD_SELECTORS.target_column);
+function pickRandomSelectValue(selector: string): string | null {
+  const select = findControl(selector);
   if (!(select instanceof HTMLSelectElement)) return null;
+  const currentValue = select.value?.trim();
   const options = Array.from(select.options)
     .map((option) => option.value)
     .filter((value) => value && value.trim().length > 0);
   if (!options.length) return null;
-  return randomItem(options);
+  const alternatives = currentValue
+    ? options.filter((value) => value !== currentValue)
+    : options;
+  const candidatePool = alternatives.length > 0 ? alternatives : options;
+  return randomItem(candidatePool);
+}
+
+/**
+ * Returns ordered non-empty select values from a form control.
+ *
+ * @param selector Select control selector.
+ * @returns Available values in DOM order.
+ */
+function getSelectOptions(selector: string): string[] {
+  const select = findControl(selector);
+  if (!(select instanceof HTMLSelectElement)) return [];
+  return Array.from(select.options)
+    .map((option) => option.value)
+    .filter((value) => value && value.trim().length > 0);
+}
+
+/**
+ * Resolves the next distinct value from a select control.
+ *
+ * @param selector Select control selector.
+ * @returns Next option after the current value, wrapping around when needed.
+ */
+function pickNextSelectValue(selector: string): string | null {
+  const select = findControl(selector);
+  if (!(select instanceof HTMLSelectElement)) return null;
+  const options = getSelectOptions(selector);
+  if (!options.length) return null;
+  const currentValue = select.value?.trim();
+  const currentIndex = currentValue ? options.findIndex((value) => value === currentValue) : -1;
+  if (currentIndex === -1) return options[0] ?? null;
+  return options[(currentIndex + 1) % options.length] ?? null;
+}
+
+/**
+ * Resolves a target-column change request into a concrete target value.
+ *
+ * Explicit `target_column` wins. Otherwise the tool defaults to a different
+ * target so "change the target column" remains deterministic.
+ *
+ * @param selector Target-column select selector.
+ * @param args Requested target-column change args.
+ * @returns Concrete target column or `null` when no valid change is possible.
+ */
+function resolveTargetColumnChange(
+  selector: string,
+  args: { target_column?: string; mode?: "different" | "random" | "next" }
+): string | null {
+  const options = getSelectOptions(selector);
+  if (!options.length) return null;
+
+  if (typeof args.target_column === "string" && args.target_column.trim().length > 0) {
+    const explicit = args.target_column.trim();
+    return options.includes(explicit) ? explicit : null;
+  }
+
+  if (args.mode === "next") {
+    return pickNextSelectValue(selector);
+  }
+
+  return pickRandomSelectValue(selector);
 }
 
 /**
@@ -183,7 +289,7 @@ function pickRandomTargetColumn(): string | null {
  * @returns Selected value or `null` when unavailable/empty.
  */
 function getSelectValue(selector: string): string | null {
-  const element = findPytorchControl(selector);
+  const element = findControl(selector);
   if (!(element instanceof HTMLSelectElement)) return null;
   const value = element.value?.trim();
   return value ? value : null;
@@ -337,21 +443,21 @@ export function buildRandomPytorchFormPatch(args: PytorchRandomizeArgs = {}): Py
   const currentMode = getSelectValue(PYTORCH_FIELD_SELECTORS.training_mode) as PytorchTrainingMode | null;
   const trainingMode = randomizeModelFields ? randomItem(PYTORCH_MODES) : (currentMode ?? "mlp_dense");
   const isLinearMode = trainingMode === "linear_glm_baseline";
-  const currentTask = getSelectValue(PYTORCH_FIELD_SELECTORS.task) as PytorchTask | null;
-  const targetColumn = args.lock_target_column ? undefined : randomizeModelFields ? (pickRandomTargetColumn() ?? undefined) : undefined;
+  const currentTask = getSelectValue(PYTORCH_FIELD_SELECTORS.task) as MlTask | null;
   const task = randomizeModelFields ? randomItem(ML_TASKS) : (currentTask ?? "auto");
+  // Broader sweeps now require an explicit `value_count`; omitted counts stay single-value.
+  const valueCount = args.value_count;
 
   return {
     training_mode: randomizeModelFields ? trainingMode : undefined,
-    target_column: targetColumn,
     task,
-    epoch_values: epochs,
-    batch_sizes: batchSizes,
-    learning_rates: learningRates,
-    test_sizes: testSizes,
-    hidden_dims: isLinearMode ? "128" : hiddenDims,
-    num_hidden_layers: isLinearMode ? "2" : hiddenLayers,
-    dropouts: isLinearMode ? "0.1" : dropouts,
+    epoch_values: selectSweepValues(epochs, valueCount),
+    batch_sizes: selectSweepValues(batchSizes, valueCount),
+    learning_rates: selectSweepValues(learningRates, valueCount),
+    test_sizes: selectSweepValues(testSizes, valueCount),
+    hidden_dims: isLinearMode ? "128" : selectSweepValues(hiddenDims, valueCount),
+    num_hidden_layers: isLinearMode ? "2" : selectSweepValues(hiddenLayers, valueCount),
+    dropouts: isLinearMode ? "0.1" : selectSweepValues(dropouts, valueCount),
     run_sweep: args.run_sweep ?? args.set_sweep_values,
     auto_distill: args.auto_distill,
   };
@@ -364,6 +470,13 @@ export function buildRandomPytorchFormPatch(args: PytorchRandomizeArgs = {}): Py
  * @returns Randomization/apply status plus applied patch details.
  */
 export function handleRandomizePytorchFormFields(args: PytorchRandomizeArgs = {}) {
+  if (args.confirm_randomize !== true) {
+    return {
+      status: "error" as const,
+      code: "RANDOMIZE_CONFIRMATION_REQUIRED" as const,
+      message: "Randomization blocked. Pass confirm_randomize=true to randomize form fields.",
+    };
+  }
   const patch = buildRandomPytorchFormPatch(args);
   const applied = handleSetPytorchFormFields(patch);
   if (applied.status !== "ok") {
@@ -399,19 +512,22 @@ export function buildRandomTensorflowFormPatch(args: TensorflowRandomizeArgs = {
 
   const randomizeModelFields = args.randomize_model_fields ?? false;
   const trainingMode = randomizeModelFields ? randomItem(TENSORFLOW_MODES) : undefined;
-  const task = randomizeModelFields ? randomItem(ML_TASKS) : "auto";
+  const currentTask = getSelectValue(TENSORFLOW_FIELD_SELECTORS.task) as MlTask | null;
+  const task = randomizeModelFields ? randomItem(ML_TASKS) : (currentTask ?? "auto");
+
+  // Broader sweeps now require an explicit `value_count`; omitted counts stay single-value.
+  const valueCount = args.value_count;
 
   return {
     training_mode: trainingMode,
-    target_column: args.lock_target_column ? undefined : undefined,
     task,
-    epoch_values: epochs,
-    batch_sizes: batchSizes,
-    learning_rates: learningRates,
-    test_sizes: testSizes,
-    hidden_dims: hiddenDims,
-    num_hidden_layers: hiddenLayers,
-    dropouts,
+    epoch_values: selectSweepValues(epochs, valueCount),
+    batch_sizes: selectSweepValues(batchSizes, valueCount),
+    learning_rates: selectSweepValues(learningRates, valueCount),
+    test_sizes: selectSweepValues(testSizes, valueCount),
+    hidden_dims: selectSweepValues(hiddenDims, valueCount),
+    num_hidden_layers: selectSweepValues(hiddenLayers, valueCount),
+    dropouts: selectSweepValues(dropouts, valueCount),
     run_sweep: args.run_sweep ?? args.set_sweep_values,
     auto_distill: args.auto_distill,
   };
@@ -424,6 +540,13 @@ export function buildRandomTensorflowFormPatch(args: TensorflowRandomizeArgs = {
  * @returns Randomization/apply status plus applied patch details.
  */
 export function handleRandomizeTensorflowFormFields(args: TensorflowRandomizeArgs = {}) {
+  if (args.confirm_randomize !== true) {
+    return {
+      status: "error" as const,
+      code: "RANDOMIZE_CONFIRMATION_REQUIRED" as const,
+      message: "Randomization blocked. Pass confirm_randomize=true to randomize form fields.",
+    };
+  }
   const patch = buildRandomTensorflowFormPatch(args);
   const applied = handleSetTensorflowFormFields(patch);
   if (applied.status !== "ok") {
@@ -436,6 +559,34 @@ export function handleRandomizeTensorflowFormFields(args: TensorflowRandomizeArg
     applied: applied.applied,
     skipped: applied.skipped,
   };
+}
+
+/**
+ * Changes the PyTorch target column through the existing form bridge.
+ *
+ * @param args Optional explicit target or selection mode.
+ * @returns Applied target-column change or an availability/validation error.
+ */
+export function handleChangePytorchTargetColumn(args: ChangePytorchTargetColumnArgs = {}) {
+  const nextTarget = resolveTargetColumnChange(PYTORCH_FIELD_SELECTORS.target_column, args);
+  if (!nextTarget) {
+    return { status: "error" as const, code: "PYTORCH_TARGET_COLUMN_UNAVAILABLE" as const };
+  }
+  return handleSetPytorchFormFields({ target_column: nextTarget });
+}
+
+/**
+ * Changes the TensorFlow target column through the existing form bridge.
+ *
+ * @param args Optional explicit target or selection mode.
+ * @returns Applied target-column change or an availability/validation error.
+ */
+export function handleChangeTensorflowTargetColumn(args: ChangeTensorflowTargetColumnArgs = {}) {
+  const nextTarget = resolveTargetColumnChange(TENSORFLOW_FIELD_SELECTORS.target_column, args);
+  if (!nextTarget) {
+    return { status: "error" as const, code: "TENSORFLOW_TARGET_COLUMN_UNAVAILABLE" as const };
+  }
+  return handleSetTensorflowFormFields({ target_column: nextTarget });
 }
 
 /**

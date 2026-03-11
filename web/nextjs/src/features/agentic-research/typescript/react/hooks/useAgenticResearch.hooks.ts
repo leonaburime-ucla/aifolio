@@ -13,6 +13,12 @@ import {
 import { groupSklearnTools } from "@/features/agentic-research/typescript/logic/agenticResearchTools.logic";
 import { applyDatasetLoadReset } from "@/features/agentic-research/typescript/logic/agenticResearchDataset.logic";
 
+const DEBUG_EFFECTS = process.env.NEXT_PUBLIC_DEBUG_EFFECTS === "1";
+
+function getDebugPath(): string {
+  return globalThis.location?.pathname ?? "";
+}
+
 /**
  * Hook 1: Local UI state for agentic research screens.
  * @returns Local UI state (placeholder for future UI-only state).
@@ -154,6 +160,12 @@ export function useAgenticResearchLogic(
    * Load manifest on first mount.
    */
   useEffect(() => {
+    if (DEBUG_EFFECTS) {
+      console.log("[agentic-debug] load_manifest_effect", {
+        path: getDebugPath(),
+        selectedDatasetId: state.selectedDatasetId,
+      });
+    }
     loadManifest();
     loadSklearnTools();
   }, [loadManifest, loadSklearnTools]);
@@ -162,6 +174,13 @@ export function useAgenticResearchLogic(
    * Reload dataset whenever selection changes or manifest arrives.
    */
   useEffect(() => {
+    if (DEBUG_EFFECTS) {
+      console.log("[agentic-debug] load_dataset_effect", {
+        path: getDebugPath(),
+        selectedDatasetId: state.selectedDatasetId,
+        manifestCount: state.datasetManifest.length,
+      });
+    }
     if (!state.selectedDatasetId) return;
     if (state.datasetManifest.length === 0) return;
     loadDataset();

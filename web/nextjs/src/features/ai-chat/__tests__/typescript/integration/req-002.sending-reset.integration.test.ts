@@ -6,6 +6,7 @@ import type {
   ChatDeps,
   ChatUiState,
 } from "@/features/ai-chat/__types__/typescript/chat.types";
+import { DEFAULT_CHAT_LOGIC_DEPS } from "@/features/ai-chat/__tests__/fixtures/chatLogicDeps.fixture";
 
 function createDeps(
   sendMessage: ChatDeps["api"]["sendMessage"],
@@ -38,6 +39,7 @@ function createDeps(
       sendMessage,
       fetchModels: vi.fn(async () => null),
     },
+    logic: DEFAULT_CHAT_LOGIC_DEPS,
   };
 }
 

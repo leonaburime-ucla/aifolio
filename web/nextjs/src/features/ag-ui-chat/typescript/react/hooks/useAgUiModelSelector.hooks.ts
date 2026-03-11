@@ -1,19 +1,56 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { fetchAgUiModels } from "@/features/ag-ui-chat/typescript/api/agUiModelApi";
-import { resolveNextAgUiSelectedModelId } from "@/features/ag-ui-chat/typescript/logic/agUiContext.logic";
-import { useAgUiModelStore } from "@/features/ag-ui-chat/typescript/react/state/zustand/agUiModelStore";
-import { useAgUiModelStateAdapter } from "@/features/ag-ui-chat/typescript/react/state/adapters/agUiModelState.adapter";
+import type { AgUiModelOption } from "@/features/ag-ui-chat/__types__/typescript/react/state/agUiModel.types";
+
+// ---------------------------------------------------------------------------
+// Dependency Injection types
+// ---------------------------------------------------------------------------
+
+export type AgUiModelSelectorState = {
+  modelOptions: AgUiModelOption[];
+  selectedModelId: string | null;
+  isModelsLoading: boolean;
+  backendError: string | null;
+};
+
+export type AgUiModelSelectorActions = {
+  setModelOptions: (value: AgUiModelOption[]) => void;
+  setSelectedModelId: (value: string | null) => void;
+  setModelsLoading: (value: boolean) => void;
+  setBackendError: (value: string | null) => void;
+};
+
+export type AgUiModelSelectorApi = {
+  fetchModels: () => Promise<{ currentModel: string | null; models: AgUiModelOption[] } | null>;
+  resolveSelectedModelId: (params: {
+    currentSelectedModelId: string | null;
+    fetchedModels: AgUiModelOption[];
+    apiCurrentModelId: string | null;
+  }) => string | null;
+};
+
+export type AgUiModelSelectorDeps = {
+  state: AgUiModelSelectorState;
+  actions: AgUiModelSelectorActions;
+  api: AgUiModelSelectorApi;
+};
+
+// ---------------------------------------------------------------------------
+// Hook
+// ---------------------------------------------------------------------------
 
 /**
  * Encapsulates AG-UI model selector loading and selection behavior.
  *
+ * All dependencies (state reads, state writes, and API calls) are injected
+ * via the `deps` bag so the hook is fully testable and respects DI.
+ *
+ * @param deps - Required injected dependency bag from orchestrator wiring.
  * @returns Selector view model and actions for the model dropdown component.
  */
-export function useAgUiModelSelector() {
-  const { modelOptions, selectedModelId, isModelsLoading, setSelectedModelId } =
-    useAgUiModelStateAdapter();
+export function useAgUiModelSelector(deps: AgUiModelSelectorDeps) {
+  const { state, actions, api } = deps;
   const hasLoadedRef = useRef(false);
 
   useEffect(() => {
@@ -21,40 +58,48 @@ export function useAgUiModelSelector() {
 
     async function loadModels() {
       hasLoadedRef.current = true;
-      useAgUiModelStore.getState().setModelsLoading(true);
+      actions.setModelsLoading(true);
       try {
-        const result = await fetchAgUiModels();
-        if (!result || cancelled) return;
+        const result = await api.fetchModels();
+        if (cancelled) return;
 
-        useAgUiModelStore.getState().setModelOptions(result.models);
+        if (!result) {
+          actions.setBackendError(
+            "Cannot connect to backend — make sure the backend server is running."
+          );
+          return;
+        }
 
-        const currentSelected = useAgUiModelStore.getState().selectedModelId;
-        const nextSelected = resolveNextAgUiSelectedModelId({
-          currentSelectedModelId: currentSelected,
+        actions.setBackendError(null);
+        actions.setModelOptions(result.models);
+
+        const nextSelected = api.resolveSelectedModelId({
+          currentSelectedModelId: state.selectedModelId,
           fetchedModels: result.models,
           apiCurrentModelId: result.currentModel ?? null,
         });
-        useAgUiModelStore.getState().setSelectedModelId(nextSelected);
+        actions.setSelectedModelId(nextSelected);
       } finally {
         if (!cancelled) {
-          useAgUiModelStore.getState().setModelsLoading(false);
+          actions.setModelsLoading(false);
         }
       }
     }
 
-    if (!isModelsLoading && !hasLoadedRef.current) {
+    if (!state.isModelsLoading && !hasLoadedRef.current) {
       void loadModels();
     }
 
     return () => {
       cancelled = true;
     };
-  }, [isModelsLoading]);
+  }, [state.isModelsLoading, actions, api]);
 
   return {
-    modelOptions,
-    selectedModelId,
-    isModelsLoading,
-    setSelectedModelId,
+    modelOptions: state.modelOptions,
+    selectedModelId: state.selectedModelId,
+    isModelsLoading: state.isModelsLoading,
+    backendError: state.backendError,
+    setSelectedModelId: actions.setSelectedModelId,
   };
 }

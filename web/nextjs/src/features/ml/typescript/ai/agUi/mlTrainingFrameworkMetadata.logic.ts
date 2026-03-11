@@ -22,12 +22,13 @@ const COMMON_TRAIN_PARAMETERS: CopilotActionParameter[] = [
 ];
 
 const COMMON_RANDOMIZE_PARAMETERS: CopilotActionParameter[] = [
+  { name: "confirm_randomize", type: "boolean", required: true, description: "Must be true to allow randomization. Prevents accidental randomization on non-randomize prompts." },
+  { name: "value_count", type: "number", required: false, description: "How many values per sweep field. Use 1 for single-run-like randomization, 2+ for broader sweeps." },
   { name: "style", type: "string", required: false, description: "Randomization profile: safe, balanced, or aggressive." },
   { name: "set_sweep_values", type: "boolean", required: false, description: "Preferred: explicitly enable/disable sweep values." },
   { name: "run_sweep", type: "boolean", required: false, description: "Legacy alias for set_sweep_values." },
   { name: "auto_distill", type: "boolean", required: false, description: "Optional explicit auto_distill setting." },
-  { name: "lock_target_column", type: "boolean", required: false, description: "If true, preserve current target column." },
-  { name: "randomize_model_fields", type: "boolean", required: false, description: "If true, also randomize training_mode, target_column, and task." },
+  { name: "randomize_model_fields", type: "boolean", required: false, description: "If true, also randomize training_mode and task." },
 ];
 
 function createSetFieldsParameters(frameworkId: MlTrainingFrameworkId): CopilotActionParameter[] {

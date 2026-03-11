@@ -6,6 +6,7 @@ import type {
   ChatChartActionsPort,
   ChatDeps,
   ChatIntegration,
+  ChatLogicDeps,
   ChatStateActions,
 } from "@/features/ai-chat/__types__/typescript/chat.types";
 import { useAiChatStateAdapter } from "@/features/ai-chat/typescript/react/state/adapters/aiChatState.adapter";
@@ -17,9 +18,20 @@ import {
   createChatApiDeps,
   createChatDeps,
 } from "@/features/ai-chat/typescript/logic/chatOrchestrator.logic";
+import {
+  normalizeSubmissionValue,
+  buildChatHistoryWindow,
+  createUserChatMessage,
+  createAssistantChatMessage,
+  shouldRestoreDraftValue,
+} from "@/features/ai-chat/typescript/logic/chatSubmission.logic";
+import {
+  resolveFallbackModelSelection,
+  resolveFetchedModelSelection,
+} from "@/features/ai-chat/typescript/logic/modelSelection.logic";
 
 /**
- * Orchestrator hook that wires state + API dependencies into the chat integration hook.
+ * Orchestrator hook that wires state + API + logic dependencies into the chat integration hook.
  */
 export type ChatOrchestratorInput = {
   chartActionsPort?: ChatChartActionsPort;
@@ -43,7 +55,7 @@ export function useChatOrchestrator(
   const actions = useMemo<ChatStateActions>(() => {
     return composeChatStateActions({
       coreActions: chatStatePort.actions,
-      addChartSpec: input.chartActionsPort?.addChartSpec ?? (() => {}),
+      addChartSpec: input.chartActionsPort?.addChartSpec ?? (() => { }),
     });
   }, [chatStatePort.actions, input.chartActionsPort]);
 
@@ -55,13 +67,27 @@ export function useChatOrchestrator(
     [input.apiAdapter]
   );
 
+  const logic = useMemo<ChatLogicDeps>(
+    () => ({
+      normalizeSubmissionValue,
+      buildChatHistoryWindow,
+      createUserChatMessage,
+      createAssistantChatMessage,
+      shouldRestoreDraftValue,
+      resolveFallbackModelSelection,
+      resolveFetchedModelSelection,
+    }),
+    []
+  );
+
   const deps = useMemo<ChatDeps>(
-    () => createChatDeps({ state, actions, api }),
+    () => createChatDeps({ state, actions, api, logic }),
     [
-    state,
-    actions,
-    api,
-  ]);
+      state,
+      actions,
+      api,
+      logic,
+    ]);
 
   return useChatIntegration(deps);
 }

@@ -38,6 +38,11 @@ export function applyPytorchBridgePatch(
   const applied: string[] = [];
   const handled = new Set<string>();
 
+  if (patch.dataset_id !== undefined) {
+    bindings.setDatasetId(String(patch.dataset_id));
+    applied.push("dataset_id");
+    handled.add("dataset_id");
+  }
   if (patch.training_mode !== undefined) {
     bindings.setTrainingMode(patch.training_mode);
     applied.push("training_mode");

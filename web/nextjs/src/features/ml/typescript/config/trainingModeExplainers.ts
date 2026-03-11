@@ -7,6 +7,14 @@ type ModeExplainer = {
   distillationNote: string;
 };
 
+const FALLBACK_MODE_EXPLAINER: ModeExplainer = {
+  what: "This training mode is available, but its detailed explainer copy is not registered yet.",
+  why:
+    "The UI falls back to a generic description so unsupported or newly added runtime modes do not crash the page.",
+  distillationNote:
+    "Distillation support depends on the current runtime mode and training hook guards.",
+};
+
 /**
  * Centralized mode explanations for ML training UIs.
  * Keeping these dictionaries in feature config avoids route-level business text duplication
@@ -142,3 +150,11 @@ export const TENSORFLOW_MODE_EXPLAINERS: Record<TensorflowTrainingMode, ModeExpl
       "Not supported yet because this mode adds temporal gating branches that are not represented in the current distillation student template.",
   },
 };
+
+export function getPytorchModeExplainer(mode: string): ModeExplainer {
+  return PYTORCH_MODE_EXPLAINERS[mode as PytorchTrainingMode] ?? FALLBACK_MODE_EXPLAINER;
+}
+
+export function getTensorflowModeExplainer(mode: string): ModeExplainer {
+  return TENSORFLOW_MODE_EXPLAINERS[mode as TensorflowTrainingMode] ?? FALLBACK_MODE_EXPLAINER;
+}

@@ -52,11 +52,10 @@ export function useAgenticResearchAiSurface(): AgenticResearchAiSurface {
       return handleAgenticSetActiveDataset(
         datasetId,
         state.datasetManifest,
-        chartActions.clearChartSpecs,
         actions.setSelectedDatasetId
       );
     },
-    [state.datasetManifest, chartActions.clearChartSpecs, actions.setSelectedDatasetId]
+    [state.datasetManifest, actions.setSelectedDatasetId]
   );
 
   const handlers = useMemo(

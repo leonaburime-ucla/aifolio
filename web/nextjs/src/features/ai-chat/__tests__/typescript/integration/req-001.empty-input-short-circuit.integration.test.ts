@@ -5,6 +5,7 @@ import type {
   ChatDeps,
   ChatUiState,
 } from "@/features/ai-chat/__types__/typescript/chat.types";
+import { DEFAULT_CHAT_LOGIC_DEPS } from "@/features/ai-chat/__tests__/fixtures/chatLogicDeps.fixture";
 
 describe("REQ-001/DR-001 empty input short-circuit", () => {
   it("does not mutate state or call API when normalized input is empty", async () => {
@@ -47,6 +48,7 @@ describe("REQ-001/DR-001 empty input short-circuit", () => {
         sendMessage: vi.fn(async () => null),
         fetchModels: vi.fn(async () => null),
       },
+      logic: DEFAULT_CHAT_LOGIC_DEPS,
     };
 
     const { result } = renderHook(() => useChatLogic(uiState, deps));

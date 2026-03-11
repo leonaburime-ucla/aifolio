@@ -3,6 +3,19 @@
  */
 import type { ChartSpec } from "@/features/ai-chat/__types__/typescript/chart.types";
 import type {
+  BuildChatHistoryWindowInput,
+  BuildChatHistoryWindowOptions,
+  CreateChatMessageInput,
+  NormalizeSubmissionInput,
+  ShouldRestoreDraftValueInput,
+} from "@/features/ai-chat/__types__/typescript/logic/chatSubmission.types";
+import type {
+  FallbackSelectionInput,
+  FallbackSelectionOptions,
+  FetchedSelectionInput,
+  ModelSelectionResult,
+} from "@/features/ai-chat/__types__/typescript/logic/modelSelection.types";
+import type {
   FetchChatModelsInput,
   FetchChatModelsOptions,
   FetchChatModelsResult,
@@ -149,10 +162,31 @@ export type ChatActions = {
 export type ChatIntegration = ChatUiState & ChatState & ChatActions;
 
 /**
+ * Logic functions injected into chat hooks.
+ * These come from `chatSubmission.logic` and `modelSelection.logic`.
+ */
+export type ChatLogicDeps = {
+  normalizeSubmissionValue: (input: NormalizeSubmissionInput) => string | null;
+  buildChatHistoryWindow: (
+    input: BuildChatHistoryWindowInput,
+    options?: BuildChatHistoryWindowOptions
+  ) => ChatHistoryMessage[];
+  createUserChatMessage: (input: CreateChatMessageInput) => ChatMessage;
+  createAssistantChatMessage: (input: CreateChatMessageInput) => ChatMessage;
+  shouldRestoreDraftValue: (input: ShouldRestoreDraftValueInput) => boolean;
+  resolveFallbackModelSelection: (
+    input: FallbackSelectionInput,
+    options?: FallbackSelectionOptions
+  ) => ModelSelectionResult;
+  resolveFetchedModelSelection: (input: FetchedSelectionInput) => ModelSelectionResult;
+};
+
+/**
  * Dependencies injected into chat hooks.
  */
 export type ChatDeps = {
   state: ChatState;
   actions: ChatStateActions;
   api: ChatApiDeps;
+  logic: ChatLogicDeps;
 };

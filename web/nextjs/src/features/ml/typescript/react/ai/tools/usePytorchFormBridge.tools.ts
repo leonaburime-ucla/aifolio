@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import type {
   PytorchFormBridge,
   PytorchFormBridgeBindings,
@@ -52,53 +52,43 @@ async function flushUiWork(): Promise<void> {
  * @returns Nothing. Registers and cleans up global bridge side effects.
  */
 export function usePytorchFormBridge(bindings: PytorchFormBridgeBindings): void {
-  const {
-    autoDistillEnabled,
-    onTrainClick,
-    runSweepEnabled,
-    setAutoDistillEnabled,
-    setBatchSizesInput,
-    setDateColumnsInput,
-    setDropoutsInput,
-    setEpochValuesInput,
-    setExcludeColumnsInput,
-    setHiddenDimsInput,
-    setLearningRatesInput,
-    setNumHiddenLayersInput,
-    setTargetColumn,
-    setTask,
-    setTestSizesInput,
-    setTrainingMode,
-    toggleRunSweep,
-  } = bindings;
+  const bindingsRef = useRef(bindings);
+
+  useEffect(() => {
+    // Keep global bridge handlers bound to the latest hook callbacks/state.
+    bindingsRef.current = bindings;
+  }, [bindings]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
 
     window.__AIFOLIO_PYTORCH_FORM_BRIDGE__ = {
-      applyPatch: (patch) =>
-        applyPytorchBridgePatch(patch, {
-          setTrainingMode,
-          setTargetColumn,
-          setTask,
-          runSweepEnabled,
-          toggleRunSweep,
-          setEpochValuesInput,
-          setBatchSizesInput,
-          setLearningRatesInput,
-          setTestSizesInput,
-          setHiddenDimsInput,
-          setNumHiddenLayersInput,
-          setDropoutsInput,
-          setExcludeColumnsInput,
-          setDateColumnsInput,
-          autoDistillEnabled,
-          setAutoDistillEnabled,
-        }),
+      applyPatch: (patch) => {
+        const current = bindingsRef.current;
+        return applyPytorchBridgePatch(patch, {
+          setDatasetId: current.setDatasetId,
+          setTrainingMode: current.setTrainingMode,
+          setTargetColumn: current.setTargetColumn,
+          setTask: current.setTask,
+          runSweepEnabled: current.runSweepEnabled,
+          toggleRunSweep: current.toggleRunSweep,
+          setEpochValuesInput: current.setEpochValuesInput,
+          setBatchSizesInput: current.setBatchSizesInput,
+          setLearningRatesInput: current.setLearningRatesInput,
+          setTestSizesInput: current.setTestSizesInput,
+          setHiddenDimsInput: current.setHiddenDimsInput,
+          setNumHiddenLayersInput: current.setNumHiddenLayersInput,
+          setDropoutsInput: current.setDropoutsInput,
+          setExcludeColumnsInput: current.setExcludeColumnsInput,
+          setDateColumnsInput: current.setDateColumnsInput,
+          autoDistillEnabled: current.autoDistillEnabled,
+          setAutoDistillEnabled: current.setAutoDistillEnabled,
+        });
+      },
       startTrainingRuns: async () => {
         try {
           await flushUiWork();
-          await onTrainClick();
+          await bindingsRef.current.onTrainClick();
           return { status: "ok" };
         } catch (error) {
           const reason = error instanceof Error ? error.message : "Unknown training bridge error.";
@@ -112,23 +102,5 @@ export function usePytorchFormBridge(bindings: PytorchFormBridgeBindings): void 
         delete window.__AIFOLIO_PYTORCH_FORM_BRIDGE__;
       }
     };
-  }, [
-    autoDistillEnabled,
-    onTrainClick,
-    runSweepEnabled,
-    setAutoDistillEnabled,
-    setBatchSizesInput,
-    setDateColumnsInput,
-    setDropoutsInput,
-    setEpochValuesInput,
-    setExcludeColumnsInput,
-    setHiddenDimsInput,
-    setLearningRatesInput,
-    setNumHiddenLayersInput,
-    setTargetColumn,
-    setTask,
-    setTestSizesInput,
-    setTrainingMode,
-    toggleRunSweep,
-  ]);
+  }, []);
 }

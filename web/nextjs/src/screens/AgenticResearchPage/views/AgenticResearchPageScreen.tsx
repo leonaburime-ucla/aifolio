@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useEffect } from "react";
 import { useAgenticResearchChatOrchestrator } from "@/screens/AgenticResearchPage/chat/orchestrators/agenticResearchChatOrchestrator";
 import type { ChatOrchestrator } from "@/features/ai-chat/typescript/react/orchestrators/chatOrchestrator";
 import ChartRenderer from "@/features/recharts/typescript/react/views/components/ChartRenderer";
@@ -9,11 +10,20 @@ import { useAgenticResearchOrchestrator } from "@/features/agentic-research/type
 import DatasetCombobox from "@/features/agentic-research/typescript/react/views/components/DatasetCombobox";
 import type { AgenticResearchOrchestratorModel } from "@/features/agentic-research/__types__/typescript/agenticResearch.types";
 
+const DEBUG_EFFECTS = process.env.NEXT_PUBLIC_DEBUG_EFFECTS === "1";
+
+function getDebugPath(): string {
+  return globalThis.location?.pathname ?? "";
+}
+
 type AgenticResearchPageProps = {
   pageOrchestrator?: () => AgenticResearchOrchestratorModel;
   chatOrchestrator?: () => ChatOrchestrator;
   showChatSidebar?: boolean;
   algorithmsAccordionInitiallyOpen?: boolean;
+  algorithmsAccordionTitle?: string;
+  showAlgorithmsResultsCallout?: boolean;
+  showAlgorithmsSamplePrompts?: boolean;
 };
 
 const ChatSidebar = dynamic(
@@ -26,7 +36,21 @@ export default function AgenticResearchPageScreen({
   chatOrchestrator = useAgenticResearchChatOrchestrator,
   showChatSidebar = true,
   algorithmsAccordionInitiallyOpen = true,
+  algorithmsAccordionTitle = "ML Algorithms + Sample Prompts",
+  showAlgorithmsResultsCallout = true,
+  showAlgorithmsSamplePrompts = true,
 }: AgenticResearchPageProps) {
+
+  useEffect(() => {
+    if (DEBUG_EFFECTS) {
+      console.log("[page-debug] agentic_research_page_mounted", {
+        path: getDebugPath(),
+        showChatSidebar,
+        algorithmsAccordionInitiallyOpen,
+      });
+    }
+  }, [algorithmsAccordionInitiallyOpen, showChatSidebar]);
+
   const {
     isLoading,
     error,
@@ -50,14 +74,25 @@ export default function AgenticResearchPageScreen({
         open={algorithmsAccordionInitiallyOpen}
       >
         <summary className="cursor-pointer text-[12px] font-semibold">
-          Ask Chat to run these Sklearn Algorithms on datasets(Results take 1-2min)
+          {algorithmsAccordionTitle}
         </summary>
         <div className="mt-3 text-[12px]">
-          <p>You can run these algorithms for the current dataset that is in the datatable.</p>
+          {showAlgorithmsResultsCallout ? (
+            <p className="font-bold text-red-600">Results take 1-2min</p>
+          ) : null}
+          {showAlgorithmsSamplePrompts ? (
+            <div className="mt-3">
+              <p className="font-bold text-zinc-900">Sample Prompts</p>
+              <ol className="mt-2 list-decimal space-y-1 pl-4">
+                <li>Run PCA analysis</li>
+                <li>Run NMF Decomposition and PLSR</li>
+              </ol>
+            </div>
+          ) : null}
           {sklearnTools.length === 0 ? (
             <p className="mt-1">Loading...</p>
           ) : (
-            <div className="mt-2 flex flex-col gap-2">
+            <div className={`${showAlgorithmsResultsCallout || showAlgorithmsSamplePrompts ? "mt-4" : "mt-1"} flex flex-col gap-2`}>
               {[
                 "Decomposition & Embeddings",
                 "Classification",

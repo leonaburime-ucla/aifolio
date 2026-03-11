@@ -2,6 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import type { RefObject } from "react";
 import type { ChatAttachment, ChatMessage } from "@/features/ai-chat/__types__/typescript/chat.types";
 
+const DEBUG_EFFECTS = process.env.NEXT_PUBLIC_DEBUG_EFFECTS === "1";
+
+function getDebugPath(): string {
+  return globalThis.location?.pathname ?? "";
+}
+
 export type ChatSidebarUiDeps = {
   messages: ChatMessage[];
   isSending: boolean;
@@ -73,6 +79,13 @@ export function useChatSidebarUi(
    * sending state toggles.
    */
   useEffect(() => {
+    if (DEBUG_EFFECTS) {
+      console.log("[chat-debug] sidebar_autoscroll_effect", {
+        path: getDebugPath(),
+        messageCount: messages.length,
+        isSending,
+      });
+    }
     const container = scrollRef.current;
     if (!container) return;
     const raf = requestAnimationFrameImpl(() => {
@@ -83,6 +96,12 @@ export function useChatSidebarUi(
 
   /** Reset transient "copied" badge state after 2 seconds. */
   useEffect(() => {
+    if (DEBUG_EFFECTS) {
+      console.log("[chat-debug] sidebar_copied_badge_effect", {
+        path: getDebugPath(),
+        copiedId,
+      });
+    }
     if (!copiedId) return;
     const timeout = setTimeoutImpl(() => setCopiedId(null), 2000);
     return () => clearTimeoutImpl(timeout);

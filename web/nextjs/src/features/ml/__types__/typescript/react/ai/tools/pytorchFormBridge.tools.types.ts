@@ -6,6 +6,7 @@ import type { PytorchTrainingMode } from "@/features/ml/__types__/typescript/api
  * Keys intentionally mirror AI tool-call field names.
  */
 export type PytorchBridgePatch = {
+  dataset_id?: string;
   training_mode?: PytorchTrainingMode;
   target_column?: string;
   task?: MlTaskType;
@@ -44,6 +45,7 @@ export type PytorchFormBridge = {
  * Minimal patch-application dependencies for pure patch processing.
  */
 export type PytorchBridgePatchBindings = {
+  setDatasetId: (value: string) => void;
   setTrainingMode: (value: PytorchTrainingMode) => void;
   setTargetColumn: (value: string) => void;
   setTask: (value: MlTaskType) => void;

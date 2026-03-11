@@ -5,6 +5,7 @@ import type {
   ChatApiDeps,
   ChatDeps,
   ChatIntegration,
+  ChatLogicDeps,
   ChatStateActions,
 } from "@/features/ai-chat/__types__/typescript/chat.types";
 import { useLandingChatStateAdapter } from "@/screens/LandingPage/chat/state/adapters/landingChatState.adapter";
@@ -17,6 +18,17 @@ import {
   createChatApiDeps,
   createChatDeps,
 } from "@/features/ai-chat/typescript/logic/chatOrchestrator.logic";
+import {
+  normalizeSubmissionValue,
+  buildChatHistoryWindow,
+  createUserChatMessage,
+  createAssistantChatMessage,
+  shouldRestoreDraftValue,
+} from "@/features/ai-chat/typescript/logic/chatSubmission.logic";
+import {
+  resolveFallbackModelSelection,
+  resolveFetchedModelSelection,
+} from "@/features/ai-chat/typescript/logic/modelSelection.logic";
 
 /**
  * Landing page chat orchestrator that uses /chat endpoint and isolated chat state.
@@ -46,9 +58,22 @@ export function useLandingChatOrchestrator(): ChatIntegration {
     []
   );
 
+  const logic = useMemo<ChatLogicDeps>(
+    () => ({
+      normalizeSubmissionValue,
+      buildChatHistoryWindow,
+      createUserChatMessage,
+      createAssistantChatMessage,
+      shouldRestoreDraftValue,
+      resolveFallbackModelSelection,
+      resolveFetchedModelSelection,
+    }),
+    []
+  );
+
   const deps = useMemo<ChatDeps>(
-    () => createChatDeps({ state, actions, api }),
-    [state, actions, api]
+    () => createChatDeps({ state, actions, api, logic }),
+    [state, actions, api, logic]
   );
   return useChatIntegration(deps);
 }

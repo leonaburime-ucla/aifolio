@@ -13,6 +13,7 @@ import json
 import re
 import time
 from typing import Any, Callable, Dict, List, Optional, Sequence, TypedDict
+from uuid import uuid4
 
 from pathlib import Path
 
@@ -36,6 +37,11 @@ DEFAULT_PCA_MESSAGE = (
 )
 
 SAMPLE_DATA_DIR = Path(__file__).resolve().parents[2] / "data" / "sample_data"
+
+
+def _build_chart_id(label: str) -> str:
+    slug = re.sub(r"[^a-z0-9]+", "-", label.strip().lower()).strip("-") or "chart"
+    return f"agentic-research-{slug}-{uuid4().hex[:8]}"
 
 FALLBACK_MESSAGE_TOOL_MAP: Dict[str, str] = {
     "pca": "pca_transform",
@@ -759,7 +765,7 @@ def _build_loadings_chart(
             }
         )
     chart = {
-        "id": f"agentic-research-{title.lower().replace(' ', '-')}",
+        "id": _build_chart_id(title),
         "title": title,
         "type": "scatter",
         "xKey": "pc1",
@@ -781,7 +787,7 @@ def _build_regression_chart(predictions: Sequence[float], targets: Sequence[floa
             continue
         points.append({"id": f"pred-{idx + 1}", "actual": actual, "predicted": pred})
     return {
-        "id": "agentic-research-regression",
+        "id": _build_chart_id(title),
         "title": title,
         "type": "scatter",
         "xKey": "actual",
@@ -817,7 +823,7 @@ def _build_feature_importance_chart(
         value = values[idx] if idx < len(values) else 0
         points.append({"feature": name, "importance": value})
     chart = {
-        "id": f"agentic-research-{title.lower().replace(' ', '-')}",
+        "id": _build_chart_id(title),
         "title": title,
         "type": "bar",
         "xKey": "feature",
@@ -853,7 +859,7 @@ def _build_embedding_chart(
             point["cluster"] = labels[idx]
         points.append(point)
     chart = {
-        "id": f"agentic-research-{title.lower().replace(' ', '-')}",
+        "id": _build_chart_id(title),
         "title": title,
         "type": "scatter",
         "xKey": "x",
@@ -884,7 +890,7 @@ def _build_cluster_distribution_chart(
         label = f"Cluster {cluster_id}" if cluster_id >= 0 else "Noise"
         points.append({"cluster": label, "count": counts[cluster_id]})
     chart = {
-        "id": f"agentic-research-{title.lower().replace(' ', '-')}",
+        "id": _build_chart_id(title),
         "title": title,
         "type": "bar",
         "xKey": "cluster",

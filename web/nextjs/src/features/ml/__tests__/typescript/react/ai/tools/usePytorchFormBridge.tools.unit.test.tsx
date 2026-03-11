@@ -6,6 +6,7 @@ import type { PytorchFormBridgeBindings } from "@/features/ml/__types__/typescri
 function createBindings(overrides: Partial<PytorchFormBridgeBindings> = {}): PytorchFormBridgeBindings {
   return {
     trainingMode: "mlp_dense",
+    setDatasetId: vi.fn(),
     setTrainingMode: vi.fn(),
     setTargetColumn: vi.fn(),
     setTask: vi.fn(),
@@ -48,6 +49,7 @@ describe("usePytorchFormBridge", () => {
     renderHook(() => usePytorchFormBridge(bindings));
 
     const result = window.__AIFOLIO_PYTORCH_FORM_BRIDGE__?.applyPatch({
+      dataset_id: "fraud_detection_phishing_websites.csv",
       training_mode: "tabresnet",
       target_column: "target",
       task: "classification",
@@ -65,6 +67,7 @@ describe("usePytorchFormBridge", () => {
       unknown_key: "x",
     } as never);
 
+    expect(bindings.setDatasetId).toHaveBeenCalledWith("fraud_detection_phishing_websites.csv");
     expect(bindings.setTrainingMode).toHaveBeenCalledWith("tabresnet");
     expect(bindings.setTargetColumn).toHaveBeenCalledWith("target");
     expect(bindings.setTask).toHaveBeenCalledWith("classification");
@@ -79,6 +82,7 @@ describe("usePytorchFormBridge", () => {
     expect(bindings.setDateColumnsInput).toHaveBeenCalledWith("Date");
     expect(bindings.toggleRunSweep).toHaveBeenCalledWith(true);
     expect(bindings.setAutoDistillEnabled).toHaveBeenCalledWith(true);
+    expect(result?.applied).toContain("dataset_id");
     expect(result?.applied).toContain("auto_distill");
     expect(result?.skipped).toContain("unknown_key");
   });
@@ -113,5 +117,25 @@ describe("usePytorchFormBridge", () => {
     expect(result).toEqual({ status: "ok" });
     expect(onTrainClick).toHaveBeenCalledTimes(1);
   });
-});
 
+  it("uses latest onTrainClick after rerender", async () => {
+    vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => {
+      callback(0);
+      return 1;
+    });
+    const firstTrain = vi.fn(async () => undefined);
+    const secondTrain = vi.fn(async () => undefined);
+
+    const { rerender } = renderHook(
+      ({ bindings }) => usePytorchFormBridge(bindings),
+      { initialProps: { bindings: createBindings({ onTrainClick: firstTrain }) } },
+    );
+
+    rerender({ bindings: createBindings({ onTrainClick: secondTrain }) });
+    const result = await window.__AIFOLIO_PYTORCH_FORM_BRIDGE__?.startTrainingRuns();
+
+    expect(result).toEqual({ status: "ok" });
+    expect(firstTrain).not.toHaveBeenCalled();
+    expect(secondTrain).toHaveBeenCalledTimes(1);
+  });
+});

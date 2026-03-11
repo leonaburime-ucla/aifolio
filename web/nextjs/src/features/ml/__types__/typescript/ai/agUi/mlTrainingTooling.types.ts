@@ -31,6 +31,7 @@ export type TensorflowTrainingMode =
   | "time_aware_tabular";
 
 export type MlFormPatch<TMode extends MlMode = MlMode> = {
+  dataset_id?: string;
   training_mode?: TMode;
   target_column?: string;
   task?: MlTask;
@@ -52,6 +53,8 @@ export type PytorchFormPatch = MlFormPatch<PytorchTrainingMode>;
 export type TensorflowFormPatch = MlFormPatch<TensorflowTrainingMode>;
 
 export type MlFormRandomizeArgs = {
+  confirm_randomize?: boolean;
+  value_count?: number;
   style?: "safe" | "balanced" | "aggressive";
   set_sweep_values?: boolean;
   run_sweep?: boolean;
@@ -93,6 +96,16 @@ export type TrainTensorflowModelArgs = {
   batch_size?: number;
   learning_rate?: number;
 };
+
+export type MlTargetColumnChangeMode = "different" | "random" | "next";
+
+export type MlTargetColumnChangeArgs = {
+  target_column?: string;
+  mode?: MlTargetColumnChangeMode;
+};
+
+export type ChangePytorchTargetColumnArgs = MlTargetColumnChangeArgs;
+export type ChangeTensorflowTargetColumnArgs = MlTargetColumnChangeArgs;
 
 export type MlFrameworkTab = "pytorch" | "tensorflow";
 

@@ -6,6 +6,7 @@ import type { TensorflowFormBridgeBindings } from "@/features/ml/__types__/types
 function createBindings(overrides: Partial<TensorflowFormBridgeBindings> = {}): TensorflowFormBridgeBindings {
   return {
     trainingMode: "wide_and_deep",
+    setDatasetId: vi.fn(),
     setTrainingMode: vi.fn(),
     setTargetColumn: vi.fn(),
     setTask: vi.fn(),
@@ -47,6 +48,7 @@ describe("useTensorflowFormBridge", () => {
     renderHook(() => useTensorflowFormBridge(bindings));
 
     const result = window.__AIFOLIO_TENSORFLOW_FORM_BRIDGE__?.applyPatch({
+      dataset_id: "customer_churn_telco.csv",
       training_mode: "entity_embeddings",
       target_column: "target",
       task: "classification",
@@ -64,6 +66,7 @@ describe("useTensorflowFormBridge", () => {
       unknown_key: "x",
     } as never);
 
+    expect(bindings.setDatasetId).toHaveBeenCalledWith("customer_churn_telco.csv");
     expect(bindings.setTrainingMode).toHaveBeenCalledWith("entity_embeddings");
     expect(bindings.setTargetColumn).toHaveBeenCalledWith("target");
     expect(bindings.setTask).toHaveBeenCalledWith("classification");
@@ -78,6 +81,7 @@ describe("useTensorflowFormBridge", () => {
     expect(bindings.setDateColumnsInput).toHaveBeenCalledWith("Date");
     expect(bindings.toggleRunSweep).toHaveBeenCalledWith(true);
     expect(bindings.setAutoDistillEnabled).toHaveBeenCalledWith(true);
+    expect(result?.applied).toContain("dataset_id");
     expect(result?.applied).toContain("auto_distill");
     expect(result?.skipped).toContain("unknown_key");
   });
@@ -95,5 +99,26 @@ describe("useTensorflowFormBridge", () => {
 
     expect(result).toEqual({ status: "ok" });
     expect(onTrainClick).toHaveBeenCalledTimes(1);
+  });
+
+  it("uses latest onTrainClick after rerender", async () => {
+    vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => {
+      callback(0);
+      return 1;
+    });
+    const firstTrain = vi.fn(async () => undefined);
+    const secondTrain = vi.fn(async () => undefined);
+
+    const { rerender } = renderHook(
+      ({ bindings }) => useTensorflowFormBridge(bindings),
+      { initialProps: { bindings: createBindings({ onTrainClick: firstTrain }) } },
+    );
+
+    rerender({ bindings: createBindings({ onTrainClick: secondTrain }) });
+    const result = await window.__AIFOLIO_TENSORFLOW_FORM_BRIDGE__?.startTrainingRuns();
+
+    expect(result).toEqual({ status: "ok" });
+    expect(firstTrain).not.toHaveBeenCalled();
+    expect(secondTrain).toHaveBeenCalledTimes(1);
   });
 });

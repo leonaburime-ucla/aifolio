@@ -1,5 +1,6 @@
 import type {
   ChatApiDeps,
+  ChatLogicDeps,
   ChatState,
   ChatStateActions,
 } from "@/features/ai-chat/__types__/typescript/chat.types";
@@ -13,4 +14,5 @@ export type CreateChatDepsInput = {
   state: ChatState;
   actions: ChatStateActions;
   api: ChatApiDeps;
+  logic: ChatLogicDeps;
 };

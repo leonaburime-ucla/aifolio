@@ -50,26 +50,27 @@ export function createMlFrameworkActions<TTrainArgs, TRandomizeArgs>({
     startTrainingRuns: {
       name: startToolName,
       description:
-        `Start ${frameworkLabel} training using the current /ag-ui ${frameworkLabel} form state (selected dataset, target column, sweep/autodistill, and hyperparameters). Prefer this for generic prompts like 'train the model'.`,
+        `Start ${frameworkLabel} training using the current /ag-ui ${frameworkLabel} form state (selected dataset, target column, sweep/autodistill, and hyperparameters). Use this only when the user explicitly names ${frameworkLabel}; otherwise prefer the active-ML training tool.`,
       parameters: [],
       handler: startHandler,
     } satisfies CopilotToolAction<void>,
     trainModel: {
       name: trainToolName,
       description:
-        `Start one backend ${frameworkLabel} training run with explicit dataset_id and target_column arguments. Use this only when those values are explicitly provided.`,
+        `Start one backend ${frameworkLabel} training run with explicit dataset_id and target_column arguments. Use this only when the user explicitly names ${frameworkLabel} and those values are explicitly provided.`,
       parameters: trainParams,
       handler: trainHandler,
     } satisfies CopilotToolAction<TTrainArgs>,
     setFormFields: {
       name: setFieldsToolName,
-      description: setFieldsDescription,
+      description: `${setFieldsDescription} Use this only when the user explicitly names ${frameworkLabel}; otherwise prefer the active-ML set-fields tool.`,
       parameters: setFieldsParams,
       handler: setFieldsHandler,
     } satisfies CopilotToolAction<Record<string, unknown>>,
     randomizeFormFields: {
       name: randomizeFieldsToolName,
-      description: `Randomize ${frameworkLabel} form fields intelligently using safe validator-aware ranges.`,
+      description:
+        `Randomize ${frameworkLabel} form fields only when the user explicitly asks to randomize and explicitly names ${frameworkLabel}. Otherwise prefer the active-ML randomize tool. Requires confirm_randomize=true.`,
       parameters: randomizeParams,
       handler: randomizeHandler,
     } satisfies CopilotToolAction<TRandomizeArgs>,

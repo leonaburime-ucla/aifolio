@@ -1,6 +1,6 @@
 "use client";
 
-import { useCopilotFrontendTools } from "@/features/ag-ui-chat/typescript/react/hooks/useCopilotFrontendTools.hooks";
+import { useCopilotFrontendTools } from "@/features/ag-ui-chat/typescript/api/hooks/useCopilotFrontendTools.hooks";
 
 /**
  * Purpose: Register global Copilot frontend tools for charting/navigation/training.

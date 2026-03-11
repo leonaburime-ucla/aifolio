@@ -47,12 +47,11 @@ function resolveDatasetId(
 }
 
 /**
- * AI tool helper: switch active dataset and clear stale chart state.
+ * AI tool helper: switch the active dataset while preserving existing chart history.
  */
 export function handleAgenticSetActiveDataset(
   datasetInput: string,
   datasetManifest: DatasetManifestEntry[],
-  clearChartsFn: () => void,
   setDatasetFn: (id: string) => void
 ): SetActiveDatasetSuccessResponse | SetActiveDatasetErrorResponse {
   const allowedIds = datasetManifest.map((entry) => entry.id);
@@ -67,7 +66,6 @@ export function handleAgenticSetActiveDataset(
     };
   }
 
-  clearChartsFn();
   setDatasetFn(resolvedDatasetId);
 
   return {

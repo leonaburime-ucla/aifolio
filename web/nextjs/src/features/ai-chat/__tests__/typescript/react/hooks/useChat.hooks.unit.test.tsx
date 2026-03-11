@@ -7,7 +7,18 @@ import {
   useChatLogic,
   useChatUiState,
 } from "@/features/ai-chat/typescript/react/hooks/useChat.hooks";
-import { FALLBACK_CHAT_MODELS } from "@/features/ai-chat/typescript/logic/modelSelection.logic";
+import {
+  FALLBACK_CHAT_MODELS,
+  resolveFallbackModelSelection,
+  resolveFetchedModelSelection,
+} from "@/features/ai-chat/typescript/logic/modelSelection.logic";
+import {
+  normalizeSubmissionValue,
+  buildChatHistoryWindow,
+  createUserChatMessage,
+  createAssistantChatMessage,
+  shouldRestoreDraftValue,
+} from "@/features/ai-chat/typescript/logic/chatSubmission.logic";
 import type { ChatDeps, ChatUiState } from "@/features/ai-chat/__types__/typescript/chat.types";
 
 function createUiState(overrides: Partial<ChatUiState> = {}): ChatUiState {
@@ -53,6 +64,15 @@ function createDeps(overrides: Partial<ChatDeps> = {}): ChatDeps {
       sendMessage: vi.fn(async () => null),
       fetchModels: vi.fn(async () => null),
     },
+    logic: {
+      normalizeSubmissionValue,
+      buildChatHistoryWindow,
+      createUserChatMessage,
+      createAssistantChatMessage,
+      shouldRestoreDraftValue,
+      resolveFallbackModelSelection,
+      resolveFetchedModelSelection,
+    },
     ...overrides,
   };
 }
@@ -76,14 +96,14 @@ describe("useChat hooks unit", () => {
       onMessageReceived: vi.fn(),
     };
 
-    setFallbackModels({ actions, selectedModelId: null });
+    setFallbackModels({ actions, selectedModelId: null, resolveFallbackModelSelection });
     expect(actions.setModelOptions).toHaveBeenCalledWith(FALLBACK_CHAT_MODELS);
     expect(actions.setSelectedModelId).toHaveBeenCalledWith(
       FALLBACK_CHAT_MODELS[0]?.id ?? null
     );
 
     actions.setSelectedModelId.mockClear();
-    setFallbackModels({ actions, selectedModelId: "already-set" });
+    setFallbackModels({ actions, selectedModelId: "already-set", resolveFallbackModelSelection });
     expect(actions.setSelectedModelId).not.toHaveBeenCalled();
 
     setFetchedModels({
@@ -93,6 +113,7 @@ describe("useChat hooks unit", () => {
         currentModel: "m2",
         models: [{ id: "m1", label: "Model 1" }],
       },
+      resolveFetchedModelSelection,
     });
     expect(actions.setModelOptions).toHaveBeenCalledWith([
       { id: "m1", label: "Model 1" },

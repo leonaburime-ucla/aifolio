@@ -1,12 +1,17 @@
 import type { AgUiWorkspaceTab } from "@/features/ag-ui-chat/__types__/typescript/react/state/agUiWorkspace.types";
 import {
   ADD_CHART_SPEC_TOOL,
+  CHANGE_ACTIVE_ML_TARGET_COLUMN_TOOL,
+  CHANGE_PYTORCH_TARGET_COLUMN_TOOL,
+  CHANGE_TENSORFLOW_TARGET_COLUMN_TOOL,
   CLEAR_CHARTS_TOOL,
-  NAVIGATE_TO_PAGE_TOOL,
+  RANDOMIZE_ACTIVE_ML_FORM_FIELDS_TOOL,
   RANDOMIZE_PYTORCH_FORM_FIELDS_TOOL,
   RANDOMIZE_TENSORFLOW_FORM_FIELDS_TOOL,
+  SET_ACTIVE_ML_FORM_FIELDS_TOOL,
   SET_PYTORCH_FORM_FIELDS_TOOL,
   SET_TENSORFLOW_FORM_FIELDS_TOOL,
+  START_ACTIVE_ML_TRAINING_RUNS_TOOL,
   START_PYTORCH_TRAINING_RUNS_TOOL,
   START_TENSORFLOW_TRAINING_RUNS_TOOL,
   SWITCH_AG_UI_TAB_TOOL,
@@ -36,7 +41,6 @@ export type AgUiToolInfo = {
 
 const BASE_TOOLS: AgUiToolInfo[] = [
   { name: SWITCH_AG_UI_TAB_TOOL, summary: "Switches AG-UI workspace tabs." },
-  { name: NAVIGATE_TO_PAGE_TOOL, summary: "Navigates to app routes." },
 ];
 
 const CHART_TOOLS: AgUiToolInfo[] = [
@@ -45,14 +49,24 @@ const CHART_TOOLS: AgUiToolInfo[] = [
 ];
 
 const PYTORCH_TOOLS: AgUiToolInfo[] = [
+  { name: SET_ACTIVE_ML_FORM_FIELDS_TOOL, summary: "Patches ML form fields on the currently active ML tab." },
+  { name: CHANGE_ACTIVE_ML_TARGET_COLUMN_TOOL, summary: "Changes the target column on the currently active ML tab." },
+  { name: RANDOMIZE_ACTIVE_ML_FORM_FIELDS_TOOL, summary: "Randomizes form fields on the currently active ML tab." },
+  { name: START_ACTIVE_ML_TRAINING_RUNS_TOOL, summary: "Starts training runs on the currently active ML tab." },
   { name: SET_PYTORCH_FORM_FIELDS_TOOL, summary: "Patches PyTorch form fields." },
+  { name: CHANGE_PYTORCH_TARGET_COLUMN_TOOL, summary: "Changes the PyTorch target column." },
   { name: RANDOMIZE_PYTORCH_FORM_FIELDS_TOOL, summary: "Randomizes PyTorch form fields with various values." },
   { name: START_PYTORCH_TRAINING_RUNS_TOOL, summary: "Starts training runs from current form state." },
   { name: TRAIN_PYTORCH_MODEL_TOOL, summary: "Runs one explicit backend training call." },
 ];
 
 const TENSORFLOW_TOOLS: AgUiToolInfo[] = [
+  { name: SET_ACTIVE_ML_FORM_FIELDS_TOOL, summary: "Patches ML form fields on the currently active ML tab." },
+  { name: CHANGE_ACTIVE_ML_TARGET_COLUMN_TOOL, summary: "Changes the target column on the currently active ML tab." },
+  { name: RANDOMIZE_ACTIVE_ML_FORM_FIELDS_TOOL, summary: "Randomizes form fields on the currently active ML tab." },
+  { name: START_ACTIVE_ML_TRAINING_RUNS_TOOL, summary: "Starts training runs on the currently active ML tab." },
   { name: SET_TENSORFLOW_FORM_FIELDS_TOOL, summary: "Patches TensorFlow form fields." },
+  { name: CHANGE_TENSORFLOW_TARGET_COLUMN_TOOL, summary: "Changes the TensorFlow target column." },
   { name: RANDOMIZE_TENSORFLOW_FORM_FIELDS_TOOL, summary: "Randomizes TensorFlow form fields with various values." },
   { name: START_TENSORFLOW_TRAINING_RUNS_TOOL, summary: "Starts training runs from current form state." },
   { name: TRAIN_TENSORFLOW_MODEL_TOOL, summary: "Runs one explicit backend training call." },

@@ -1,4 +1,6 @@
 import type {
+  ChangePytorchTargetColumnArgs,
+  ChangeTensorflowTargetColumnArgs,
   PytorchRandomizeArgs,
   TensorflowRandomizeArgs,
   TrainPytorchModelArgs,
@@ -32,5 +34,6 @@ export type NavigateToPageArgs = {
 
 export type RandomizePytorchFormFieldsArgs = PytorchRandomizeArgs;
 export type RandomizeTensorflowFormFieldsArgs = TensorflowRandomizeArgs;
+export type { ChangePytorchTargetColumnArgs, ChangeTensorflowTargetColumnArgs };
 
 export type { TrainPytorchModelArgs, TrainTensorflowModelArgs };

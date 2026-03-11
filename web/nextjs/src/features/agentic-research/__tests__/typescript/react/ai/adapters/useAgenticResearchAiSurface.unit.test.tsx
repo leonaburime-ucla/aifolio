@@ -79,7 +79,6 @@ describe("useAgenticResearchAiSurface", () => {
     expect(handleAgenticSetActiveDataset).toHaveBeenCalledWith(
       "iris",
       [{ id: "iris", label: "Iris" }],
-      clearChartSpecs,
       setSelectedDatasetId
     );
   });

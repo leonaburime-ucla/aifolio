@@ -6,6 +6,7 @@ import type { TensorflowTrainingMode } from "@/features/ml/__types__/typescript/
  * Keys intentionally mirror AI tool-call field names.
  */
 export type TensorflowBridgePatch = {
+  dataset_id?: string;
   training_mode?: TensorflowTrainingMode;
   target_column?: string;
   task?: MlTaskType;
@@ -38,6 +39,7 @@ export type TensorflowFormBridge = {
 };
 
 export type TensorflowBridgePatchBindings = {
+  setDatasetId: (value: string) => void;
   setTrainingMode: (value: TensorflowTrainingMode) => void;
   setTargetColumn: (value: string) => void;
   setTask: (value: MlTaskType) => void;

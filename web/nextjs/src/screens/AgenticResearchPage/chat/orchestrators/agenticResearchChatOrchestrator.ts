@@ -5,6 +5,7 @@ import type {
   ChatApiDeps,
   ChatDeps,
   ChatIntegration,
+  ChatLogicDeps,
   ChatStateActions,
 } from "@/features/ai-chat/__types__/typescript/chat.types";
 import { useAiChatStateAdapter } from "@/features/ai-chat/typescript/react/state/adapters/aiChatState.adapter";
@@ -18,6 +19,17 @@ import {
   createChatApiDeps,
   createChatDeps,
 } from "@/features/ai-chat/typescript/logic/chatOrchestrator.logic";
+import {
+  normalizeSubmissionValue,
+  buildChatHistoryWindow,
+  createUserChatMessage,
+  createAssistantChatMessage,
+  shouldRestoreDraftValue,
+} from "@/features/ai-chat/typescript/logic/chatSubmission.logic";
+import {
+  resolveFallbackModelSelection,
+  resolveFetchedModelSelection,
+} from "@/features/ai-chat/typescript/logic/modelSelection.logic";
 
 /**
  * Chat orchestrator scoped to Agentic Research charts.
@@ -50,9 +62,22 @@ export function useAgenticResearchChatOrchestrator(): ChatIntegration {
     []
   );
 
+  const logic = useMemo<ChatLogicDeps>(
+    () => ({
+      normalizeSubmissionValue,
+      buildChatHistoryWindow,
+      createUserChatMessage,
+      createAssistantChatMessage,
+      shouldRestoreDraftValue,
+      resolveFallbackModelSelection,
+      resolveFetchedModelSelection,
+    }),
+    []
+  );
+
   const deps = useMemo<ChatDeps>(
-    () => createChatDeps({ state, actions, api }),
-    [state, actions, api]
+    () => createChatDeps({ state, actions, api, logic }),
+    [state, actions, api, logic]
   );
   return useChatIntegration(deps);
 }

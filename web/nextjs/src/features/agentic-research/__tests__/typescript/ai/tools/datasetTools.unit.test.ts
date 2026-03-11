@@ -2,25 +2,21 @@ import { describe, expect, it, vi } from "vitest";
 import { handleAgenticSetActiveDataset } from "@/features/agentic-research/typescript/ai/tools/datasetTools";
 
 describe("agentic datasetTools", () => {
-  it("accepts exact id and clears charts before setting dataset", () => {
-    const clearChartsFn = vi.fn();
+  it("accepts exact id and preserves existing charts while setting dataset", () => {
     const setDatasetFn = vi.fn();
 
     expect(
       handleAgenticSetActiveDataset(
         "iris.csv",
         [{ id: "iris.csv", label: "Iris CSV" }],
-        clearChartsFn,
         setDatasetFn
       )
     ).toEqual({ status: "ok", active_dataset_id: "iris.csv" });
 
-    expect(clearChartsFn).toHaveBeenCalledTimes(1);
     expect(setDatasetFn).toHaveBeenCalledWith("iris.csv");
   });
 
   it("resolves dataset by normalized/fuzzy label tokens", () => {
-    const clearChartsFn = vi.fn();
     const setDatasetFn = vi.fn();
     const manifest = [
       { id: "iris.csv", label: "Iris Dataset" },
@@ -31,7 +27,6 @@ describe("agentic datasetTools", () => {
       handleAgenticSetActiveDataset(
         "wine quality",
         manifest,
-        clearChartsFn,
         setDatasetFn
       )
     ).toEqual({ status: "ok", active_dataset_id: "wine-quality.csv" });
@@ -40,7 +35,6 @@ describe("agentic datasetTools", () => {
       handleAgenticSetActiveDataset(
         "iri",
         manifest,
-        clearChartsFn,
         setDatasetFn
       )
     ).toEqual({ status: "ok", active_dataset_id: "iris.csv" });
@@ -50,7 +44,7 @@ describe("agentic datasetTools", () => {
     const manifest = [{ id: "iris.csv", label: "Iris Dataset" }];
 
     expect(
-      handleAgenticSetActiveDataset("", manifest, vi.fn(), vi.fn())
+      handleAgenticSetActiveDataset("", manifest, vi.fn())
     ).toEqual({
       status: "error",
       code: "INVALID_DATASET_ID",
@@ -59,7 +53,7 @@ describe("agentic datasetTools", () => {
     });
 
     expect(
-      handleAgenticSetActiveDataset("unknown", manifest, vi.fn(), vi.fn())
+      handleAgenticSetActiveDataset("unknown", manifest, vi.fn())
     ).toEqual({
       status: "error",
       code: "INVALID_DATASET_ID",
@@ -68,7 +62,7 @@ describe("agentic datasetTools", () => {
     });
 
     expect(
-      handleAgenticSetActiveDataset("  ---  ", manifest, vi.fn(), vi.fn())
+      handleAgenticSetActiveDataset("  ---  ", manifest, vi.fn())
     ).toEqual({
       status: "error",
       code: "INVALID_DATASET_ID",
@@ -80,7 +74,6 @@ describe("agentic datasetTools", () => {
       handleAgenticSetActiveDataset(
         undefined as unknown as string,
         manifest,
-        vi.fn(),
         vi.fn()
       )
     ).toEqual({
@@ -94,7 +87,6 @@ describe("agentic datasetTools", () => {
       handleAgenticSetActiveDataset(
         "missing",
         [{ id: "id-only.csv", label: "" }],
-        vi.fn(),
         vi.fn()
       )
     ).toEqual({

@@ -9,6 +9,8 @@
 export {
   buildRandomPytorchFormPatch,
   buildRandomTensorflowFormPatch,
+  handleChangePytorchTargetColumn,
+  handleChangeTensorflowTargetColumn,
   handleRandomizePytorchFormFields,
   handleRandomizeTensorflowFormFields,
   handleSetPytorchFormFields,

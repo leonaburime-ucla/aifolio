@@ -1,11 +1,18 @@
 "use client";
 
+import { useEffect } from "react";
 import ChatBar from "@/features/ai-chat/typescript/react/views/components/ChatBar";
 import { useChatOrchestrator } from "@/features/ai-chat/typescript/react/orchestrators/chatOrchestrator";
 import type { ChatOrchestrator } from "@/features/ai-chat/typescript/react/orchestrators/chatOrchestrator";
 import { useChatSidebarUi } from "@/features/ai-chat/typescript/react/hooks/useChatSidebar.web";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+
+const DEBUG_EFFECTS = process.env.NEXT_PUBLIC_DEBUG_EFFECTS === "1";
+
+function getDebugPath(): string {
+  return globalThis.location?.pathname ?? "";
+}
 
 /**
  * Sidebar chat panel modeled after VSCode AI chat.
@@ -39,6 +46,16 @@ export default function ChatSidebar({
     handleDragOver,
     handleDragLeave,
   } = useChatSidebarUi({ messages, isSending, addAttachments });
+
+  useEffect(() => {
+    if (DEBUG_EFFECTS) {
+      console.log("[chat-debug] sidebar_mounted", {
+        path: getDebugPath(),
+        initialMessageCount: messages.length,
+        selectedModelId,
+      });
+    }
+  }, []);
 
   return (
     <aside
