@@ -27,6 +27,7 @@ describe("useChatLogic runtime deps", () => {
         modelOptions: [],
         selectedModelId: null,
         isModelsLoading: false,
+        screenFeedback: null,
         activeDatasetId: null,
       },
       actions: {
@@ -38,6 +39,7 @@ describe("useChatLogic runtime deps", () => {
         setModelOptions: vi.fn(),
         setSelectedModelId: vi.fn(),
         setModelsLoading: vi.fn(),
+        setScreenFeedback: vi.fn(),
         addChartSpec: vi.fn(),
         onMessageReceived: vi.fn(),
       },

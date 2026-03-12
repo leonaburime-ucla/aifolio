@@ -19,6 +19,29 @@ import {
 } from "@/features/ai-chat/typescript/logic/chatApiNormalization.logic";
 
 const DEFAULT_MODELS_TIMEOUT_MS = 5000;
+const DEBUG_AI_PROXY = process.env.NODE_ENV === "development";
+
+type ChatRequestErrorCode =
+  | "CHAT_REQUEST_HTTP_ERROR"
+  | "CHAT_RESPONSE_PARSE_ERROR";
+
+class ChatRequestError extends Error {
+  code: ChatRequestErrorCode;
+  status?: number;
+
+  constructor(input: {
+    code: ChatRequestErrorCode;
+    message: string;
+    status?: number;
+    cause?: unknown;
+  }) {
+    super(input.message);
+    this.name = "ChatRequestError";
+    this.code = input.code;
+    this.status = input.status;
+    this.cause = input.cause;
+  }
+}
 
 type ResolvedChatApiRuntimeDeps = {
   fetchImpl: typeof fetch;
@@ -94,7 +117,16 @@ function sendChatMessageToEndpoint(
 ): Promise<ChatAssistantPayload | null> {
   const runtime = resolveRuntimeDeps(options?.runtimeDeps);
   const baseUrl = runtime.resolveBaseUrl();
-  return runtime.fetchImpl(`${baseUrl}${input.endpoint}`, {
+  const requestUrl = `${baseUrl}${input.endpoint}`;
+
+  if (DEBUG_AI_PROXY) {
+    console.warn("[ai-chat] request", {
+      endpoint: input.endpoint,
+      url: requestUrl,
+    });
+  }
+
+  return runtime.fetchImpl(requestUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -105,13 +137,43 @@ function sendChatMessageToEndpoint(
       dataset_id: options?.datasetId ?? null,
     }),
   }).then(async (response) => {
-    if (!response.ok) return null;
+    if (!response.ok) {
+      if (DEBUG_AI_PROXY) {
+        console.warn("[ai-chat] request non-ok response", {
+          endpoint: input.endpoint,
+          url: requestUrl,
+          status: response.status,
+        });
+      }
+      throw new ChatRequestError({
+        code: "CHAT_REQUEST_HTTP_ERROR",
+        message: `Chat request failed with status ${response.status}.`,
+        status: response.status,
+      });
+    }
     try {
       const data = (await response.json()) as ChatApiResponse;
       const normalized = normalizeChatApiResult(data.result);
+      if (!normalized && DEBUG_AI_PROXY) {
+        console.warn("[ai-chat] request invalid payload", {
+          endpoint: input.endpoint,
+          url: requestUrl,
+        });
+      }
       return normalized ?? null;
-    } catch {
-      return null;
+    } catch (error) {
+      if (DEBUG_AI_PROXY) {
+        console.warn("[ai-chat] request response parse failed", {
+          endpoint: input.endpoint,
+          url: requestUrl,
+          error,
+        });
+      }
+      throw new ChatRequestError({
+        code: "CHAT_RESPONSE_PARSE_ERROR",
+        message: "Chat response body could not be parsed.",
+        cause: error,
+      });
     }
   });
 }
@@ -134,17 +196,36 @@ export async function fetchChatModels(
   let result: FetchChatModelsResult | null;
 
   try {
+    const requestUrl = `${runtime.resolveBaseUrl()}/llm/gemini-models`;
+    if (DEBUG_AI_PROXY) {
+      console.warn("[ai-chat] fetch-models", {
+        url: requestUrl,
+      });
+    }
+
     const response = await runtime.fetchImpl(
-      `${runtime.resolveBaseUrl()}/llm/gemini-models`,
+      requestUrl,
       {
       signal: controller.signal,
       }
     );
     if (!response.ok) {
+      if (DEBUG_AI_PROXY) {
+        console.warn("[ai-chat] fetch-models non-ok response", {
+          url: requestUrl,
+          status: response.status,
+        });
+      }
       result = null;
     } else {
-    const data = (await response.json()) as ModelsApiResponse;
+      const data = (await response.json()) as ModelsApiResponse;
       if (data.status !== "ok" || !data.models) {
+        if (DEBUG_AI_PROXY) {
+          console.warn("[ai-chat] fetch-models invalid payload", {
+            url: requestUrl,
+            data,
+          });
+        }
         result = createModelFetchErrorResult({
           code: "MODEL_FETCH_FAILED",
           retryable: true,
@@ -159,6 +240,11 @@ export async function fetchChatModels(
       }
     }
   } catch (error) {
+    if (DEBUG_AI_PROXY) {
+      console.warn("[ai-chat] fetch-models threw", {
+        error,
+      });
+    }
     if (error instanceof DOMException && error.name === "AbortError") {
       result = createModelFetchErrorResult({
         code: "MODEL_FETCH_TIMEOUT",

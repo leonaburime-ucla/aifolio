@@ -17,6 +17,7 @@ describe("chatStore.logic", () => {
       modelOptions: [],
       selectedModelId: null,
       isModelsLoading: false,
+      screenFeedback: null,
     });
   });
 

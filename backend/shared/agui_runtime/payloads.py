@@ -10,6 +10,28 @@ import json
 from typing import Any, Callable
 
 
+def _serialize_tool(tool: Any) -> dict[str, Any] | None:
+    """Normalize a runtime tool object/dict into a prompt-safe descriptor."""
+    if isinstance(tool, dict):
+        name = str(tool.get("name") or "").strip()
+        if not name:
+            return None
+        return {
+            "name": name,
+            "description": tool.get("description", ""),
+            "parameters": tool.get("parameters", {}),
+        }
+
+    name = str(getattr(tool, "name", "") or "").strip()
+    if not name:
+        return None
+    return {
+        "name": name,
+        "description": getattr(tool, "description", ""),
+        "parameters": getattr(tool, "parameters", {}),
+    }
+
+
 def extract_text(content: Any) -> str:
     """Normalize AG-UI message content into plain text.
 
@@ -158,14 +180,7 @@ def build_chat_payload(
     return {
         "messages": normalized_messages,
         "model": selected_model,
-        "tools": [
-            {
-                "name": tool.name,
-                "description": tool.description,
-                "parameters": tool.parameters,
-            }
-            for tool in tools
-        ],
+        "tools": [serialized for tool in tools if (serialized := _serialize_tool(tool)) is not None],
         "context": [
             {
                 "description": item.description,

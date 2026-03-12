@@ -118,6 +118,8 @@ def _build_system_prompt(payload: ChatPayload) -> str:
         "Do not wrap JSON in markdown or code fences.\n"
         "Do not include any extra keys at the top level.\n"
         "If the user asks for charting, populate chartSpec with one or more entries.\n"
+        "When chartSpec can satisfy a chart request, do not emit `add_chart_spec` or `ar-add_chart_spec` in `actions`.\n"
+        "For singular chart requests like 'a line chart' or 'one chart' comparing multiple series on the same x-axis, return exactly one multi-series ChartSpec rather than separate charts.\n"
         "ChartSpec fields: { id, title, description?, type, xKey, yKeys, xLabel?, yLabel?, zKey?, colorKey?, errorKeys?, data, unit?, currency?, timeframe?, source?, meta? }.\n"
         "Allowed chart types: 'line'|'area'|'bar'|'scatter'|'histogram'|'density'|'roc'|'pr'|'errorbar'|'heatmap'|'box'|'biplot'|'dendrogram'.\n"
         "Prefer those chart types and avoid unsupported UI types.\n"
@@ -145,6 +147,7 @@ def _build_system_prompt(payload: ChatPayload) -> str:
             base_prompt
             + "\nPLANNING MODE:\n"
             "- Return ONLY tool actions needed to satisfy the user request.\n"
+            "- Do not emit `add_chart_spec` or `ar-add_chart_spec`; chart rendering is handled by `chartSpec` in the full response.\n"
             "- Keep `message` short and operational (or empty string).\n"
             "- Always set `chartSpec` to null in this mode.\n"
             "- Do not include analysis prose in this mode.\n"

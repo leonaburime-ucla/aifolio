@@ -46,6 +46,7 @@ function createDeps(overrides: Partial<ChatDeps> = {}): ChatDeps {
       modelOptions: [],
       selectedModelId: null,
       isModelsLoading: false,
+      screenFeedback: null,
       activeDatasetId: null,
     },
     actions: {
@@ -57,6 +58,7 @@ function createDeps(overrides: Partial<ChatDeps> = {}): ChatDeps {
       setModelOptions: vi.fn(),
       setSelectedModelId: vi.fn(),
       setModelsLoading: vi.fn(),
+      setScreenFeedback: vi.fn(),
       addChartSpec: vi.fn(),
       onMessageReceived: vi.fn(),
     },
@@ -92,6 +94,7 @@ describe("useChat hooks unit", () => {
       setModelOptions: vi.fn(),
       setSelectedModelId: vi.fn(),
       setModelsLoading: vi.fn(),
+      setScreenFeedback: vi.fn(),
       addChartSpec: vi.fn(),
       onMessageReceived: vi.fn(),
     };
@@ -160,6 +163,7 @@ describe("useChat hooks unit", () => {
         modelOptions: [],
         selectedModelId: null,
         isModelsLoading: false,
+        screenFeedback: null,
         activeDatasetId: null,
       },
     });
@@ -191,6 +195,7 @@ describe("useChat hooks unit", () => {
         modelOptions: [],
         selectedModelId: null,
         isModelsLoading: false,
+        screenFeedback: null,
         activeDatasetId: null,
       },
     });
@@ -252,10 +257,64 @@ describe("useChat hooks unit", () => {
     act(() => {
       result.current.resetHistoryCursor();
       result.current.setSelectedModelId("model-x");
+      result.current.setScreenFeedback({
+        kind: "error",
+        code: "CHAT_REQUEST_FAILED",
+        message: "failed",
+      });
     });
 
     expect(deps.actions.resetHistoryCursor).toHaveBeenCalledTimes(1);
     expect(deps.actions.setSelectedModelId).toHaveBeenCalledWith("model-x");
+    expect(deps.actions.setScreenFeedback).toHaveBeenCalledWith({
+      kind: "error",
+      code: "CHAT_REQUEST_FAILED",
+      message: "failed",
+    });
+  });
+
+  it("retries the last failed submission without adding a duplicate user message", async () => {
+    const sendMessage = vi
+      .fn()
+      .mockRejectedValueOnce(new Error("network"))
+      .mockResolvedValueOnce({
+        message: "assistant reply",
+        chartSpec: null,
+      });
+    const uiState = createUiState({
+      value: "hello",
+      attachments: [{ name: "file.txt", type: "text/plain", size: 1, dataUrl: "data:file" }],
+    });
+    const deps = createDeps({
+      api: {
+        sendMessage,
+        fetchModels: vi.fn(async () => null),
+      },
+    });
+
+    const { result } = renderHook(() => useChatLogic(uiState, deps));
+
+    await act(async () => {
+      await result.current.submit();
+    });
+
+    expect(deps.actions.addMessage).toHaveBeenCalledTimes(1);
+    expect(deps.actions.setScreenFeedback).toHaveBeenCalledWith(
+      expect.objectContaining({
+        code: "CHAT_REQUEST_FAILED",
+      })
+    );
+
+    await act(async () => {
+      await result.current.retryLastSubmission();
+    });
+
+    expect(sendMessage).toHaveBeenCalledTimes(2);
+    expect(deps.actions.addMessage).toHaveBeenCalledTimes(2);
+    expect(deps.actions.onMessageReceived).toHaveBeenCalledWith({
+      message: "assistant reply",
+      chartSpec: null,
+    });
   });
 
   it("useChatIntegration bootstraps model fetch when models are empty and not loading", async () => {
@@ -286,6 +345,7 @@ describe("useChat hooks unit", () => {
         modelOptions: [{ id: "m1", label: "Model 1" }],
         selectedModelId: "m1",
         isModelsLoading: false,
+        screenFeedback: null,
         activeDatasetId: null,
       },
     });
@@ -301,10 +361,12 @@ describe("useChat hooks unit", () => {
         modelOptions: [],
         selectedModelId: null,
         isModelsLoading: true,
+        screenFeedback: null,
         activeDatasetId: null,
       },
     });
     renderHook(() => useChatIntegration(loadingDeps));
     expect(loadingDeps.api.fetchModels).not.toHaveBeenCalled();
   });
+
 });

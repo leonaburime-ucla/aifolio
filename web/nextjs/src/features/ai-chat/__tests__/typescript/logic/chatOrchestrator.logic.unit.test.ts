@@ -25,6 +25,7 @@ describe("chatOrchestrator.logic", () => {
       modelOptions: [],
       selectedModelId: null,
       isModelsLoading: false,
+      screenFeedback: null,
       activeDatasetId: null,
     };
     const actions = {
@@ -36,6 +37,7 @@ describe("chatOrchestrator.logic", () => {
       setModelOptions: vi.fn(),
       setSelectedModelId: vi.fn(),
       setModelsLoading: vi.fn(),
+      setScreenFeedback: vi.fn(),
       addChartSpec: vi.fn(),
       onMessageReceived: vi.fn(),
     };

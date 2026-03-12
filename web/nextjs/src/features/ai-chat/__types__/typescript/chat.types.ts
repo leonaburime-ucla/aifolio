@@ -2,6 +2,7 @@
  * Domain type for chat messages.
  */
 import type { ChartSpec } from "@/features/ai-chat/__types__/typescript/chart.types";
+import type { ScreenFeedback } from "@/features/ai-chat/__types__/typescript/uiFeedback.types";
 import type {
   BuildChatHistoryWindowInput,
   BuildChatHistoryWindowOptions,
@@ -72,6 +73,7 @@ export type ChatState = {
   modelOptions: ChatModelOption[];
   selectedModelId: string | null;
   isModelsLoading: boolean;
+  screenFeedback: ScreenFeedback | null;
   activeDatasetId?: string | null;
 };
 
@@ -88,6 +90,7 @@ export type ChatStateActions = {
   setModelOptions: (value: ChatModelOption[]) => void;
   setSelectedModelId: (value: string | null) => void;
   setModelsLoading: (value: boolean) => void;
+  setScreenFeedback: (value: ScreenFeedback | null) => void;
   addChartSpec: (spec: ChartSpec) => void;
   onMessageReceived: (payload: ChatAssistantPayload) => void;
 };
@@ -147,9 +150,11 @@ export type ChatUiState = {
  */
 export type ChatActions = {
   submit: () => Promise<void>;
+  retryLastSubmission: () => Promise<void>;
   handleHistory: (direction: ChatHistoryDirection) => void;
   resetHistoryCursor: () => void;
   setSelectedModelId: (value: string | null) => void;
+  setScreenFeedback: (value: ScreenFeedback | null) => void;
   /**
    * Manually triggers a model fetch.
    */

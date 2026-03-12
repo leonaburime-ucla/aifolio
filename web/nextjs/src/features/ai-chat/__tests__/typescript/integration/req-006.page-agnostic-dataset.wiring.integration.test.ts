@@ -17,6 +17,7 @@ const stateAdapterMock = {
     modelOptions: [],
     selectedModelId: null,
     isModelsLoading: false,
+    screenFeedback: null,
   },
   actions: {
     addMessage: vi.fn(),
@@ -27,6 +28,7 @@ const stateAdapterMock = {
     setModelOptions: vi.fn(),
     setSelectedModelId: vi.fn(),
     setModelsLoading: vi.fn(),
+    setScreenFeedback: vi.fn(),
   },
 };
 

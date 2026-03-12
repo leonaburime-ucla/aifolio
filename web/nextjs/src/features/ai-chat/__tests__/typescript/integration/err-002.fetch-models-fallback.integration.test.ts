@@ -28,6 +28,7 @@ describe("ERR-002 model fetch failure fallback", () => {
         modelOptions: [],
         selectedModelId: null,
         isModelsLoading: false,
+        screenFeedback: null,
         activeDatasetId: null,
       },
       actions: {
@@ -39,6 +40,7 @@ describe("ERR-002 model fetch failure fallback", () => {
         setModelOptions: vi.fn(),
         setSelectedModelId: vi.fn(),
         setModelsLoading: vi.fn(),
+        setScreenFeedback: vi.fn(),
         addChartSpec: vi.fn(),
         onMessageReceived: vi.fn(),
       },

@@ -91,7 +91,7 @@ export default function AgUiWorkspace() {
             <div className="mt-3 text-[12px]">
               <ol className="list-decimal pl-5 flex flex-col gap-1">
                 <li>Use the house prices dataset. Switch the training algorithm from neural net to wide and deep. Set test sizes to 0.25 and 0.3, batch sizes to 32 and 64, and hidden dims to 128 and 256.</li>
-                <li>Change from customer churn to house prices. Set task to regression, choose a different target column, set epochs to 20 and 40, and start training runs.</li>
+                <li>Change from customer churn to house prices. Set task to regression, set epochs to 20 and 40, and start training runs.</li>
                 <li>Randomize TensorFlow form fields with one value each, and keep the current algorithm.</li>
                 <li>Switch the algorithm to entity embeddings, and turn auto-distill on.</li>
               </ol>

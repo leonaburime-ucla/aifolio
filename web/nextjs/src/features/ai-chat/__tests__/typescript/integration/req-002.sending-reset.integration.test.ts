@@ -21,6 +21,7 @@ function createDeps(
       modelOptions: [],
       selectedModelId: null,
       isModelsLoading: false,
+      screenFeedback: null,
       activeDatasetId: null,
     },
     actions: {
@@ -32,6 +33,7 @@ function createDeps(
       setModelOptions: vi.fn(),
       setSelectedModelId: vi.fn(),
       setModelsLoading: vi.fn(),
+      setScreenFeedback: vi.fn(),
       addChartSpec: vi.fn(),
       onMessageReceived: vi.fn(),
     },
@@ -105,14 +107,17 @@ describe("REQ-002 sending reset on all outcomes", () => {
 
     const { result } = renderHook(() => useChatLogic(uiState, deps));
 
-    await expect(
-      act(async () => {
-        await result.current.submit();
-      })
-    ).rejects.toThrow("network");
+    await act(async () => {
+      await result.current.submit();
+    });
 
     expect(deps.actions.setSending).toHaveBeenNthCalledWith(1, true);
     expect(deps.actions.setSending).toHaveBeenLastCalledWith(false);
+    expect(deps.actions.setScreenFeedback).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        code: "CHAT_REQUEST_FAILED",
+      })
+    );
     expect(uiState.clearAttachments).toHaveBeenCalledTimes(1);
   });
 });

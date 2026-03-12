@@ -15,6 +15,7 @@ export function useAiChatStateAdapter(): ChatStatePort {
       modelOptions: store.modelOptions,
       selectedModelId: store.selectedModelId,
       isModelsLoading: store.isModelsLoading,
+      screenFeedback: store.screenFeedback,
     }))
   );
 
@@ -28,6 +29,7 @@ export function useAiChatStateAdapter(): ChatStatePort {
       setModelOptions: store.setModelOptions,
       setSelectedModelId: store.setSelectedModelId,
       setModelsLoading: store.setModelsLoading,
+      setScreenFeedback: store.setScreenFeedback,
     }))
   );
 

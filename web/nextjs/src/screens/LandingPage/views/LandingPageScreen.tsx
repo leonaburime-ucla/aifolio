@@ -3,8 +3,10 @@
 import { useEffect } from "react";
 import LandingCharts from "@/core/views/screens/LandingCharts";
 import dynamic from "next/dynamic";
+import UIFeedback from "@/screens/LandingPage/views/components/UIFeedback";
 
 const DEBUG_EFFECTS = process.env.NEXT_PUBLIC_DEBUG_EFFECTS === "1";
+const DEFAULT_DEMO_TOAST_DURATION_MS = 4000;
 
 function getDebugPath(): string {
   return globalThis.location?.pathname ?? "";
@@ -41,6 +43,7 @@ export default function LandingPageScreen({
 
   return (
     <div className="flex min-h-screen flex-row bg-zinc-50 text-zinc-900">
+      <UIFeedback />
       <main className="min-w-0 flex-1 py-10">
         <div
           className={`mx-auto flex max-w-5xl flex-col gap-8 ${

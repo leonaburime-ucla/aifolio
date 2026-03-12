@@ -9,6 +9,7 @@ const state = {
   modelOptions: [],
   selectedModelId: null,
   isModelsLoading: false,
+  screenFeedback: null,
 };
 
 const actions = {
@@ -20,6 +21,7 @@ const actions = {
   setModelOptions: vi.fn(),
   setSelectedModelId: vi.fn(),
   setModelsLoading: vi.fn(),
+  setScreenFeedback: vi.fn(),
 };
 
 vi.mock("zustand/react/shallow", () => ({

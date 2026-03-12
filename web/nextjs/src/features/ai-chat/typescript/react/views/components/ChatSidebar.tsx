@@ -5,6 +5,7 @@ import ChatBar from "@/features/ai-chat/typescript/react/views/components/ChatBa
 import { useChatOrchestrator } from "@/features/ai-chat/typescript/react/orchestrators/chatOrchestrator";
 import type { ChatOrchestrator } from "@/features/ai-chat/typescript/react/orchestrators/chatOrchestrator";
 import { useChatSidebarUi } from "@/features/ai-chat/typescript/react/hooks/useChatSidebar.web";
+import UIFeedback from "@/features/ai-chat/typescript/react/views/components/UIFeedback";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -32,7 +33,10 @@ export default function ChatSidebar({
     modelOptions,
     selectedModelId,
     isModelsLoading,
+    screenFeedback,
     setSelectedModelId,
+    setScreenFeedback,
+    retryLastSubmission,
     addAttachments,
     attachments,
     removeAttachment,
@@ -91,6 +95,16 @@ export default function ChatSidebar({
           )}
         </select>
       </div>
+
+      {screenFeedback ? (
+        <div className="px-4 pt-3">
+          <UIFeedback
+            feedback={screenFeedback}
+            onDismiss={() => setScreenFeedback(null)}
+            onAction={screenFeedback.retryable ? () => void retryLastSubmission() : undefined}
+          />
+        </div>
+      ) : null}
 
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4">
         <div className="flex flex-col gap-3">

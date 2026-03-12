@@ -22,6 +22,7 @@ function createOrchestrator(overrides: Partial<ChatOrchestrator> = {}): ChatOrch
     modelOptions: [],
     selectedModelId: null,
     isModelsLoading: false,
+    screenFeedback: null,
     activeDatasetId: null,
     value: "",
     showTooltip: false,
@@ -33,10 +34,12 @@ function createOrchestrator(overrides: Partial<ChatOrchestrator> = {}): ChatOrch
     clearAttachments: vi.fn(),
     removeAttachment: vi.fn(),
     submit: vi.fn(async () => undefined),
+    retryLastSubmission: vi.fn(async () => undefined),
     handleHistory: vi.fn(),
     resetHistoryCursor: vi.fn(),
     setSelectedModelId: vi.fn(),
     refetchModels: vi.fn(async () => undefined),
+    setScreenFeedback: vi.fn(),
     ...overrides,
   };
 }
@@ -165,5 +168,40 @@ describe("ChatSidebar component", () => {
 
     render(<ChatSidebar chatOrchestrator={() => orchestrator} />);
     expect(screen.getByRole("button", { name: "✓" })).toBeInTheDocument();
+  });
+
+  it("renders persistent feedback and dismisses it through the orchestrator", () => {
+    const setScreenFeedback = vi.fn();
+    const retryLastSubmission = vi.fn(async () => undefined);
+    const orchestrator = createOrchestrator({
+      screenFeedback: {
+        kind: "error",
+        code: "CHAT_REQUEST_FAILED",
+        message: "Could not reach the AI service.",
+        retryable: true,
+        actionLabel: "Try again",
+      },
+      setScreenFeedback,
+      retryLastSubmission,
+    });
+    sidebarUiMock.mockReturnValue({
+      scrollRef: { current: null },
+      isDragging: false,
+      copiedId: null,
+      handleCopy: vi.fn(),
+      handleDrop: vi.fn(),
+      handleDragOver: vi.fn(),
+      handleDragLeave: vi.fn(),
+    });
+
+    render(<ChatSidebar chatOrchestrator={() => orchestrator} />);
+
+    expect(screen.getByText("Could not reach the AI service.")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(retryLastSubmission).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(screen.getByRole("button", { name: "Dismiss feedback" }));
+    expect(setScreenFeedback).toHaveBeenCalledWith(null);
   });
 });

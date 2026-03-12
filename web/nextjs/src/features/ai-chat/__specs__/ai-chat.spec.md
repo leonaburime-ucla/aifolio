@@ -1,9 +1,9 @@
 # Feature Spec: AI Chat
 
 Spec ID: `ai-chat`
-Version: `1.8.0`
+Version: `1.9.0`
 Status: `draft`
-Last updated: `2026-03-02`
+Last updated: `2026-03-11`
 
 ## Scope
 
@@ -13,6 +13,7 @@ In scope:
 - Model option loading with deterministic fallback behavior.
 - Chart payload fan-out from assistant responses into chart action ports.
 - Type contracts under `features/ai-chat/__types__/typescript`.
+- Feature-local feedback rendering via `typescript/react/views/components/UIFeedback.tsx`.
 
 Out of scope:
 - Route/page composition and cross-feature orchestration (owned by `screens/*`).
@@ -39,6 +40,7 @@ Out of scope:
 - REQ-007: In-flight requests MUST be abortable on unmount/navigation, and aborted requests MUST NOT mutate state afterward.
 - REQ-008: Attachment handling MUST define deterministic acceptance rules (allowed type policy, max size, max count) and reject invalid files with structured non-crashing outcomes.
 - REQ-009: Timeout behavior MUST be explicit per endpoint; timeout outcomes MUST map to defined error contracts.
+- REQ-010: Chat request and model-loading failures MUST populate persistent, structured screen feedback that the feature view can render and dismiss.
 
 ## Deterministic Rules
 
@@ -59,6 +61,7 @@ Out of scope:
 - AC-007 (REQ-007): Given unmount/navigation during request, no post-abort state update occurs.
 - AC-008 (REQ-008): Given invalid attachment input, chat UI remains usable and invalid files are rejected predictably.
 - AC-009 (REQ-009): Given endpoint timeout, UI receives deterministic timeout behavior per error contract.
+- AC-010 (REQ-010): Given request failure or degraded model loading, the chat sidebar renders persistent inline feedback until the user retries or dismisses it.
 
 ## Open Clarifications
 

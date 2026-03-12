@@ -27,6 +27,7 @@ describe("REQ-001/AC-001 submit ordering", () => {
         modelOptions: [],
         selectedModelId: null,
         isModelsLoading: false,
+        screenFeedback: null,
         activeDatasetId: null,
       },
       actions: {
@@ -38,6 +39,7 @@ describe("REQ-001/AC-001 submit ordering", () => {
         setModelOptions: vi.fn(),
         setSelectedModelId: vi.fn(),
         setModelsLoading: vi.fn(),
+        setScreenFeedback: vi.fn(),
         addChartSpec: vi.fn(),
         onMessageReceived: vi.fn(),
       },

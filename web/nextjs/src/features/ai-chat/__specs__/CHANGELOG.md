@@ -1,5 +1,11 @@
 # AI Chat Specs Changelog
 
+## 1.9.0 - 2026-03-11
+
+- Added a feature-local `UIFeedback` component contract for persistent inline feedback.
+- Added `REQ-010` to require structured screen feedback for request failures and degraded model loading.
+- Added `ERR-008` to prevent important chat failures from being toast-only or otherwise ephemeral.
+
 ## 1.8.0 - 2026-03-02
 
 - De-duplicated behavior vs feature specs; behavior file now focuses on flow semantics/invariants.

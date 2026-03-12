@@ -30,6 +30,7 @@ describe("REQ-001/DR-001 empty input short-circuit", () => {
         modelOptions: [],
         selectedModelId: null,
         isModelsLoading: false,
+        screenFeedback: null,
         activeDatasetId: null,
       },
       actions: {
@@ -41,6 +42,7 @@ describe("REQ-001/DR-001 empty input short-circuit", () => {
         setModelOptions: vi.fn(),
         setSelectedModelId: vi.fn(),
         setModelsLoading: vi.fn(),
+        setScreenFeedback: vi.fn(),
         addChartSpec: vi.fn(),
         onMessageReceived: vi.fn(),
       },

@@ -41,6 +41,7 @@ describe("REQ-007 abort/unmount behavior", () => {
         modelOptions: [],
         selectedModelId: null,
         isModelsLoading: false,
+        screenFeedback: null,
         activeDatasetId: null,
       },
       actions: {
@@ -52,6 +53,7 @@ describe("REQ-007 abort/unmount behavior", () => {
         setModelOptions: vi.fn(),
         setSelectedModelId: vi.fn(),
         setModelsLoading: vi.fn(),
+        setScreenFeedback: vi.fn(),
         addChartSpec: vi.fn(),
         onMessageReceived: vi.fn(),
       },

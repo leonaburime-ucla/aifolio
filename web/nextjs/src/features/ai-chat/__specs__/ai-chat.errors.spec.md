@@ -1,7 +1,7 @@
 # AI Chat Error Spec
 
-Version: `1.8.0`
-Last updated: `2026-03-02`
+Version: `1.9.0`
+Last updated: `2026-03-11`
 
 ## Error Handling Contracts
 
@@ -12,3 +12,4 @@ Last updated: `2026-03-02`
 - ERR-005: Endpoint timeout returns a deterministic timeout result shape (`retryable=true`) and must not crash UI.
 - ERR-006: Aborted request returns deterministic no-op completion behavior; no stale-state writes are allowed.
 - ERR-007: Invalid attachments return deterministic rejection outcomes without breaking submit flow.
+- ERR-008: Request failures and degraded model fallback states surface as persistent inline `ScreenFeedback`, not toast-only notifications.

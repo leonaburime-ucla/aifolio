@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { ChatMessage, ChatModelOption } from "@/features/ai-chat/__types__/typescript/chat.types";
+import type { ScreenFeedback } from "@/features/ai-chat/__types__/typescript/uiFeedback.types";
 import {
   appendInputHistory,
   appendMessage,
@@ -40,6 +41,10 @@ type AiChatState = {
    */
   isModelsLoading: boolean;
   /**
+   * Persistent inline feedback for chat failures or degraded states.
+   */
+  screenFeedback: ScreenFeedback | null;
+  /**
    * Append a new chat message to the transcript.
    */
   addMessage: (message: ChatMessage) => void;
@@ -71,6 +76,10 @@ type AiChatState = {
    * Toggle model options loading state.
    */
   setModelsLoading: (value: boolean) => void;
+  /**
+   * Persist or clear inline feedback for the chat surface.
+   */
+  setScreenFeedback: (value: ScreenFeedback | null) => void;
 };
 
 /**
@@ -125,6 +134,10 @@ export const useAiChatStore = create<AiChatState>((set, get) => ({
    * Mark whether model options are still loading.
    */
   setModelsLoading: (value) => set({ isModelsLoading: value }),
+  /**
+   * Persist or clear inline chat feedback.
+   */
+  setScreenFeedback: (value) => set({ screenFeedback: value }),
 }));
 
 export type { AiChatState };

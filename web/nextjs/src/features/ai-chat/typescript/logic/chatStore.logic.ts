@@ -24,6 +24,7 @@ export function createInitialChatStoreCoreState(
     modelOptions: [],
     selectedModelId: null,
     isModelsLoading: false,
+    screenFeedback: null,
   };
 }
 

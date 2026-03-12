@@ -16,15 +16,14 @@ export async function fetchAgUiModels(timeoutMs = 5000): Promise<FetchAgUiModels
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const response = await fetch(`${getAiApiBaseUrl()}/llm/gemini-models`, {
+    const requestUrl = `${getAiApiBaseUrl()}/llm/gemini-models`;
+    const response = await fetch(requestUrl, {
       signal: controller.signal,
     });
     if (!response.ok) return null;
 
     const payload = (await response.json()) as ModelsResponse;
-    if (payload.status !== "ok" || !Array.isArray(payload.models)) {
-      return null;
-    }
+    if (payload.status !== "ok" || !Array.isArray(payload.models)) return null;
 
     return {
       currentModel: payload.currentModel ?? null,

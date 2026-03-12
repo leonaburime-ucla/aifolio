@@ -12,6 +12,7 @@ function createOrchestrator(overrides: Partial<ChatOrchestrator> = {}): ChatOrch
     modelOptions: [],
     selectedModelId: null,
     isModelsLoading: false,
+    screenFeedback: null,
     activeDatasetId: null,
     value: "",
     showTooltip: false,
@@ -23,10 +24,12 @@ function createOrchestrator(overrides: Partial<ChatOrchestrator> = {}): ChatOrch
     clearAttachments: vi.fn(),
     removeAttachment: vi.fn(),
     submit: vi.fn(async () => undefined),
+    retryLastSubmission: vi.fn(async () => undefined),
     handleHistory: vi.fn(),
     resetHistoryCursor: vi.fn(),
     setSelectedModelId: vi.fn(),
     refetchModels: vi.fn(async () => undefined),
+    setScreenFeedback: vi.fn(),
     ...overrides,
   };
 }

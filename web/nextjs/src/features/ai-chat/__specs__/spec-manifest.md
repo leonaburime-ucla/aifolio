@@ -2,7 +2,7 @@
 
 Spec naming: `prefixed`
 Package root: `features/ai-chat/__specs__`
-Spec version baseline: `1.8.0`
+Spec version baseline: `1.9.0`
 
 Produced files:
 - `ai-chat.spec.md`

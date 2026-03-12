@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { ChatMessage, ChatModelOption } from "@/features/ai-chat/__types__/typescript/chat.types";
+import type { ScreenFeedback } from "@/features/ai-chat/__types__/typescript/uiFeedback.types";
 import {
   appendInputHistory,
   appendMessage,
@@ -15,6 +16,7 @@ type LandingChatState = {
   modelOptions: ChatModelOption[];
   selectedModelId: string | null;
   isModelsLoading: boolean;
+  screenFeedback: ScreenFeedback | null;
   addMessage: (message: ChatMessage) => void;
   addInputToHistory: (value: string) => void;
   moveHistoryCursor: (direction: "up" | "down") => string;
@@ -23,6 +25,7 @@ type LandingChatState = {
   setModelOptions: (value: ChatModelOption[]) => void;
   setSelectedModelId: (value: string | null) => void;
   setModelsLoading: (value: boolean) => void;
+  setScreenFeedback: (value: ScreenFeedback | null) => void;
 };
 
 export const useLandingChatStore = create<LandingChatState>((set, get) => ({
@@ -50,6 +53,7 @@ export const useLandingChatStore = create<LandingChatState>((set, get) => ({
   setModelOptions: (value) => set({ modelOptions: value }),
   setSelectedModelId: (value) => set({ selectedModelId: value }),
   setModelsLoading: (value) => set({ isModelsLoading: value }),
+  setScreenFeedback: (value) => set({ screenFeedback: value }),
 }));
 
 export type { LandingChatState };

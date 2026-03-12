@@ -1,18 +1,105 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type {
   ChatActions,
+  ChatAttachment,
   ChatDeps,
   ChatHistoryDirection,
+  ChatHistoryMessage,
   ChatIntegration,
   ChatModelOption,
   ChatStateActions,
   ChatUiState,
 } from "@/features/ai-chat/__types__/typescript/chat.types";
+import type { ScreenFeedback } from "@/features/ai-chat/__types__/typescript/uiFeedback.types";
 
 const DEBUG_EFFECTS = process.env.NEXT_PUBLIC_DEBUG_EFFECTS === "1";
+const INVALID_RESPONSE_FEEDBACK: ScreenFeedback = {
+  kind: "error",
+  code: "CHAT_RESPONSE_INVALID",
+  message: "The AI service did not return a usable response. Try again.",
+  retryable: true,
+  actionLabel: "Try again",
+};
 
 function getDebugPath(): string {
   return globalThis.location?.pathname ?? "";
+}
+
+type PendingSubmission = {
+  value: string;
+  model: string | null;
+  history: ChatHistoryMessage[];
+  attachments: ChatAttachment[];
+  datasetId: string | null;
+};
+
+/**
+ * Convert unknown request failures into a stable, UI-safe feedback contract.
+ *
+ * @param error - Required unknown runtime failure.
+ * @returns Screen feedback that the view can render persistently.
+ */
+function resolveSubmitFeedback(error: unknown): ScreenFeedback {
+  if (
+    error &&
+    typeof error === "object" &&
+    "code" in error &&
+    error.code === "CHAT_REQUEST_HTTP_ERROR" &&
+    "status" in error &&
+    typeof error.status === "number"
+  ) {
+    return {
+      kind: "error",
+      code: error.status >= 500 ? "CHAT_SERVICE_UNAVAILABLE" : "CHAT_REQUEST_REJECTED",
+      message:
+        error.status >= 500
+          ? "The AI service returned an error. Try again in a moment."
+          : "The AI service rejected the request. Check the request and try again.",
+      retryable: true,
+      actionLabel: "Try again",
+    };
+  }
+
+  if (
+    error &&
+    typeof error === "object" &&
+    "code" in error &&
+    error.code === "CHAT_RESPONSE_PARSE_ERROR"
+  ) {
+    return {
+      kind: "error",
+      code: "CHAT_RESPONSE_INVALID",
+      message: "The AI service returned an unreadable response. Try again.",
+      retryable: true,
+      actionLabel: "Try again",
+    };
+  }
+
+  if (error instanceof DOMException && error.name === "AbortError") {
+    return {
+      kind: "info",
+      code: "CHAT_REQUEST_ABORTED",
+      message: "The request was canceled before a response was returned.",
+    };
+  }
+
+  if (globalThis.navigator?.onLine === false) {
+    return {
+      kind: "error",
+      code: "CHAT_OFFLINE",
+      message: "You're offline. Reconnect to the internet and try again.",
+      retryable: true,
+      actionLabel: "Try again",
+    };
+  }
+
+  return {
+    kind: "error",
+    code: "CHAT_REQUEST_FAILED",
+    message: "Could not reach the AI service. Check your connection and try again.",
+    retryable: true,
+    actionLabel: "Try again",
+  };
 }
 
 export type ChatLogicRuntimeDeps = {
@@ -136,6 +223,8 @@ export function useChatLogic(
    */
   const draftValueRef = useRef("");
   const isMountedRef = useRef(true);
+  const lastSubmissionRef = useRef<PendingSubmission | null>(null);
+  const { state, actions, api, logic } = deps;
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -153,60 +242,91 @@ export function useChatLogic(
    *
    * @returns Promise that resolves when the submit lifecycle completes.
    */
+  const runSubmission = useCallback(
+    async (submission: PendingSubmission): Promise<void> => {
+      actions.setScreenFeedback(null);
+      actions.setSending(true);
+      try {
+        const assistantMessage = await api.sendMessage(
+          {
+            value: submission.value,
+            model: submission.model,
+            history: submission.history,
+            attachments: submission.attachments,
+          },
+          {
+            datasetId: submission.datasetId,
+          }
+        );
+
+        if (!isMountedRef.current) return;
+
+        if (!assistantMessage) {
+          actions.setScreenFeedback(INVALID_RESPONSE_FEEDBACK);
+          return;
+        }
+
+        actions.setScreenFeedback(null);
+
+        const assistantTimestamp = now();
+        actions.addMessage({
+          ...logic.createAssistantChatMessage({
+            id: createId(assistantTimestamp),
+            content: assistantMessage.message,
+            createdAt: assistantTimestamp,
+          }),
+        });
+        actions.onMessageReceived(assistantMessage);
+      } catch (error) {
+        if (!isMountedRef.current) return;
+        actions.setScreenFeedback(resolveSubmitFeedback(error));
+      } finally {
+        if (!isMountedRef.current) return;
+        actions.setSending(false);
+      }
+    },
+    [actions, api, logic, now, createId]
+  );
+
   const submit = useCallback(async (): Promise<void> => {
-    const trimmed = deps.logic.normalizeSubmissionValue({ value: uiState.value });
+    const trimmed = logic.normalizeSubmissionValue({ value: uiState.value });
     if (!trimmed) return;
 
-    deps.actions.addInputToHistory(trimmed);
-    const history = deps.logic.buildChatHistoryWindow({
-      messages: deps.state.messages,
+    actions.addInputToHistory(trimmed);
+    const history = logic.buildChatHistoryWindow({
+      messages: state.messages,
       userContent: trimmed,
       attachments: uiState.attachments,
     });
 
     const userTimestamp = now();
-    deps.actions.addMessage({
-      ...deps.logic.createUserChatMessage({
+    actions.addMessage({
+      ...logic.createUserChatMessage({
         id: createId(userTimestamp),
         content: trimmed,
         createdAt: userTimestamp,
       }),
     });
 
+    lastSubmissionRef.current = {
+      value: trimmed,
+      model: state.selectedModelId,
+      history,
+      attachments: [...uiState.attachments],
+      datasetId: state.activeDatasetId ?? null,
+    };
+
     uiState.resetValue();
-    deps.actions.resetHistoryCursor();
+    actions.resetHistoryCursor();
+    uiState.clearAttachments();
 
-    deps.actions.setSending(true);
-    try {
-      const assistantMessage = await deps.api.sendMessage(
-        {
-          value: trimmed,
-          model: deps.state.selectedModelId,
-          history,
-          attachments: uiState.attachments,
-        },
-        {
-          datasetId: deps.state.activeDatasetId ?? null,
-        }
-      );
+    await runSubmission(lastSubmissionRef.current);
+  }, [actions, logic, state.messages, state.selectedModelId, state.activeDatasetId, uiState, now, createId, runSubmission]);
 
-      if (assistantMessage) {
-        const assistantTimestamp = now();
-        deps.actions.addMessage({
-          ...deps.logic.createAssistantChatMessage({
-            id: createId(assistantTimestamp),
-            content: assistantMessage.message,
-            createdAt: assistantTimestamp,
-          }),
-        });
-        deps.actions.onMessageReceived(assistantMessage);
-      }
-    } finally {
-      if (!isMountedRef.current) return;
-      deps.actions.setSending(false);
-      uiState.clearAttachments();
-    }
-  }, [deps, uiState, now, createId]);
+  const retryLastSubmission = useCallback(async (): Promise<void> => {
+    if (!lastSubmissionRef.current) return;
+    await runSubmission(lastSubmissionRef.current);
+  }, [runSubmission]);
 
   /**
    * Navigate through input history and update UI value.
@@ -217,15 +337,15 @@ export function useChatLogic(
   const handleHistory = useCallback(
     (direction: ChatHistoryDirection): void => {
       if (deps.state.inputHistory.length === 0) return;
-      if (direction === "up" && deps.state.historyCursor === null) {
+      if (direction === "up" && state.historyCursor === null) {
         draftValueRef.current = uiState.value;
       }
 
-      const nextValue = deps.actions.moveHistoryCursor(direction);
+      const nextValue = actions.moveHistoryCursor(direction);
       if (
-        deps.logic.shouldRestoreDraftValue({
+        logic.shouldRestoreDraftValue({
           direction,
-          historyCursor: deps.state.historyCursor,
+          historyCursor: state.historyCursor,
           nextValue,
         })
       ) {
@@ -235,7 +355,7 @@ export function useChatLogic(
 
       uiState.setValue(nextValue);
     },
-    [deps, uiState]
+    [actions, logic, state.inputHistory.length, state.historyCursor, uiState]
   );
 
   /**
@@ -244,8 +364,8 @@ export function useChatLogic(
    * @returns void
    */
   const resetHistoryCursor = useCallback((): void => {
-    deps.actions.resetHistoryCursor();
-  }, [deps]);
+    actions.resetHistoryCursor();
+  }, [actions]);
 
   /**
    * Update selected model in store state.
@@ -255,9 +375,22 @@ export function useChatLogic(
    */
   const setSelectedModelId = useCallback(
     (value: string | null): void => {
-      deps.actions.setSelectedModelId(value);
+      actions.setSelectedModelId(value);
     },
-    [deps]
+    [actions]
+  );
+
+  /**
+   * Update persistent inline feedback for the current chat surface.
+   *
+   * @param value - Feedback object to persist, or null to clear it.
+   * @returns void
+   */
+  const setScreenFeedback = useCallback(
+    (value: ScreenFeedback | null): void => {
+      actions.setScreenFeedback(value);
+    },
+    [actions]
   );
 
   /**
@@ -268,47 +401,60 @@ export function useChatLogic(
    */
   const refetchModels = useCallback(async (): Promise<void> => {
     try {
-      deps.actions.setModelsLoading(true);
-      const result = await deps.api.fetchModels({});
+      actions.setModelsLoading(true);
+      const result = await api.fetchModels({});
 
       if (!result || result.status === "error") {
         setFallbackModels({
-          actions: deps.actions,
-          selectedModelId: deps.state.selectedModelId,
-          resolveFallbackModelSelection: deps.logic.resolveFallbackModelSelection,
+          actions,
+          selectedModelId: state.selectedModelId,
+          resolveFallbackModelSelection: logic.resolveFallbackModelSelection,
         });
         return;
       }
 
+      if (!isMountedRef.current) return;
+
       setFetchedModels({
-        actions: deps.actions,
-        selectedModelId: deps.state.selectedModelId,
+        actions,
+        selectedModelId: state.selectedModelId,
         result: {
           currentModel: result.currentModel,
           models: result.models,
         },
-        resolveFetchedModelSelection: deps.logic.resolveFetchedModelSelection,
+        resolveFetchedModelSelection: logic.resolveFetchedModelSelection,
       });
     } catch {
       setFallbackModels({
-        actions: deps.actions,
-        selectedModelId: deps.state.selectedModelId,
-        resolveFallbackModelSelection: deps.logic.resolveFallbackModelSelection,
+        actions,
+        selectedModelId: state.selectedModelId,
+        resolveFallbackModelSelection: logic.resolveFallbackModelSelection,
       });
     } finally {
-      deps.actions.setModelsLoading(false);
+      if (!isMountedRef.current) return;
+      actions.setModelsLoading(false);
     }
-  }, [deps]);
+  }, [actions, api, state.selectedModelId, logic]);
 
   return useMemo(
     () => ({
       submit,
+      retryLastSubmission,
       handleHistory,
       resetHistoryCursor,
       setSelectedModelId,
+      setScreenFeedback,
       refetchModels,
     }),
-    [submit, handleHistory, resetHistoryCursor, setSelectedModelId, refetchModels]
+    [
+      submit,
+      retryLastSubmission,
+      handleHistory,
+      resetHistoryCursor,
+      setSelectedModelId,
+      setScreenFeedback,
+      refetchModels,
+    ]
   );
 }
 

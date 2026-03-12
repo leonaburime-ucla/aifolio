@@ -83,23 +83,27 @@ describe("chatApi", () => {
     expect(result).toEqual({ message: "plain text response", chartSpec: null });
   });
 
-  it("returns null on non-ok chat response and invalid payload", async () => {
-    const nonOkFetch = vi.fn(async () => ({ ok: false }));
-    const nonOkResult = await sendChatMessage(
-      {
-        value: "x",
-        model: null,
-        history: [],
-        attachments: [],
-      },
-      {
-        runtimeDeps: {
-          fetchImpl: nonOkFetch as unknown as typeof fetch,
-          resolveBaseUrl: () => "http://ai-api",
+  it("throws on non-ok chat response and unreadable JSON, and returns null for invalid payload", async () => {
+    const nonOkFetch = vi.fn(async () => ({ ok: false, status: 503 }));
+    await expect(
+      sendChatMessage(
+        {
+          value: "x",
+          model: null,
+          history: [],
+          attachments: [],
         },
-      }
-    );
-    expect(nonOkResult).toBeNull();
+        {
+          runtimeDeps: {
+            fetchImpl: nonOkFetch as unknown as typeof fetch,
+            resolveBaseUrl: () => "http://ai-api",
+          },
+        }
+      )
+    ).rejects.toMatchObject({
+      code: "CHAT_REQUEST_HTTP_ERROR",
+      status: 503,
+    });
 
     const invalidPayloadFetch = vi.fn(async () => ({
       ok: true,
@@ -127,21 +131,24 @@ describe("chatApi", () => {
         throw new Error("invalid json");
       },
     }));
-    const invalidJsonResult = await sendChatMessage(
-      {
-        value: "x",
-        model: null,
-        history: [],
-        attachments: undefined,
-      },
-      {
-        runtimeDeps: {
-          fetchImpl: invalidJsonFetch as unknown as typeof fetch,
-          resolveBaseUrl: () => "http://ai-api",
+    await expect(
+      sendChatMessage(
+        {
+          value: "x",
+          model: null,
+          history: [],
+          attachments: undefined,
         },
-      }
-    );
-    expect(invalidJsonResult).toBeNull();
+        {
+          runtimeDeps: {
+            fetchImpl: invalidJsonFetch as unknown as typeof fetch,
+            resolveBaseUrl: () => "http://ai-api",
+          },
+        }
+      )
+    ).rejects.toMatchObject({
+      code: "CHAT_RESPONSE_PARSE_ERROR",
+    });
   });
 
   it("fetches models success path and invalid payload path", async () => {

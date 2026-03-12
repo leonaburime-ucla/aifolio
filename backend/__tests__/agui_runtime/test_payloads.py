@@ -101,3 +101,15 @@ def test_build_chat_payload_preserves_attachments_and_requested_model():
     )
     assert result["model"] == "m-requested"
     assert result["messages"][0]["attachments"] == [{"type": "text/plain", "name": "a.txt", "url": None, "data": "x"}]
+
+
+def test_build_chat_payload_accepts_dict_tool_descriptors():
+    result = payloads.build_chat_payload(
+        messages=[_Msg("user", "hello")],
+        tools=[{"name": "switch_ag_ui_tab", "description": "desc", "parameters": {"type": "object"}}],
+        context=[],
+        requested_model="",
+        default_model_id="m-default",
+    )
+
+    assert result["tools"] == [{"name": "switch_ag_ui_tab", "description": "desc", "parameters": {"type": "object"}}]

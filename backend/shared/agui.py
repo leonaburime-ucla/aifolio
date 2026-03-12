@@ -47,7 +47,11 @@ from shared.agui_runtime.payloads import (
     extract_context_map as extract_context_map_from_runtime,
     extract_text as extract_text_from_runtime,
 )
-from shared.chat_application_service import run_unified_action_plan, run_unified_chat
+from shared.chat_application_service import (
+    is_probable_ui_action_request,
+    run_unified_action_plan,
+    run_unified_chat,
+)
 from shared.chartspec import format_assistant_json_text
 
 # Backward-compatible aliases for existing imports/tests.
@@ -57,6 +61,56 @@ _is_pure_tab_switch_intent = is_pure_tab_switch_intent
 _normalize_action_calls = normalize_action_calls
 _build_enforced_pytorch_actions = build_enforced_pytorch_actions
 _decode_context_value = decode_context_value
+
+BASE_AG_UI_TOOL_NAMES: set[str] = {"switch_ag_ui_tab"}
+GLOBAL_CHART_TOOL_NAMES: set[str] = {"add_chart_spec", "clear_charts"}
+PYTORCH_TOOL_NAMES: set[str] = {
+    "set_active_ml_form_fields",
+    "change_active_ml_target_column",
+    "randomize_active_ml_form_fields",
+    "start_active_ml_training_runs",
+    "set_pytorch_form_fields",
+    "change_pytorch_target_column",
+    "randomize_pytorch_form_fields",
+    "start_pytorch_training_runs",
+    "train_pytorch_model",
+}
+TENSORFLOW_TOOL_NAMES: set[str] = {
+    "set_active_ml_form_fields",
+    "change_active_ml_target_column",
+    "randomize_active_ml_form_fields",
+    "start_active_ml_training_runs",
+    "set_tensorflow_form_fields",
+    "change_tensorflow_target_column",
+    "randomize_tensorflow_form_fields",
+    "start_tensorflow_training_runs",
+    "train_tensorflow_model",
+}
+AGENTIC_RESEARCH_TOOL_NAMES: set[str] = {
+    "ar-add_chart_spec",
+    "ar-clear_charts",
+    "ar-remove_chart_spec",
+    "ar-reorder_chart_specs",
+    "ar-set_active_dataset",
+    "remove_chart_spec",
+    "reorder_chart_specs",
+    "set_active_dataset",
+}
+CHART_RENDER_TOOL_NAMES: set[str] = {"add_chart_spec", "ar-add_chart_spec"}
+CONTEXT_BOUND_TOOL_NAMES: set[str] = {
+    "navigate_to_page",
+    *BASE_AG_UI_TOOL_NAMES,
+    *GLOBAL_CHART_TOOL_NAMES,
+    *PYTORCH_TOOL_NAMES,
+    *TENSORFLOW_TOOL_NAMES,
+    *AGENTIC_RESEARCH_TOOL_NAMES,
+}
+TAB_SCOPED_TOOL_NAMES: dict[str, set[str]] = {
+    "charts": BASE_AG_UI_TOOL_NAMES | GLOBAL_CHART_TOOL_NAMES,
+    "agentic-research": BASE_AG_UI_TOOL_NAMES | GLOBAL_CHART_TOOL_NAMES | AGENTIC_RESEARCH_TOOL_NAMES,
+    "pytorch": BASE_AG_UI_TOOL_NAMES | PYTORCH_TOOL_NAMES,
+    "tensorflow": BASE_AG_UI_TOOL_NAMES | TENSORFLOW_TOOL_NAMES,
+}
 
 def _is_debug_enabled() -> bool:
     """Return whether AG-UI debug logging is enabled.
@@ -121,6 +175,64 @@ def _extract_latest_user_text(input_data: RunAgentInput) -> str:
     return ""
 
 
+def _serialize_runtime_tools(tools: list[Any]) -> list[dict[str, Any]]:
+    """Normalize runtime tool entries into `{name, description, parameters}` dicts."""
+    serialized: list[dict[str, Any]] = []
+    for tool in tools:
+        if isinstance(tool, dict):
+            name = str(tool.get("name") or "").strip()
+            if not name:
+                continue
+            serialized.append(
+                {
+                    "name": name,
+                    "description": tool.get("description", ""),
+                    "parameters": tool.get("parameters", {}),
+                }
+            )
+            continue
+
+        name = str(getattr(tool, "name", "") or "").strip()
+        if not name:
+            continue
+        serialized.append(
+            {
+                "name": name,
+                "description": getattr(tool, "description", ""),
+                "parameters": getattr(tool, "parameters", {}),
+            }
+        )
+    return serialized
+
+
+def _sanitize_runtime_tools(
+    tools: list[dict[str, Any]],
+    *,
+    active_tab: str,
+    latest_user_text: str,
+) -> tuple[list[dict[str, Any]], list[str]]:
+    """Drop stale tab-scoped tools while preserving current and explicit target tabs."""
+    current_tab = active_tab if active_tab in TAB_SCOPED_TOOL_NAMES else "charts"
+    target_tab = resolve_ag_ui_tab_target(latest_user_text or "")
+    allowed_tool_names = set(TAB_SCOPED_TOOL_NAMES[current_tab])
+    if target_tab and target_tab in TAB_SCOPED_TOOL_NAMES:
+        allowed_tool_names.update(TAB_SCOPED_TOOL_NAMES[target_tab])
+
+    sanitized: list[dict[str, Any]] = []
+    dropped: list[str] = []
+    seen_names: set[str] = set()
+    for tool in tools:
+        name = str(tool.get("name") or "").strip()
+        if not name:
+            continue
+        if name in CONTEXT_BOUND_TOOL_NAMES and name not in allowed_tool_names:
+            dropped.append(name)
+            continue
+        if name in seen_names:
+            continue
+        seen_names.add(name)
+        sanitized.append(tool)
+    return sanitized, dropped
 
 
 def _build_tool_call_events(
@@ -251,6 +363,8 @@ def _filter_non_planned_known_actions(
     for action in action_calls:
         action_name = action["name"]
         action_args = action["args"]
+        if action_name in CHART_RENDER_TOOL_NAMES:
+            continue
         has_planned_match = any(
             action_name == planned_action.get("name")
             and action_args == planned_action.get("args")
@@ -379,8 +493,21 @@ async def agui_event_stream(
         context_map = _extract_context_map(input_data)
         selected_model_from_context = context_map.get("ag_ui_selected_model_id", "").strip() or None
         requested_model = selected_model_from_context or payload.get("model")
-        chat_payload = build_chat_payload(input_data, requested_model=requested_model)
         active_tab = context_map.get("ag_ui_active_tab", "").strip().lower()
+        serialized_tools = _serialize_runtime_tools(input_data.tools)
+        sanitized_tools, dropped_tool_names = _sanitize_runtime_tools(
+            serialized_tools,
+            active_tab=active_tab,
+            latest_user_text=latest_user_text,
+        )
+        chat_payload = build_chat_payload_from_runtime(
+            messages=input_data.messages,
+            tools=sanitized_tools,
+            context=input_data.context,
+            requested_model=requested_model or DEFAULT_MODEL_ID,
+            default_model_id=DEFAULT_MODEL_ID,
+            debug_log=_debug_log,
+        )
         selected_dataset_id = context_map.get("agentic_research_selected_dataset_id", "").strip() or None
         service_payload = {
             **chat_payload,
@@ -388,6 +515,7 @@ async def agui_event_stream(
             "dataset_id": selected_dataset_id,
             "model": requested_model or DEFAULT_MODEL_ID,
         }
+        should_plan_actions = is_probable_ui_action_request(latest_user_text, sanitized_tools)
         _debug_log(
             "service.plan.start",
             run_id=run_id,
@@ -396,9 +524,19 @@ async def agui_event_stream(
             selected_model_from_context=selected_model_from_context,
             active_tab=active_tab,
             dataset_id=selected_dataset_id,
+            available_tool_names=[tool.get("name") for tool in sanitized_tools],
+            dropped_tool_names=dropped_tool_names,
+            should_plan_actions=should_plan_actions,
         )
-        plan_result = run_unified_action_plan(service_payload)
+        plan_result = (
+            run_unified_action_plan(service_payload)
+            if should_plan_actions
+            else {"actions": [], "planner_message": ""}
+        )
         planned_actions = _normalize_action_calls(plan_result.get("actions"))
+        planned_actions = [
+            action for action in planned_actions if action.get("name") not in CHART_RENDER_TOOL_NAMES
+        ]
         _debug_log(
             "service.plan.done",
             run_id=run_id,
@@ -406,7 +544,7 @@ async def agui_event_stream(
             action_names=[item.get("name") for item in planned_actions],
         )
 
-        available_tool_names = {getattr(tool, "name", None) for tool in input_data.tools}
+        available_tool_names = {tool.get("name") for tool in sanitized_tools}
         serial_tool_events_emitted = 0
         for index, action in enumerate(planned_actions):
             action_name = action["name"]

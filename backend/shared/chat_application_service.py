@@ -56,7 +56,7 @@ def _normalize_action_plan_payload(normalized: dict[str, Any]) -> UnifiedActionP
     }
 
 
-def _is_probable_ui_action_request(message: str, tools: Any) -> bool:
+def is_probable_ui_action_request(message: str, tools: Any) -> bool:
     """
     Heuristic gate: when a prompt looks like a frontend action intent,
     keep the provider path so it can emit `actions` for AG-UI tool calls.
@@ -83,6 +83,11 @@ def _is_probable_ui_action_request(message: str, tools: Any) -> bool:
         r"\breorder\b.*\b(chart|charts)\b",
     ]
     return any(re.search(pattern, normalized_message) for pattern in ui_action_patterns)
+
+
+def _is_probable_ui_action_request(message: str, tools: Any) -> bool:
+    """Backward-compatible wrapper for legacy tests/imports."""
+    return is_probable_ui_action_request(message, tools)
 
 
 def run_unified_action_plan(payload: dict[str, Any]) -> UnifiedActionPlan:
@@ -119,7 +124,7 @@ def run_unified_chat(
 
     dataset_id = str(payload.get("dataset_id") or "").strip()
     tools = payload.get("tools")
-    ui_action_request = _is_probable_ui_action_request(message, tools)
+    ui_action_request = is_probable_ui_action_request(message, tools)
 
     if dataset_id and message and not ui_action_request and not force_provider:
         coordinator_payload = {
