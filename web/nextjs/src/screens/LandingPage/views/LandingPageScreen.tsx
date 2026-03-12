@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import LandingCharts from "@/core/views/screens/LandingCharts";
 import dynamic from "next/dynamic";
 import UIFeedback from "@/screens/LandingPage/views/components/UIFeedback";
@@ -43,7 +43,9 @@ export default function LandingPageScreen({
 
   return (
     <div className="flex min-h-screen flex-row bg-zinc-50 text-zinc-900">
-      <UIFeedback />
+      <Suspense fallback={null}>
+        <UIFeedback />
+      </Suspense>
       <main className="min-w-0 flex-1 py-10">
         <div
           className={`mx-auto flex max-w-5xl flex-col gap-8 ${
