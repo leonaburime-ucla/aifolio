@@ -51,7 +51,7 @@ export default function AgUiWorkspace() {
               <ol className="mt-3 list-decimal pl-5 flex flex-col gap-1">
                 <li>Run PCA Transform</li>
                 <li>Run NMF Decomposition and PLSR</li>
-                <li>Change the dataset to fraud detection and run Lasso Regression</li>
+                <li>Change the dataset to fraud detection and run Random Forest</li>
               </ol>
             </div>
           </details>
