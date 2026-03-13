@@ -64,7 +64,7 @@ def test_is_probable_ui_action_request_detects_dataset_switch_phrasing():
     )
     assert (
         cas._is_probable_ui_action_request(
-            "Use the fraud detection dataset and run lasso regression.",
+            "Use the fraud detection dataset and run Random Forest.",
             [{"name": "ar-set_active_dataset"}],
         )
         is True
@@ -144,3 +144,19 @@ def test_run_unified_chat_uses_provider_for_ui_action_requests(monkeypatch):
 
     assert mode == "provider"
     assert payload == {"message": "provider", "chartSpec": None, "actions": []}
+
+
+def test_run_unified_chat_force_coordinator_bypasses_ui_action_heuristic(monkeypatch):
+    monkeypatch.setattr(cas, "coordinator_agent", lambda payload: {"message": "coordinator", "chartSpec": {"id": "chart-1"}})
+
+    mode, payload = cas.run_unified_chat(
+        {
+            "dataset_id": "fraud_detection.csv",
+            "message": "Change the dataset to fraud detection and run Random Forest",
+            "tools": [{"name": "ar-set_active_dataset"}],
+            "_force_coordinator": True,
+        }
+    )
+
+    assert mode == "coordinator"
+    assert payload == {"message": "coordinator", "chartSpec": {"id": "chart-1"}, "actions": []}

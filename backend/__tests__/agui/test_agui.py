@@ -118,4 +118,5 @@ def test_resolve_surface_dataset_id_only_allows_agentic_research():
 
 def test_resolve_dataset_from_action_args_normalizes_friendly_dataset_names():
     assert agui._resolve_dataset_from_action_args({"dataset": "fraud detection"}) == "fraud_detection_phishing_websites.csv"
+    assert agui._resolve_dataset_from_action_args({"dataset_id": "fraud_detection.csv"}) == "fraud_detection_phishing_websites.csv"
     assert agui._resolve_dataset_from_action_args({"dataset_id": "house prices"}) == "house_prices_ames.csv"

@@ -126,8 +126,9 @@ def run_unified_chat(
     dataset_id = str(payload.get("dataset_id") or "").strip()
     tools = payload.get("tools")
     ui_action_request = is_probable_ui_action_request(message, tools)
+    force_coordinator = bool(payload.get("_force_coordinator"))
 
-    if dataset_id and message and not ui_action_request and not force_provider:
+    if dataset_id and message and (force_coordinator or (not ui_action_request and not force_provider)):
         coordinator_payload = {
             **payload,
             "message": message,

@@ -27,6 +27,14 @@ def test_normalize_dataset_id_value_maps_known_aliases_and_keeps_unknown():
         ml_actions._normalize_dataset_id_value("fraud detection")
         == "fraud_detection_phishing_websites.csv"
     )
+    assert (
+        ml_actions._normalize_dataset_id_value("fraud_detection.csv")
+        == "fraud_detection_phishing_websites.csv"
+    )
+    assert (
+        ml_actions._normalize_dataset_id_value("house_prices.csv")
+        == "house_prices_ames.csv"
+    )
     assert ml_actions._normalize_dataset_id_value("custom.csv") == "custom.csv"
     assert ml_actions._normalize_dataset_id_value("   ") == "   "
     sentinel = object()

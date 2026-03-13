@@ -288,6 +288,29 @@ def _assert_tool_calls_are_tab_scoped(
     assert len(turn.tool_call_names) == len(set(turn.tool_call_names))
 
 
+def _chart_spec_count(payload: dict[str, Any] | None) -> int:
+    if not isinstance(payload, dict):
+        return 0
+    chart_spec = payload.get("chartSpec")
+    if isinstance(chart_spec, list):
+        return len([item for item in chart_spec if isinstance(item, dict)])
+    if isinstance(chart_spec, dict):
+        return 1
+    return 0
+
+
+def _assert_agentic_research_analysis_turn(
+    turn: LiveTurnResult,
+    *,
+    expected_chart_count_at_least: int = 1,
+) -> None:
+    _assert_protocol_shape(turn)
+    assert turn.tool_call_names == ["ar-set_active_dataset"]
+    assert isinstance(turn.assistant_payload, dict)
+    assert turn.assistant_payload.get("actions") == []
+    assert _chart_spec_count(turn.assistant_payload) >= expected_chart_count_at_least
+
+
 def _run_serial_sequence(
     scenario: str,
     *,
@@ -452,6 +475,126 @@ def test_live_capture_agentic_research_dataset_switch_only(capfd: pytest.Capture
 
     captured = capfd.readouterr()
     assert "agentic-research-dataset-switch-only" in captured.out
+
+
+@pytest.mark.skipif(not _backend_is_reachable(), reason="Live backend is not reachable on AGUI_LIVE_BASE_URL.")
+def test_live_capture_agentic_research_dataset_switch_and_lasso_regression(capfd: pytest.CaptureFixture[str]) -> None:
+    turn, capture_path = _run_turn(
+        "agentic-research-dataset-switch-lasso",
+        "Change the dataset to fraud detection and run Random Forest",
+        active_tab="agentic-research",
+        thread_id="live-agentic-research-dataset-switch-lasso",
+        run_id="turn-1",
+        tools=AGENTIC_RESEARCH_TOOLS,
+    )
+    _assert_agentic_research_analysis_turn(turn)
+
+    print(
+        json.dumps(
+            {
+                "scenario": "agentic-research-dataset-switch-lasso",
+                "capture": str(capture_path),
+                "tools": turn.tool_call_names,
+                "chart_count": _chart_spec_count(turn.assistant_payload),
+                "message_preview": turn.assistant_message[:300],
+            },
+            indent=2,
+        )
+    )
+
+    captured = capfd.readouterr()
+    assert "agentic-research-dataset-switch-lasso" in captured.out
+
+
+@pytest.mark.skipif(not _backend_is_reachable(), reason="Live backend is not reachable on AGUI_LIVE_BASE_URL.")
+def test_live_capture_agentic_research_dataset_switch_and_ridge_regression(capfd: pytest.CaptureFixture[str]) -> None:
+    turn, capture_path = _run_turn(
+        "agentic-research-dataset-switch-ridge",
+        "Change the dataset to fraud detection and run Ridge Regression",
+        active_tab="agentic-research",
+        thread_id="live-agentic-research-dataset-switch-ridge",
+        run_id="turn-1",
+        tools=AGENTIC_RESEARCH_TOOLS,
+    )
+    _assert_agentic_research_analysis_turn(turn)
+
+    print(
+        json.dumps(
+            {
+                "scenario": "agentic-research-dataset-switch-ridge",
+                "capture": str(capture_path),
+                "tools": turn.tool_call_names,
+                "chart_count": _chart_spec_count(turn.assistant_payload),
+                "message_preview": turn.assistant_message[:300],
+            },
+            indent=2,
+        )
+    )
+
+    captured = capfd.readouterr()
+    assert "agentic-research-dataset-switch-ridge" in captured.out
+
+
+@pytest.mark.skipif(not _backend_is_reachable(), reason="Live backend is not reachable on AGUI_LIVE_BASE_URL.")
+def test_live_capture_agentic_research_dataset_switch_and_random_forest_classification(
+    capfd: pytest.CaptureFixture[str],
+) -> None:
+    turn, capture_path = _run_turn(
+        "agentic-research-dataset-switch-random-forest-classification",
+        "Change the dataset to fraud detection and run Random Forest Classification",
+        active_tab="agentic-research",
+        thread_id="live-agentic-research-dataset-switch-random-forest-classification",
+        run_id="turn-1",
+        tools=AGENTIC_RESEARCH_TOOLS,
+    )
+    _assert_agentic_research_analysis_turn(turn)
+
+    print(
+        json.dumps(
+            {
+                "scenario": "agentic-research-dataset-switch-random-forest-classification",
+                "capture": str(capture_path),
+                "tools": turn.tool_call_names,
+                "chart_count": _chart_spec_count(turn.assistant_payload),
+                "message_preview": turn.assistant_message[:300],
+            },
+            indent=2,
+        )
+    )
+
+    captured = capfd.readouterr()
+    assert "agentic-research-dataset-switch-random-forest-classification" in captured.out
+
+
+@pytest.mark.skipif(not _backend_is_reachable(), reason="Live backend is not reachable on AGUI_LIVE_BASE_URL.")
+def test_live_capture_agentic_research_dataset_switch_and_two_regressions_multi_chart(
+    capfd: pytest.CaptureFixture[str],
+) -> None:
+    turn, capture_path = _run_turn(
+        "agentic-research-dataset-switch-two-regressions",
+        "Change the dataset to fraud detection and run Random Forest and Ridge Regression",
+        active_tab="agentic-research",
+        thread_id="live-agentic-research-dataset-switch-two-regressions",
+        run_id="turn-1",
+        tools=AGENTIC_RESEARCH_TOOLS,
+    )
+    _assert_agentic_research_analysis_turn(turn, expected_chart_count_at_least=2)
+
+    print(
+        json.dumps(
+            {
+                "scenario": "agentic-research-dataset-switch-two-regressions",
+                "capture": str(capture_path),
+                "tools": turn.tool_call_names,
+                "chart_count": _chart_spec_count(turn.assistant_payload),
+                "message_preview": turn.assistant_message[:300],
+            },
+            indent=2,
+        )
+    )
+
+    captured = capfd.readouterr()
+    assert "agentic-research-dataset-switch-two-regressions" in captured.out
 
 
 @pytest.mark.skipif(not _backend_is_reachable(), reason="Live backend is not reachable on AGUI_LIVE_BASE_URL.")

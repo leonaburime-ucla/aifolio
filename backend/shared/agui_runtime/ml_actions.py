@@ -76,10 +76,12 @@ DATASET_ID_ALIASES: dict[str, str] = {
     "customer_churn_telco_csv": "customer_churn_telco.csv",
     "churn": "customer_churn_telco.csv",
     "fraud_detection": "fraud_detection_phishing_websites.csv",
+    "fraud_detection_csv": "fraud_detection_phishing_websites.csv",
     "fraud": "fraud_detection_phishing_websites.csv",
     "fraud_detection_phishing_websites": "fraud_detection_phishing_websites.csv",
     "fraud_detection_phishing_websites_csv": "fraud_detection_phishing_websites.csv",
     "house_prices": "house_prices_ames.csv",
+    "house_prices_csv": "house_prices_ames.csv",
     "house_prices_ames": "house_prices_ames.csv",
     "house_prices_ames_csv": "house_prices_ames.csv",
 }

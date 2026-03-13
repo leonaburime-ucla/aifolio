@@ -722,6 +722,8 @@ async def agui_event_stream(
             and planned_dataset_override is not None
             and _has_agentic_research_analysis_intent(latest_user_text)
         )
+        if allow_coordinator_after_dataset_switch:
+            service_payload["_force_coordinator"] = True
         mode, raw_output = run_unified_chat(
             service_payload,
             force_provider=serial_tool_events_emitted > 0 and not allow_coordinator_after_dataset_switch,

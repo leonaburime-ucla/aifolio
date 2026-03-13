@@ -584,7 +584,7 @@ async def _agui_stream_strips_non_agentic_research_actions_from_assistant_payloa
     )
 
     payload = _build_payload(
-        "Change the dataset to fraud detection and run Lasso Regression",
+        "Change the dataset to fraud detection and run Random Forest",
         tools=[
             {"name": "switch_ag_ui_tab", "description": "x", "parameters": {}},
             {"name": "add_chart_spec", "description": "x", "parameters": {}},
@@ -607,6 +607,62 @@ async def _agui_stream_strips_non_agentic_research_actions_from_assistant_payloa
     assert '"set_pytorch_form_fields"' not in payload_text
     assert '"start_pytorch_training_runs"' not in payload_text
     assert "Lasso Regression training run" in payload_text
+    assert events[-1]["type"] == "RUN_FINISHED"
+
+
+async def _agui_stream_forces_coordinator_for_agentic_research_dataset_switch_analysis(monkeypatch):
+    captured = {}
+
+    monkeypatch.setattr(
+        agui,
+        "run_unified_action_plan",
+        lambda payload: {
+            "actions": [
+                {"name": "ar-set_active_dataset", "args": {"dataset_id": "fraud_detection.csv"}},
+            ],
+            "planner_message": "",
+        },
+    )
+
+    def _run_unified_chat(payload, force_provider=False):
+        captured["payload"] = payload
+        captured["force_provider"] = force_provider
+        return (
+            "coordinator",
+            {
+                "message": "Lasso complete.",
+                "chartSpec": {"id": "chart-1", "type": "bar", "xKey": "feature", "yKeys": ["coefficient"], "data": [{"feature": "x", "coefficient": 1}]},
+                "actions": [],
+            },
+        )
+
+    monkeypatch.setattr(agui, "run_unified_chat", _run_unified_chat)
+
+    payload = _build_payload(
+        "Change the dataset to fraud detection and run Random Forest",
+        tools=[
+            {"name": "switch_ag_ui_tab", "description": "x", "parameters": {}},
+            {"name": "ar-set_active_dataset", "description": "x", "parameters": {}},
+            {"name": "ar-add_chart_spec", "description": "x", "parameters": {}},
+        ],
+        context=[
+            {"description": "ag_ui_active_tab", "value": "\"agentic-research\""},
+            {"description": "agentic_research_selected_dataset_id", "value": "\"customer_churn_telco.csv\""},
+        ],
+    )
+
+    events: list[dict] = []
+    async for encoded in agui.agui_event_stream(payload):
+        events.append(_decode_event_line(encoded))
+
+    assert captured["force_provider"] is False
+    assert captured["payload"]["dataset_id"] == "fraud_detection_phishing_websites.csv"
+    assert captured["payload"]["_force_coordinator"] is True
+    text_events = [event for event in events if event.get("type") == "TEXT_MESSAGE_CONTENT"]
+    assert len(text_events) == 1
+    payload_text = text_events[0]["delta"]
+    assert '"chartSpec"' in payload_text
+    assert "Lasso complete." in payload_text
     assert events[-1]["type"] == "RUN_FINISHED"
 
 
@@ -656,3 +712,7 @@ def test_contract_agui_stream_strips_implicit_sweep_for_tensorflow_multi_value_p
 
 def test_contract_agui_stream_strips_non_agentic_research_actions_from_assistant_payload(monkeypatch):
     asyncio.run(_agui_stream_strips_non_agentic_research_actions_from_assistant_payload(monkeypatch))
+
+
+def test_contract_agui_stream_forces_coordinator_for_agentic_research_dataset_switch_analysis(monkeypatch):
+    asyncio.run(_agui_stream_forces_coordinator_for_agentic_research_dataset_switch_analysis(monkeypatch))
