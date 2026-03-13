@@ -1,5 +1,5 @@
 # Vercel-compatible subset of requirements.txt
-# Excludes heavy ML packages (tensorflow, scikit-learn) that exceed
+# Excludes heavy ML packages (torch, tensorflow, scikit-learn) that exceed
 # the 500 MB Lambda ephemeral storage limit. The FastAPI server
 # gracefully degrades when these are missing (try/except guards).
 fastapi>=0.111.0
