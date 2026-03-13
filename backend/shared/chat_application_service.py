@@ -78,7 +78,8 @@ def is_probable_ui_action_request(message: str, tools: Any) -> bool:
         r"\btrain\b.*\b(pytorch|tensorflow|model)\b",
         r"\b(start|run)\b.*\b(training|train|sweep|runs?)\b",
         r"\b(set|update|change|randomize)\b.*\b(hidden|layers?|dims?|dropout|learning rate|batch|epoch|target|columns?|sweep|auto distill|autodistill)\b",
-        r"\b(set|select|choose)\b.*\b(dataset)\b",
+        r"\b(set|select|choose|change|switch|use)\b.*\b(dataset)\b",
+        r"\bdataset\b.*\b(to|as)\b",
         r"\b(remove|delete)\b.*\b(chart)\b",
         r"\breorder\b.*\b(chart|charts)\b",
     ]

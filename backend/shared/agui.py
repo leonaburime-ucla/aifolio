@@ -29,10 +29,11 @@ from ag_ui.encoder import EventEncoder
 
 from shared.agent_langchain import DEFAULT_MODEL_ID
 from shared.agui_runtime.actions import (
-    PYTORCH_EXECUTION_TOOL_NAMES,
     build_enforced_pytorch_actions,
+    normalize_ml_tab_actions,
     normalize_action_calls,
 )
+from shared.agui_runtime.ml_actions import normalize_dataset_id_value, strip_implicit_sweep_flags
 from shared.agui_runtime.intents import (
     AG_UI_TAB_ALIASES,
     NAV_ROUTE_ALIASES,
@@ -60,6 +61,7 @@ _resolve_ag_ui_tab_target = resolve_ag_ui_tab_target
 _is_pure_tab_switch_intent = is_pure_tab_switch_intent
 _normalize_action_calls = normalize_action_calls
 _build_enforced_pytorch_actions = build_enforced_pytorch_actions
+_normalize_ml_tab_actions = normalize_ml_tab_actions
 _decode_context_value = decode_context_value
 
 BASE_AG_UI_TOOL_NAMES: set[str] = {"switch_ag_ui_tab"}
@@ -111,6 +113,9 @@ TAB_SCOPED_TOOL_NAMES: dict[str, set[str]] = {
     "pytorch": BASE_AG_UI_TOOL_NAMES | PYTORCH_TOOL_NAMES,
     "tensorflow": BASE_AG_UI_TOOL_NAMES | TENSORFLOW_TOOL_NAMES,
 }
+COORDINATOR_ENABLED_TABS: set[str] = {"agentic-research"}
+DATASET_SWITCH_TOOL_NAMES: set[str] = {"ar-set_active_dataset", "set_active_dataset"}
+ML_ACTION_TABS: set[str] = {"pytorch", "tensorflow"}
 
 def _is_debug_enabled() -> bool:
     """Return whether AG-UI debug logging is enabled.
@@ -324,6 +329,86 @@ def _extract_context_map(input_data: RunAgentInput) -> dict[str, str]:
     return extract_context_map_from_runtime(input_data.context)
 
 
+def _filter_messages_for_surface(messages: list[Any], *, active_tab: str) -> list[Any]:
+    """Scope backend-visible message history to the current AG-UI surface.
+
+    Agentic Research is the only surface that currently relies on backend
+    multi-turn history. Charts and ML surfaces should behave from the latest
+    user intent plus current UI state to avoid stale cross-surface carry-over.
+    """
+    if active_tab in COORDINATOR_ENABLED_TABS:
+        return messages
+
+    for message in reversed(messages):
+        if getattr(message, "role", None) == "user":
+            return [message]
+    return []
+
+
+def _resolve_surface_dataset_id(context_map: dict[str, str], *, active_tab: str) -> str | None:
+    """Return a backend coordinator dataset only for Agentic Research turns."""
+    if active_tab not in COORDINATOR_ENABLED_TABS:
+        return None
+    return context_map.get("agentic_research_selected_dataset_id", "").strip() or None
+
+
+def _resolve_dataset_from_action_args(action_args: dict[str, Any]) -> str | None:
+    """Extract a dataset identifier from normalized tool-call args."""
+    for key in ("dataset_id", "datasetId", "dataset", "id"):
+        value = action_args.get(key)
+        if isinstance(value, str) and value.strip():
+            normalized_value = normalize_dataset_id_value(value.strip())
+            if isinstance(normalized_value, str) and normalized_value.strip():
+                return normalized_value.strip()
+    return None
+
+
+def _resolve_planned_dataset_override(
+    planned_actions: list[dict[str, Any]],
+    *,
+    active_tab: str,
+) -> str | None:
+    """Resolve a dataset switch requested by planned Agentic Research actions."""
+    if active_tab not in COORDINATOR_ENABLED_TABS:
+        return None
+    for action in planned_actions:
+        action_name = str(action.get("name") or "").strip()
+        if action_name not in DATASET_SWITCH_TOOL_NAMES:
+            continue
+        action_args = action.get("args")
+        if not isinstance(action_args, dict):
+            continue
+        if dataset_id := _resolve_dataset_from_action_args(action_args):
+            return dataset_id
+    return None
+
+
+def _has_agentic_research_analysis_intent(text: str) -> bool:
+    """Return whether text asks Agentic Research to run/perform an analysis."""
+    normalized = (text or "").strip().lower()
+    if not normalized:
+        return False
+    analysis_terms = [
+        " run ",
+        " analyze ",
+        " analysis",
+        " regression",
+        " classification",
+        " transform",
+        " decomposition",
+        " pca",
+        " nmf",
+        " plsr",
+        " lasso",
+        " ridge",
+        " forest",
+        " svm",
+        " cluster",
+    ]
+    padded = f" {normalized} "
+    return any(term in padded for term in analysis_terms)
+
+
 def _pick_auto_chart_tool_name(input_data: RunAgentInput, active_tab: str) -> str | None:
     """Choose preferred chart tool name based on active tab and availability.
 
@@ -500,22 +585,27 @@ async def agui_event_stream(
             active_tab=active_tab,
             latest_user_text=latest_user_text,
         )
+        scoped_messages = _filter_messages_for_surface(input_data.messages, active_tab=active_tab)
+        has_tool_messages_after_latest_user = _has_tool_messages_after_latest_user(input_data)
         chat_payload = build_chat_payload_from_runtime(
-            messages=input_data.messages,
+            messages=scoped_messages,
             tools=sanitized_tools,
             context=input_data.context,
             requested_model=requested_model or DEFAULT_MODEL_ID,
             default_model_id=DEFAULT_MODEL_ID,
             debug_log=_debug_log,
         )
-        selected_dataset_id = context_map.get("agentic_research_selected_dataset_id", "").strip() or None
+        selected_dataset_id = _resolve_surface_dataset_id(context_map, active_tab=active_tab)
         service_payload = {
             **chat_payload,
             "message": latest_user_text,
             "dataset_id": selected_dataset_id,
             "model": requested_model or DEFAULT_MODEL_ID,
         }
-        should_plan_actions = is_probable_ui_action_request(latest_user_text, sanitized_tools)
+        should_plan_actions = (
+            is_probable_ui_action_request(latest_user_text, sanitized_tools)
+            and not has_tool_messages_after_latest_user
+        )
         _debug_log(
             "service.plan.start",
             run_id=run_id,
@@ -534,14 +624,30 @@ async def agui_event_stream(
             else {"actions": [], "planner_message": ""}
         )
         planned_actions = _normalize_action_calls(plan_result.get("actions"))
+        if active_tab in ML_ACTION_TABS:
+            planned_actions = _normalize_ml_tab_actions(planned_actions, active_tab=active_tab)
+            planned_actions = strip_implicit_sweep_flags(
+                planned_actions,
+                active_tab=active_tab,
+                latest_user_text=latest_user_text,
+            )
         planned_actions = [
             action for action in planned_actions if action.get("name") not in CHART_RENDER_TOOL_NAMES
         ]
+        planned_dataset_override = _resolve_planned_dataset_override(
+            planned_actions,
+            active_tab=active_tab,
+        )
+        if planned_dataset_override:
+            selected_dataset_id = planned_dataset_override
+            service_payload["dataset_id"] = planned_dataset_override
+
         _debug_log(
             "service.plan.done",
             run_id=run_id,
             action_count=len(planned_actions),
             action_names=[item.get("name") for item in planned_actions],
+            planned_dataset_override=planned_dataset_override,
         )
 
         available_tool_names = {tool.get("name") for tool in sanitized_tools}
@@ -590,9 +696,14 @@ async def agui_event_stream(
             dataset_id=selected_dataset_id,
             force_provider=serial_tool_events_emitted > 0,
         )
+        allow_coordinator_after_dataset_switch = (
+            active_tab in COORDINATOR_ENABLED_TABS
+            and planned_dataset_override is not None
+            and _has_agentic_research_analysis_intent(latest_user_text)
+        )
         mode, raw_output = run_unified_chat(
             service_payload,
-            force_provider=serial_tool_events_emitted > 0,
+            force_provider=serial_tool_events_emitted > 0 and not allow_coordinator_after_dataset_switch,
         )
         _debug_log(
             "service.generate.mode",
@@ -609,6 +720,13 @@ async def agui_event_stream(
             parsed_payload = normalized_payload if isinstance(normalized_payload, dict) else None
             chart_spec = parsed_payload.get("chartSpec") if parsed_payload else None
             action_calls = _normalize_action_calls(parsed_payload.get("actions") if parsed_payload else None)
+            if active_tab in ML_ACTION_TABS:
+                action_calls = _normalize_ml_tab_actions(action_calls, active_tab=active_tab)
+                action_calls = strip_implicit_sweep_flags(
+                    action_calls,
+                    active_tab=active_tab,
+                    latest_user_text=latest_user_text,
+                )
             chart_count, chart_types = _summarize_chart_spec(chart_spec)
             _debug_log(
                 "service.generate.normalized_payload",
@@ -650,7 +768,13 @@ async def agui_event_stream(
         #     action_names=[item.get("name") for item in action_calls],
         # )
 
-        filtered_action_calls = _filter_non_planned_known_actions(action_calls, planned_actions, available_tool_names)
+        filtered_action_calls = (
+            []
+            if has_tool_messages_after_latest_user
+            else _filter_non_planned_known_actions(action_calls, planned_actions, available_tool_names)
+        )
+        if active_tab in ML_ACTION_TABS and planned_actions:
+            filtered_action_calls = []
         for index, action in enumerate(filtered_action_calls):
             action_name = action["name"]
             action_args = action["args"]

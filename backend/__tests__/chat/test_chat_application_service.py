@@ -54,6 +54,23 @@ def test_is_probable_ui_action_request_detects_pattern_without_named_tool():
     assert cas._is_probable_ui_action_request("", [{"name": "tool"}]) is False
 
 
+def test_is_probable_ui_action_request_detects_dataset_switch_phrasing():
+    assert (
+        cas._is_probable_ui_action_request(
+            "Change the dataset to fraud detection.",
+            [{"name": "ar-set_active_dataset"}],
+        )
+        is True
+    )
+    assert (
+        cas._is_probable_ui_action_request(
+            "Use the fraud detection dataset and run lasso regression.",
+            [{"name": "ar-set_active_dataset"}],
+        )
+        is True
+    )
+
+
 def test_run_unified_action_plan_returns_empty_without_tools():
     assert cas.run_unified_action_plan({"message": "anything", "tools": []}) == {
         "actions": [],

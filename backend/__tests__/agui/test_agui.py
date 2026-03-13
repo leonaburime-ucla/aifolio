@@ -81,3 +81,41 @@ def test_extract_latest_user_text_returns_last_user_message():
     )
 
     assert agui._extract_latest_user_text(input_data) == "second"
+
+
+def test_filter_messages_for_surface_keeps_full_history_for_agentic_research():
+    messages = [
+        SimpleNamespace(role="user", content="first"),
+        SimpleNamespace(role="assistant", content="answer"),
+        SimpleNamespace(role="user", content="second"),
+    ]
+
+    assert agui._filter_messages_for_surface(messages, active_tab="agentic-research") == messages
+
+
+def test_filter_messages_for_surface_keeps_only_latest_user_for_non_research_tabs():
+    latest_user = SimpleNamespace(role="user", content="latest")
+    messages = [
+        SimpleNamespace(role="user", content="first"),
+        SimpleNamespace(role="assistant", content="answer"),
+        latest_user,
+    ]
+
+    assert agui._filter_messages_for_surface(messages, active_tab="charts") == [latest_user]
+    assert agui._filter_messages_for_surface(messages, active_tab="pytorch") == [latest_user]
+
+
+def test_resolve_surface_dataset_id_only_allows_agentic_research():
+    context_map = {
+        "agentic_research_selected_dataset_id": "research-dataset",
+        "ml_selected_dataset_id": "ml-dataset",
+    }
+
+    assert agui._resolve_surface_dataset_id(context_map, active_tab="agentic-research") == "research-dataset"
+    assert agui._resolve_surface_dataset_id(context_map, active_tab="charts") is None
+    assert agui._resolve_surface_dataset_id(context_map, active_tab="tensorflow") is None
+
+
+def test_resolve_dataset_from_action_args_normalizes_friendly_dataset_names():
+    assert agui._resolve_dataset_from_action_args({"dataset": "fraud detection"}) == "fraud_detection_phishing_websites.csv"
+    assert agui._resolve_dataset_from_action_args({"dataset_id": "house prices"}) == "house_prices_ames.csv"

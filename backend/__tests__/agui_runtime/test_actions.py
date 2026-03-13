@@ -110,3 +110,64 @@ def test_build_enforced_pytorch_actions_updates_existing_form_patch():
         available_tool_names={"set_pytorch_form_fields", "start_pytorch_training_runs"},
     )
     assert result[0]["args"]["fields"] == {"auto_distill": True, "run_sweep": False}
+
+
+def test_normalize_ml_tab_actions_rewrites_generic_tools_and_merges_setter_aliases():
+    result = actions.normalize_ml_tab_actions(
+        [
+            {
+                "name": "set_active_ml_form_fields",
+                "args": {
+                    "fields": {
+                        "dataset": "fraud detection",
+                        "model_type": "TabResNet",
+                        "batch_size": [33, 40],
+                    }
+                },
+            },
+            {
+                "name": "set_pytorch_form_fields",
+                "args": {
+                    "fields": {
+                        "model_architecture": "TabResNet",
+                        "hidden_dim": [64, 96],
+                        "dropout": [0.1, 0.2],
+                    }
+                },
+            },
+            {"name": "start_active_ml_training_runs", "args": {}},
+        ],
+        active_tab="pytorch",
+    )
+
+    assert result == [
+        {
+            "name": "set_pytorch_form_fields",
+            "args": {
+                "fields": {
+                    "dataset_id": "fraud_detection_phishing_websites.csv",
+                    "training_mode": "tabresnet",
+                    "batch_sizes": [33, 40],
+                    "hidden_dims": [64, 96],
+                    "dropouts": [0.1, 0.2],
+                }
+            },
+        },
+        {"name": "start_pytorch_training_runs", "args": {}},
+    ]
+
+
+def test_normalize_ml_tab_actions_preserves_serial_multi_tool_chain():
+    result = actions.normalize_ml_tab_actions(
+        [
+            {"name": "randomize_active_ml_form_fields", "args": {"value_count": 1}},
+            {"name": "start_active_ml_training_runs", "args": {}},
+            {"name": "start_active_ml_training_runs", "args": {}},
+        ],
+        active_tab="tensorflow",
+    )
+
+    assert result == [
+        {"name": "randomize_tensorflow_form_fields", "args": {"value_count": 1}},
+        {"name": "start_tensorflow_training_runs", "args": {}},
+    ]

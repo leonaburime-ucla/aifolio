@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import type { AgUiWorkspaceTab } from "@/features/ag-ui-chat/__types__/typescript/react/state/agUiWorkspace.types";
+import { SWITCH_AG_UI_TAB_TOOL } from "@/features/ag-ui-chat/typescript/config/frontendTools.config";
 import { getAgUiToolsForTab } from "@/features/ag-ui-chat/typescript/logic/agUiToolsCatalog.logic";
 
 /**
@@ -16,7 +17,10 @@ import { getAgUiToolsForTab } from "@/features/ag-ui-chat/typescript/logic/agUiT
  */
 export default function AgUiToolsModal({ activeTab }: { activeTab: AgUiWorkspaceTab }) {
   const [isOpen, setIsOpen] = useState(false);
-  const tools = useMemo(() => getAgUiToolsForTab(activeTab), [activeTab]);
+  const tools = useMemo(
+    () => getAgUiToolsForTab(activeTab).filter((tool) => tool.name !== SWITCH_AG_UI_TAB_TOOL),
+    [activeTab]
+  );
   const tabLabel = activeTab === "agentic-research" ? "Agentic Research" : activeTab;
 
   return (

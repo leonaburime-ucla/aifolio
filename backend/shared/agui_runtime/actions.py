@@ -11,6 +11,7 @@ import re
 from typing import Any, Callable
 
 from .intents import resolve_ag_ui_tab_target
+from .ml_actions import normalize_ml_tab_actions
 
 PYTORCH_EXECUTION_TOOL_NAMES: set[str] = {
     "start_pytorch_training_runs",
@@ -46,6 +47,8 @@ def normalize_action_calls(raw_actions: Any) -> list[dict[str, Any]]:
 def _has_phrase(text: str, pattern: str) -> bool:
     """Return whether `pattern` regex is present in `text`."""
     return re.search(pattern, text) is not None
+
+
 
 
 def detect_pytorch_training_intent(text: str) -> tuple[bool, bool, bool]:
