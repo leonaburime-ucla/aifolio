@@ -555,6 +555,61 @@ async def _agui_stream_strips_implicit_sweep_for_tensorflow_multi_value_prompt(m
     assert events[-1]["type"] == "RUN_FINISHED"
 
 
+async def _agui_stream_strips_non_agentic_research_actions_from_assistant_payload(monkeypatch):
+    monkeypatch.setattr(
+        agui,
+        "run_unified_action_plan",
+        lambda payload: {
+            "actions": [
+                {"name": "ar-set_active_dataset", "args": {"dataset_id": "fraud_detection.csv"}},
+            ],
+            "planner_message": "",
+        },
+    )
+    monkeypatch.setattr(
+        agui,
+        "run_unified_chat",
+        lambda payload, force_provider=False: (
+            "coordinator",
+            {
+                "message": "I have switched the active dataset to fraud detection and initiated a Lasso Regression training run.",
+                "chartSpec": None,
+                "actions": [
+                    {"name": "ar-set_active_dataset", "args": {"dataset_id": "fraud_detection.csv"}},
+                    {"name": "set_pytorch_form_fields", "args": {"fields": {"model_type": "lasso"}}},
+                    {"name": "start_pytorch_training_runs", "args": {}},
+                ],
+            },
+        ),
+    )
+
+    payload = _build_payload(
+        "Change the dataset to fraud detection and run Lasso Regression",
+        tools=[
+            {"name": "switch_ag_ui_tab", "description": "x", "parameters": {}},
+            {"name": "add_chart_spec", "description": "x", "parameters": {}},
+            {"name": "ar-set_active_dataset", "description": "x", "parameters": {}},
+        ],
+        context=[{"description": "ag_ui_active_tab", "value": "\"agentic-research\""}],
+    )
+
+    events: list[dict] = []
+    async for encoded in agui.agui_event_stream(payload):
+        events.append(_decode_event_line(encoded))
+
+    tool_starts = [event for event in events if event.get("type") == "TOOL_CALL_START"]
+    assert [event["toolCallName"] for event in tool_starts] == ["ar-set_active_dataset"]
+
+    text_events = [event for event in events if event.get("type") == "TEXT_MESSAGE_CONTENT"]
+    assert len(text_events) == 1
+    payload_text = text_events[0]["delta"]
+    assert '"ar-set_active_dataset"' not in payload_text
+    assert '"set_pytorch_form_fields"' not in payload_text
+    assert '"start_pytorch_training_runs"' not in payload_text
+    assert "Lasso Regression training run" in payload_text
+    assert events[-1]["type"] == "RUN_FINISHED"
+
+
 def test_contract_agui_stream_emits_serial_tool_calls_before_text(monkeypatch):
     asyncio.run(_agui_stream_emits_serial_tool_calls_before_text(monkeypatch))
 
@@ -597,3 +652,7 @@ def test_contract_agui_stream_prefers_serial_planned_ml_actions_over_provider_ac
 
 def test_contract_agui_stream_strips_implicit_sweep_for_tensorflow_multi_value_prompt(monkeypatch):
     asyncio.run(_agui_stream_strips_implicit_sweep_for_tensorflow_multi_value_prompt(monkeypatch))
+
+
+def test_contract_agui_stream_strips_non_agentic_research_actions_from_assistant_payload(monkeypatch):
+    asyncio.run(_agui_stream_strips_non_agentic_research_actions_from_assistant_payload(monkeypatch))

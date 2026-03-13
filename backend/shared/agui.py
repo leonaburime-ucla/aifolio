@@ -463,6 +463,27 @@ def _filter_non_planned_known_actions(
     return filtered
 
 
+def _sanitize_assistant_payload_actions(
+    *,
+    parsed_payload: dict[str, Any] | None,
+    action_calls: list[dict[str, Any]],
+) -> dict[str, Any] | None:
+    """Return a payload copy whose `actions` field matches sanitized actions.
+
+    Args:
+        parsed_payload: Parsed assistant JSON payload, if any.
+        action_calls: Sanitized action list allowed for the current tab/turn.
+
+    Returns:
+        Updated payload copy, or `None` when no parsed payload exists.
+    """
+    if not parsed_payload:
+        return None
+    next_payload = dict(parsed_payload)
+    next_payload["actions"] = action_calls
+    return next_payload
+
+
 def extract_text(content: Any) -> str:
     """Compatibility wrapper for AG-UI content-to-text normalization.
 
@@ -775,6 +796,13 @@ async def agui_event_stream(
         )
         if active_tab in ML_ACTION_TABS and planned_actions:
             filtered_action_calls = []
+        sanitized_payload = _sanitize_assistant_payload_actions(
+            parsed_payload=parsed_payload,
+            action_calls=filtered_action_calls,
+        )
+        if sanitized_payload is not None:
+            parsed_payload = sanitized_payload
+            result_text = _format_assistant_text(parsed_payload)
         for index, action in enumerate(filtered_action_calls):
             action_name = action["name"]
             action_args = action["args"]
