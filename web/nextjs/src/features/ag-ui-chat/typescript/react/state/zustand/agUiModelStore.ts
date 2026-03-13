@@ -6,10 +6,7 @@ import { AG_UI_FALLBACK_MODELS } from "@/features/ag-ui-chat/typescript/config/a
 
 export const useAgUiModelStore = create<AgUiModelStoreState>((set) => ({
   modelOptions: AG_UI_FALLBACK_MODELS,
-  selectedModelId:
-    AG_UI_FALLBACK_MODELS.find((model) => model.id === "gemini-3.1-pro-preview")?.id ??
-    AG_UI_FALLBACK_MODELS[0]?.id ??
-    null,
+  selectedModelId: AG_UI_FALLBACK_MODELS[0]?.id ?? null,
   isModelsLoading: false,
   backendError: null,
   setModelOptions: (value) => set(() => ({ modelOptions: value })),
