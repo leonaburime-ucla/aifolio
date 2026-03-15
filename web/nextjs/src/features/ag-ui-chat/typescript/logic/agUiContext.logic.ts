@@ -1,4 +1,5 @@
 import type { AgUiModelOption } from "@/features/ag-ui-chat/__types__/typescript/react/state/agUiModel.types";
+import { AG_UI_PREFERRED_MODEL_ID } from "@/features/ag-ui-chat/typescript/config/agUiModel.config";
 
 /**
  * AG-UI context and model-selection logic.
@@ -37,6 +38,10 @@ export function resolveNextAgUiSelectedModelId({
     fetchedModels.some((model) => model.id === currentSelectedModelId);
   if (hasCurrent) {
     return currentSelectedModelId;
+  }
+
+  if (fetchedModels.some((model) => model.id === AG_UI_PREFERRED_MODEL_ID)) {
+    return AG_UI_PREFERRED_MODEL_ID;
   }
 
   if (apiCurrentModelId && fetchedModels.some((model) => model.id === apiCurrentModelId)) {

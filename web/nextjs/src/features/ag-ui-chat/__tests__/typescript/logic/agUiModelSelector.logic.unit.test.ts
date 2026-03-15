@@ -3,6 +3,7 @@ import { resolveNextAgUiSelectedModelId } from "@/features/ag-ui-chat/typescript
 
 describe("resolveNextAgUiSelectedModelId", () => {
   const models = [
+    { id: "gemini-3.1-pro-preview", label: "Gemini 3.1 Pro Preview" },
     { id: "m1", label: "Model 1" },
     { id: "m2", label: "Model 2" },
   ];
@@ -22,14 +23,23 @@ describe("resolveNextAgUiSelectedModelId", () => {
       fetchedModels: models,
       apiCurrentModelId: "m1",
     });
-    expect(result).toBe("m1");
+    expect(result).toBe("gemini-3.1-pro-preview");
   });
 
-  it("falls back to first model when no valid current values exist", () => {
+  it("prefers Gemini 3.1 Pro when no valid current selection exists", () => {
     const result = resolveNextAgUiSelectedModelId({
       currentSelectedModelId: null,
       fetchedModels: models,
       apiCurrentModelId: "missing",
+    });
+    expect(result).toBe("gemini-3.1-pro-preview");
+  });
+
+  it("falls back to API current model when Gemini 3.1 Pro is unavailable", () => {
+    const result = resolveNextAgUiSelectedModelId({
+      currentSelectedModelId: null,
+      fetchedModels: [{ id: "m1", label: "Model 1" }],
+      apiCurrentModelId: "m1",
     });
     expect(result).toBe("m1");
   });

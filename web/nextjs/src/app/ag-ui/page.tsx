@@ -55,6 +55,9 @@ export default function AgUiPage() {
               </p>
             </div>
           </details>
+          <p className="text-sm font-semibold text-red-600">
+            For best results use Gemini 3.1 Pro Preview
+          </p>
           <Suspense fallback={null}>
             <AgUiWorkspace />
           </Suspense>
