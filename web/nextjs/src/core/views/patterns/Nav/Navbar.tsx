@@ -80,7 +80,7 @@ export default function Navbar() {
         </div>
 
         <Link href="/" className="text-sm font-semibold text-zinc-900">
-          AIfolio
+          AIFolio by Leon A.
         </Link>
       </div>
     </nav>
