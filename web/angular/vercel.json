@@ -2,5 +2,11 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "installCommand": "npm run vercel:install",
   "buildCommand": "npm run build",
-  "outputDirectory": "dist/angular/browser"
+  "outputDirectory": "dist/angular/browser",
+  "rewrites": [
+    {
+      "source": "/api/ai/:path*",
+      "destination": "/api/ai?path=:path*"
+    }
+  ]
 }

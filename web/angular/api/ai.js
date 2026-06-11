@@ -1,10 +1,8 @@
 export default async function handler(req, res) {
-  const path = Array.isArray(req.query.path)
-    ? req.query.path.join('/')
-    : req.query.path || '';
+  const path = String(req.query.path || '').replace(/^\/+/, '');
   const baseUrl = (process.env.ANGULAR_PUBLIC_AI_API_URL || 'http://127.0.0.1:8000').replace(/\/+$/, '');
   const incomingUrl = new URL(req.url || '/', 'https://aifolio.local');
-  const targetUrl = new URL(`${baseUrl}/${path}`);
+  const targetUrl = new URL(path ? `${baseUrl}/${path}` : baseUrl);
 
   incomingUrl.searchParams.forEach((value, key) => {
     if (key !== 'path') targetUrl.searchParams.append(key, value);
