@@ -2,10 +2,13 @@
   "name": "@aifolio/web",
   "private": true,
   "workspaces": [
+    "nextjs",
     "packages/contracts",
-    "packages/frontend-core",
-    "vue"
+    "packages/frontend-core"
   ],
+  "scripts": {
+    "build": "npm run build --workspace nextjs"
+  },
   "optionalDependencies": {
     "@esbuild/linux-x64": "0.27.7",
     "@oxc-parser/binding-linux-x64-gnu": "0.132.0",

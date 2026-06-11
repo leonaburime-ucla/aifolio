@@ -27,20 +27,18 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@aifolio/contracts": "file:../contracts"
+    "@aifolio/contracts": "file:../contracts",
+    "papaparse": "^5.5.3",
+    "xlsx": "^0.18.5"
   },
   "peerDependencies": {
-    "echarts": "*",
-    "papaparse": "*",
-    "xlsx": "*"
+    "echarts": "*"
   },
   "devDependencies": {
     "@types/papaparse": "^5.5.2",
     "@vitest/coverage-v8": "^2.1.9",
     "echarts": "^6.1.0",
-    "papaparse": "^5.5.3",
     "typescript": "^5.5.0",
-    "vitest": "^2.1.8",
-    "xlsx": "^0.18.5"
+    "vitest": "^2.1.8"
   }
 }

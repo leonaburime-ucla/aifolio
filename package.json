@@ -2,9 +2,8 @@
   "name": "aifolio-monorepo",
   "private": true,
   "workspaces": [
-    "web/nextjs",
-    "web/packages/contracts",
-    "web/packages/frontend-core"
+    "nextjs",
+    "src/*"
   ],
   "scripts": {
     "dev": "npm run dev --workspace nextjs",
