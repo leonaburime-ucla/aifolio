@@ -1,17 +1,10 @@
 from __future__ import annotations
 
 import json
-import sys
 from pathlib import Path
 from typing import Any
 
-try:
-    from ml.file_util import load_tabular_file
-except ModuleNotFoundError:  # pragma: no cover
-    AI_ROOT = Path(__file__).resolve().parent.parent
-    if str(AI_ROOT) not in sys.path:
-        sys.path.append(str(AI_ROOT))
-    from ml.file_util import load_tabular_file
+from .file_util import load_tabular_file
 
 
 ML_DATA_DIR = Path(__file__).resolve().parents[1] / "data" / "ml_data"

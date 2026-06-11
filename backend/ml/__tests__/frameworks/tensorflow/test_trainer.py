@@ -233,6 +233,64 @@ def test_predict_rows_classification_returns_indices_without_encoder():
     assert trainer.predict_rows(bundle, [{"a": 1.0}]) == [1]
 
 
+def test_predict_rows_uses_main_output_for_multi_task_classification():
+    vectorizer = DictVectorizer(sparse=False)
+    vectorizer.fit([{"a": 1.0}])
+    scaler = StandardScaler().fit(np.array([[1.0]], dtype=np.float32))
+
+    class _MultiTaskModel:
+        def predict(self, x, verbose=0):
+            _ = verbose
+            main = np.array([[0.2, 0.8] for _ in range(len(x))], dtype=np.float32)
+            aux = np.array([[0.9, 0.1] for _ in range(len(x))], dtype=np.float32)
+            return [main, aux]
+
+    bundle = ModelBundle(
+        model=_MultiTaskModel(),
+        task="classification",
+        vectorizer=vectorizer,
+        scaler=scaler,
+        feature_medians=np.array([0.0], dtype=np.float32),
+        label_encoder=None,
+        target_scaler=None,
+        target_column="y",
+        input_dim=1,
+        output_dim=2,
+        class_names=None,
+    )
+
+    assert trainer.predict_rows(bundle, [{"a": 1.0}]) == [1]
+
+
+def test_predict_rows_uses_main_output_for_multi_output_regression():
+    vectorizer = DictVectorizer(sparse=False)
+    vectorizer.fit([{"a": 1.0}])
+    scaler = StandardScaler().fit(np.array([[1.0]], dtype=np.float32))
+
+    class _AutoencoderModel:
+        def predict(self, x, verbose=0):
+            _ = verbose
+            main = np.array([[0.5] for _ in range(len(x))], dtype=np.float32)
+            recon = np.array([[9.0] for _ in range(len(x))], dtype=np.float32)
+            return [main, recon]
+
+    bundle = ModelBundle(
+        model=_AutoencoderModel(),
+        task="regression",
+        vectorizer=vectorizer,
+        scaler=scaler,
+        feature_medians=np.array([0.0], dtype=np.float32),
+        label_encoder=None,
+        target_scaler=None,
+        target_column="y",
+        input_dim=1,
+        output_dim=1,
+        class_names=None,
+    )
+
+    assert trainer.predict_rows(bundle, [{"a": 1.0}]) == [0.5]
+
+
 def test_train_model_from_file_imbalance_aware_end_to_end(tmp_path):
     path = tmp_path / "classification.csv"
     _write_csv(

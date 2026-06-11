@@ -6,7 +6,7 @@ AI_ROOT = Path(__file__).resolve().parents[2]
 if str(AI_ROOT) not in sys.path:
     sys.path.append(str(AI_ROOT))
 
-import ml.pytorch as pytorch_module
+import ml.cli.pytorch as pytorch_module
 from ml.core.types import Metrics
 
 

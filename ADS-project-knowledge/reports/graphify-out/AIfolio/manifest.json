@@ -1,0 +1,3562 @@
+{
+  "backend/__tests__/agui/test_agui.py": {
+    "mtime": 1773435487.485765,
+    "ast_hash": "eb38700fae25fd53b9f2a4c41bd519f4",
+    "semantic_hash": ""
+  },
+  "backend/__tests__/agui/test_agui_actions_intents.py": {
+    "mtime": 1772751242.6142795,
+    "ast_hash": "8a237cb17cebcedbf672401a02ce0b1d",
+    "semantic_hash": ""
+  },
+  "backend/__tests__/agui/test_agui_stream.py": {
+    "mtime": 1773437220.819401,
+    "ast_hash": "11a8b1917430c196df197bf69899171a",
+    "semantic_hash": ""
+  },
+  "backend/__tests__/agui_runtime/test_actions.py": {
+    "mtime": 1773363922.2403667,
+    "ast_hash": "d6070c9d0f0bbfa8579d0bc596e6d738",
+    "semantic_hash": ""
+  },
+  "backend/__tests__/agui_runtime/test_intents.py": {
+    "mtime": 1772751278.1969502,
+    "ast_hash": "a80e94ba5aeae1f8b950bf56ca474266",
+    "semantic_hash": ""
+  },
+  "backend/__tests__/agui_runtime/test_ml_actions.py": {
+    "mtime": 1773435472.289844,
+    "ast_hash": "ff7214a0f42bb3838161c5758bfcb2f6",
+    "semantic_hash": ""
+  },
+  "backend/__tests__/agui_runtime/test_payloads.py": {
+    "mtime": 1773259014.4633198,
+    "ast_hash": "63a0948cace3c3bac92a2498f170c820",
+    "semantic_hash": ""
+  },
+  "backend/__tests__/chartspec/test_chartspec.py": {
+    "mtime": 1772751304.1904564,
+    "ast_hash": "9063d65acfd1cdddb53d037fb6cbe1be",
+    "semantic_hash": ""
+  },
+  "backend/__tests__/chat/test_chat_application_service.py": {
+    "mtime": 1773437220.8310757,
+    "ast_hash": "6b150dbf445bbfee8efa0905b8c58dab",
+    "semantic_hash": ""
+  },
+  "backend/__tests__/conftest.py": {
+    "mtime": 1772751313.992819,
+    "ast_hash": "a584daed4c66f451c96c2805d18f4884",
+    "semantic_hash": ""
+  },
+  "backend/__tests__/data/test_ml_data.py": {
+    "mtime": 1772750659.8655145,
+    "ast_hash": "7b68dea767d6a28182230eeb7f63264f",
+    "semantic_hash": ""
+  },
+  "backend/__tests__/langgraph_agents/test_analyst.py": {
+    "mtime": 1772750539.037791,
+    "ast_hash": "bea246157e4ab801727b8a6d11acb267",
+    "semantic_hash": ""
+  },
+  "backend/__tests__/langgraph_agents/test_coordinator.py": {
+    "mtime": 1772750542.3571057,
+    "ast_hash": "a1ff081c94a74c2b31bf5e7b83f21f05",
+    "semantic_hash": ""
+  },
+  "backend/__tests__/langgraph_agents/test_data_scientist.py": {
+    "mtime": 1772750664.7428007,
+    "ast_hash": "5823f8c960c32f8c375d94ccf06a4323",
+    "semantic_hash": ""
+  },
+  "backend/__tests__/langgraph_agents/test_data_scientist_datasets.py": {
+    "mtime": 1772750548.6656692,
+    "ast_hash": "e950c378c4dfe4eee22b66fc94fc9de7",
+    "semantic_hash": ""
+  },
+  "backend/__tests__/langgraph_agents/test_data_scientist_planner.py": {
+    "mtime": 1772750553.3976488,
+    "ast_hash": "10f0666ea06843fc6e8db11484c57219",
+    "semantic_hash": ""
+  },
+  "backend/__tests__/langgraph_agents/test_langsmith.py": {
+    "mtime": 1772750559.6932087,
+    "ast_hash": "1476c9f8f149fa197d2278c05fe6f2cf",
+    "semantic_hash": ""
+  },
+  "backend/__tests__/langgraph_agents/test_langsmith_agent.py": {
+    "mtime": 1772750562.6778767,
+    "ast_hash": "f27b8bdc9e073b3cb8a7a76e45983b6e",
+    "semantic_hash": ""
+  },
+  "backend/__tests__/langgraph_agents/test_status.py": {
+    "mtime": 1772750565.617226,
+    "ast_hash": "ac2df75f54162c6fd4142e39d7673609",
+    "semantic_hash": ""
+  },
+  "backend/__tests__/live/test_agui_live_capture.py": {
+    "mtime": 1773455381.6937354,
+    "ast_hash": "1da6e763f4f9354769558f092ac8a1f3",
+    "semantic_hash": ""
+  },
+  "backend/__tests__/llm/test_agent_langchain.py": {
+    "mtime": 1772751288.3568459,
+    "ast_hash": "d2d5f150fc62bac6dfdf56228e4aad12",
+    "semantic_hash": ""
+  },
+  "backend/__tests__/llm/test_google_gemini.py": {
+    "mtime": 1772751292.708631,
+    "ast_hash": "bee9cbf435a1965b66595026a13d8910",
+    "semantic_hash": ""
+  },
+  "backend/__tests__/server/test_server_ml.py": {
+    "mtime": 1772750218.5914109,
+    "ast_hash": "91ed00ffd0c6451cdca09579601866d6",
+    "semantic_hash": ""
+  },
+  "backend/__tests__/server/test_server_routes.py": {
+    "mtime": 1772750215.659942,
+    "ast_hash": "ed6451b68c2ca43b1833d9b65d70dce4",
+    "semantic_hash": ""
+  },
+  "backend/__tests__/test_backend_namespace.py": {
+    "mtime": 1772750675.899006,
+    "ast_hash": "01de015850881d1d926f8695f4ad1b46",
+    "semantic_hash": ""
+  },
+  "backend/__tests__/test_data_scientist_chartspecs.py": {
+    "mtime": 1773183657.2184865,
+    "ast_hash": "1f0de84592754043554cae8d1c11adfa",
+    "semantic_hash": ""
+  },
+  "backend/__tests__/test_preprocessing_config.py": {
+    "mtime": 1772750669.3862956,
+    "ast_hash": "9552609cd0395766ec7fae8280ff9e61",
+    "semantic_hash": ""
+  },
+  "backend/__tests__/test_server.py": {
+    "mtime": 1772751238.0460935,
+    "ast_hash": "e1ed8d829d291d3ffd659529a14e896c",
+    "semantic_hash": ""
+  },
+  "backend/__tests__/tools/test_sklearn_tools.py": {
+    "mtime": 1772751308.943482,
+    "ast_hash": "d24b87da0569ee0e6cafaeae36250278",
+    "semantic_hash": ""
+  },
+  "backend/__tests__/tools/test_sklearn_tools_shared.py": {
+    "mtime": 1772751497.9070928,
+    "ast_hash": "5d3d0ae7cb5c810a8a1c5e292d77629b",
+    "semantic_hash": ""
+  },
+  "backend/agents/__init__.py": {
+    "mtime": 1772750513.438291,
+    "ast_hash": "35f9286069ddc0f0077fc94307aac60b",
+    "semantic_hash": ""
+  },
+  "backend/agents/analyst.py": {
+    "mtime": 1772751174.9140983,
+    "ast_hash": "21d1aceda34663439a0487d4a2a379b2",
+    "semantic_hash": ""
+  },
+  "backend/agents/coordinator.py": {
+    "mtime": 1772751183.935624,
+    "ast_hash": "9c78bc40446dd575e42198d9af42e258",
+    "semantic_hash": ""
+  },
+  "backend/agents/data_scientist/__init__.py": {
+    "mtime": 1772740199.1511357,
+    "ast_hash": "479cd62e170c50d059aaaef622415c0c",
+    "semantic_hash": ""
+  },
+  "backend/agents/data_scientist/dataset_io.py": {
+    "mtime": 1772741822.937543,
+    "ast_hash": "1c1d6ddff0db7800be3e2f86c8c0ead1",
+    "semantic_hash": ""
+  },
+  "backend/agents/data_scientist/planner.py": {
+    "mtime": 1772739880.1956267,
+    "ast_hash": "8775488ef0fa9820138e2a315e502fdf",
+    "semantic_hash": ""
+  },
+  "backend/agents/data_scientist/service.py": {
+    "mtime": 1773183706.9039176,
+    "ast_hash": "7b528dee52b5294e0342ca44758a2983",
+    "semantic_hash": ""
+  },
+  "backend/agents/langsmith.py": {
+    "mtime": 1772746293.756375,
+    "ast_hash": "daab64807dd27c500b01c6adea91fb5c",
+    "semantic_hash": ""
+  },
+  "backend/agents/langsmith_agent.py": {
+    "mtime": 1772751178.009096,
+    "ast_hash": "d9776d025629562890416a1a62878ecf",
+    "semantic_hash": ""
+  },
+  "backend/agents/status.py": {
+    "mtime": 1769297734.181157,
+    "ast_hash": "a336bbbaaf1c2f67bb3a820291d500f6",
+    "semantic_hash": ""
+  },
+  "backend/api/index.py": {
+    "mtime": 1773847564.7478018,
+    "ast_hash": "27e7c718d98b496ebff5709844158be2",
+    "semantic_hash": ""
+  },
+  "backend/application/agui/__init__.py": {
+    "mtime": 1773849714.7403812,
+    "ast_hash": "33538185d724e340a6f5dbbf1ba15bfb",
+    "semantic_hash": ""
+  },
+  "backend/application/agui/policy.py": {
+    "mtime": 1773850442.5542138,
+    "ast_hash": "a49362919f759793c9a54eef4170cdb0",
+    "semantic_hash": ""
+  },
+  "backend/application/agui/service.py": {
+    "mtime": 1773849714.7431285,
+    "ast_hash": "89d9aa35d17efc97000d6f1ea050a0cf",
+    "semantic_hash": ""
+  },
+  "backend/application/chat/__init__.py": {
+    "mtime": 1773849596.1434252,
+    "ast_hash": "f82f9734c5326a4ba646d974ad374bd3",
+    "semantic_hash": ""
+  },
+  "backend/application/chat/policies.py": {
+    "mtime": 1773849596.143683,
+    "ast_hash": "4ea2870c2dd738facb7fe277a579e2cd",
+    "semantic_hash": ""
+  },
+  "backend/application/chat/service.py": {
+    "mtime": 1773849596.1456833,
+    "ast_hash": "b3cfcd3c950a4dcabe9409fe8ca30beb",
+    "semantic_hash": ""
+  },
+  "backend/data/ml_data/download_datasets.sh": {
+    "mtime": 1770685375.9857209,
+    "ast_hash": "9c21f4169c3e9922d9d1368c964d3c3c",
+    "semantic_hash": ""
+  },
+  "backend/data/ml_data/sources.json": {
+    "mtime": 1772258203.2255378,
+    "ast_hash": "71e38ae2e026278f3deb920bb59139a7",
+    "semantic_hash": ""
+  },
+  "backend/data/sample_data/datasets.json": {
+    "mtime": 1770252898.5362387,
+    "ast_hash": "6899089e8e1ed7107f5133fa1e0628c5",
+    "semantic_hash": ""
+  },
+  "backend/ml/__init__.py": {
+    "mtime": 1770685403.2260284,
+    "ast_hash": "7f7c8b7018bb5249f13f8cafd2d3bf96",
+    "semantic_hash": ""
+  },
+  "backend/ml/__tests__/__init__.py": {
+    "mtime": 1772738122.4408138,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "backend/ml/__tests__/core/__init__.py": {
+    "mtime": 1772738122.441073,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "backend/ml/__tests__/core/test_artifacts.py": {
+    "mtime": 1772736266.8100288,
+    "ast_hash": "b6048b8847dfba42335ba3ff22b9bce7",
+    "semantic_hash": ""
+  },
+  "backend/ml/__tests__/core/test_contracts.py": {
+    "mtime": 1772744922.4434319,
+    "ast_hash": "ff06ad5179138ebbdc0908252edd532f",
+    "semantic_hash": ""
+  },
+  "backend/ml/__tests__/core/test_execution.py": {
+    "mtime": 1772736275.104881,
+    "ast_hash": "8a81b05203f28c784ebe0726d67ac176",
+    "semantic_hash": ""
+  },
+  "backend/ml/__tests__/core/test_handler_utils.py": {
+    "mtime": 1772745371.3748643,
+    "ast_hash": "b2f61c5916b43a434f73e6281cd5c548",
+    "semantic_hash": ""
+  },
+  "backend/ml/__tests__/core/test_mode_catalog.py": {
+    "mtime": 1772737935.8092728,
+    "ast_hash": "6cfb33b01820c80e131aaa5256a97deb",
+    "semantic_hash": ""
+  },
+  "backend/ml/__tests__/core/test_preprocessing.py": {
+    "mtime": 1772738079.2141404,
+    "ast_hash": "a15488fb501483f9869e380fd71f7f61",
+    "semantic_hash": ""
+  },
+  "backend/ml/__tests__/core/test_request_helpers.py": {
+    "mtime": 1772737935.8177674,
+    "ast_hash": "dea857b2364341ea7f1aa6abc0454dc9",
+    "semantic_hash": ""
+  },
+  "backend/ml/__tests__/core/test_request_prep.py": {
+    "mtime": 1772745154.7849853,
+    "ast_hash": "e43ab218ba6a229e6f161aec73ac5c4f",
+    "semantic_hash": ""
+  },
+  "backend/ml/__tests__/core/test_runtime_imports.py": {
+    "mtime": 1772737935.8254561,
+    "ast_hash": "80dc61afeabddff333c09a1cc8dc874c",
+    "semantic_hash": ""
+  },
+  "backend/ml/__tests__/core/test_types.py": {
+    "mtime": 1772739254.6618273,
+    "ast_hash": "a8e5591dc1fce2e721bead40c7c1b08f",
+    "semantic_hash": ""
+  },
+  "backend/ml/__tests__/frameworks/__init__.py": {
+    "mtime": 1772738122.4412124,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "backend/ml/__tests__/frameworks/pytorch/__init__.py": {
+    "mtime": 1772738122.4413245,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "backend/ml/__tests__/frameworks/pytorch/test_data.py": {
+    "mtime": 1772738041.7021782,
+    "ast_hash": "ed435939fb201d1eb3431e100e6a4e98",
+    "semantic_hash": ""
+  },
+  "backend/ml/__tests__/frameworks/pytorch/test_distill.py": {
+    "mtime": 1772744604.1156778,
+    "ast_hash": "19aeb459a777fa1aef8faeb14b7f83ec",
+    "semantic_hash": ""
+  },
+  "backend/ml/__tests__/frameworks/pytorch/test_handlers.py": {
+    "mtime": 1772744543.4295285,
+    "ast_hash": "baacb7e749159bbcffa9f9939634ddc4",
+    "semantic_hash": ""
+  },
+  "backend/ml/__tests__/frameworks/pytorch/test_models.py": {
+    "mtime": 1772744487.1798468,
+    "ast_hash": "beec6dc485f279bf6975263b40256467",
+    "semantic_hash": ""
+  },
+  "backend/ml/__tests__/frameworks/pytorch/test_serialization.py": {
+    "mtime": 1772738005.688686,
+    "ast_hash": "6f06548ba31d5da8535c9c6c3c8ee83f",
+    "semantic_hash": ""
+  },
+  "backend/ml/__tests__/frameworks/pytorch/test_trainer.py": {
+    "mtime": 1772744655.408554,
+    "ast_hash": "6a1fbd6cced7f83553950ffb63c9d43b",
+    "semantic_hash": ""
+  },
+  "backend/ml/__tests__/frameworks/tensorflow/__init__.py": {
+    "mtime": 1772738122.4414272,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "backend/ml/__tests__/frameworks/tensorflow/test_data.py": {
+    "mtime": 1772738036.329791,
+    "ast_hash": "81cd1bec602bcb8caf1217607e543ec1",
+    "semantic_hash": ""
+  },
+  "backend/ml/__tests__/frameworks/tensorflow/test_distill.py": {
+    "mtime": 1772744645.1455703,
+    "ast_hash": "8d9cf0e5e7cc42eb86676df019a38cd3",
+    "semantic_hash": ""
+  },
+  "backend/ml/__tests__/frameworks/tensorflow/test_handlers.py": {
+    "mtime": 1772744573.4606712,
+    "ast_hash": "23f4bfb13bc6c56fe4585eb1ff10fe20",
+    "semantic_hash": ""
+  },
+  "backend/ml/__tests__/frameworks/tensorflow/test_models.py": {
+    "mtime": 1772743457.3719656,
+    "ast_hash": "d442334b6694e6c4c1c0c7fb2724d2c8",
+    "semantic_hash": ""
+  },
+  "backend/ml/__tests__/frameworks/tensorflow/test_serialization.py": {
+    "mtime": 1773537879.6039486,
+    "ast_hash": "296786eb83caa6f01fc5b572b9edaaa8",
+    "semantic_hash": ""
+  },
+  "backend/ml/__tests__/frameworks/tensorflow/test_trainer.py": {
+    "mtime": 1773537760.8966901,
+    "ast_hash": "89743ddcb81c766c524be6115f2c4722",
+    "semantic_hash": ""
+  },
+  "backend/ml/__tests__/frameworks/test_pytorch_handlers.py": {
+    "mtime": 1772751400.5876637,
+    "ast_hash": "5ca2b6dafad72fcf67d5c9be21b8a7be",
+    "semantic_hash": ""
+  },
+  "backend/ml/__tests__/frameworks/test_tensorflow_handlers.py": {
+    "mtime": 1772751411.2635202,
+    "ast_hash": "3ef19b3fd99fbb2e7bec8cc09b254bcf",
+    "semantic_hash": ""
+  },
+  "backend/ml/__tests__/test_distill.py": {
+    "mtime": 1772744660.8498716,
+    "ast_hash": "3ead71794e6edf92b7f2d4838f57394f",
+    "semantic_hash": ""
+  },
+  "backend/ml/__tests__/test_file_util.py": {
+    "mtime": 1772742067.2850182,
+    "ast_hash": "d4ec970744bb27f2adca0be49f190f54",
+    "semantic_hash": ""
+  },
+  "backend/ml/__tests__/test_ml_util.py": {
+    "mtime": 1772737935.850976,
+    "ast_hash": "61934e1f0900e610f6c441a586ddc892",
+    "semantic_hash": ""
+  },
+  "backend/ml/__tests__/test_pytorch.py": {
+    "mtime": 1773847506.4913528,
+    "ast_hash": "08913261f81eec7b0499a0101231d0ba",
+    "semantic_hash": ""
+  },
+  "backend/ml/__tests__/test_pytorch_shim.py": {
+    "mtime": 1773847506.492115,
+    "ast_hash": "1c1cc492095b311b8da81195220ec89f",
+    "semantic_hash": ""
+  },
+  "backend/ml/__tests__/test_tensorflow.py": {
+    "mtime": 1773847506.491863,
+    "ast_hash": "2d53dfc6c1f695fbae8734bb51d522f0",
+    "semantic_hash": ""
+  },
+  "backend/ml/__tests__/test_tensorflow_shim.py": {
+    "mtime": 1773847506.4923215,
+    "ast_hash": "4644fab69c65857059d47b3ac0eeb8d7",
+    "semantic_hash": ""
+  },
+  "backend/ml/cli/__init__.py": {
+    "mtime": 1773847492.979899,
+    "ast_hash": "582ff705625ffa367d2e7e7d722abf96",
+    "semantic_hash": ""
+  },
+  "backend/ml/cli/pytorch.py": {
+    "mtime": 1773847492.9801202,
+    "ast_hash": "f63df909d136d771c035320b169ebaf4",
+    "semantic_hash": ""
+  },
+  "backend/ml/cli/tensorflow.py": {
+    "mtime": 1773847492.9802816,
+    "ast_hash": "760cd8b888c7c0df1cdaa88f24ffd7b9",
+    "semantic_hash": ""
+  },
+  "backend/ml/core/__init__.py": {
+    "mtime": 1772061236.9256854,
+    "ast_hash": "0f5075eb9c998d26e3dafe7a72829e57",
+    "semantic_hash": ""
+  },
+  "backend/ml/core/artifacts.py": {
+    "mtime": 1772735111.7075443,
+    "ast_hash": "594510a2faec9337f52ac31ab0d7adf2",
+    "semantic_hash": ""
+  },
+  "backend/ml/core/contracts.py": {
+    "mtime": 1772059271.245418,
+    "ast_hash": "d4e109a065015f5e7d9b406a6e82cc3d",
+    "semantic_hash": ""
+  },
+  "backend/ml/core/execution.py": {
+    "mtime": 1772735055.0889935,
+    "ast_hash": "343122f2abefe407f4d5d967c7c3c5f5",
+    "semantic_hash": ""
+  },
+  "backend/ml/core/handler_utils.py": {
+    "mtime": 1772751386.6258154,
+    "ast_hash": "308c706a4dc9d0288f2e964f8073260a",
+    "semantic_hash": ""
+  },
+  "backend/ml/core/mode_catalog.py": {
+    "mtime": 1772061092.4411771,
+    "ast_hash": "bab07ab9fe7d891ee15a821a0e43cc18",
+    "semantic_hash": ""
+  },
+  "backend/ml/core/preprocessing.py": {
+    "mtime": 1772059274.4952936,
+    "ast_hash": "a8cd54ed1d3ba9bc3e57028d6ae9a1f4",
+    "semantic_hash": ""
+  },
+  "backend/ml/core/request_helpers.py": {
+    "mtime": 1772753155.025429,
+    "ast_hash": "6703b84c7f2c6b9b05ccbe7be63afe35",
+    "semantic_hash": ""
+  },
+  "backend/ml/core/request_prep.py": {
+    "mtime": 1772735045.751422,
+    "ast_hash": "460aa4a4ae7a2464f483d303d694a66d",
+    "semantic_hash": ""
+  },
+  "backend/ml/core/runtime_imports.py": {
+    "mtime": 1772735105.6795738,
+    "ast_hash": "3b6d262794c3fdc5a414cd95396d9a2a",
+    "semantic_hash": ""
+  },
+  "backend/ml/core/types.py": {
+    "mtime": 1772060264.2143054,
+    "ast_hash": "d7dc73c00153db85bfcf69492476ae16",
+    "semantic_hash": ""
+  },
+  "backend/ml/distill.py": {
+    "mtime": 1772060758.4166868,
+    "ast_hash": "fc0275e11f4991d1a644096b7afc12f3",
+    "semantic_hash": ""
+  },
+  "backend/ml/file_util.py": {
+    "mtime": 1772742067.284287,
+    "ast_hash": "74c48296239e67132482516caf08ab27",
+    "semantic_hash": ""
+  },
+  "backend/ml/frameworks/__init__.py": {
+    "mtime": 1772059308.9550836,
+    "ast_hash": "469ac2a08f81bc07eb7be75c2f09c790",
+    "semantic_hash": ""
+  },
+  "backend/ml/frameworks/pytorch/__init__.py": {
+    "mtime": 1772060803.134983,
+    "ast_hash": "b76d3bcffe471fb552d1b8076483151a",
+    "semantic_hash": ""
+  },
+  "backend/ml/frameworks/pytorch/data.py": {
+    "mtime": 1772060313.1610274,
+    "ast_hash": "e13f61cd714f9d574777d57c89aebd8e",
+    "semantic_hash": ""
+  },
+  "backend/ml/frameworks/pytorch/distill.py": {
+    "mtime": 1772744427.5956843,
+    "ast_hash": "6872b89009db0c7205590639667905cb",
+    "semantic_hash": ""
+  },
+  "backend/ml/frameworks/pytorch/handlers.py": {
+    "mtime": 1772735127.30865,
+    "ast_hash": "9e5a17b5f55c8c2e2bc7f7e3a889ac77",
+    "semantic_hash": ""
+  },
+  "backend/ml/frameworks/pytorch/models.py": {
+    "mtime": 1773537760.8876345,
+    "ast_hash": "36190c2700dd4d8ef30b53a69c096201",
+    "semantic_hash": ""
+  },
+  "backend/ml/frameworks/pytorch/serialization.py": {
+    "mtime": 1772060387.0212033,
+    "ast_hash": "d4e98088c7ff75a0d2cfac970bf553e0",
+    "semantic_hash": ""
+  },
+  "backend/ml/frameworks/pytorch/trainer.py": {
+    "mtime": 1773537760.889568,
+    "ast_hash": "3094c2bfe954090c3d7ed14964545697",
+    "semantic_hash": ""
+  },
+  "backend/ml/frameworks/tensorflow/__init__.py": {
+    "mtime": 1772060806.3304605,
+    "ast_hash": "4f0eed2b29ce7d7a469558b258c6c5ab",
+    "semantic_hash": ""
+  },
+  "backend/ml/frameworks/tensorflow/data.py": {
+    "mtime": 1772060566.4028487,
+    "ast_hash": "46a2e6bbd54e9fdbc30b069940f712d1",
+    "semantic_hash": ""
+  },
+  "backend/ml/frameworks/tensorflow/distill.py": {
+    "mtime": 1772741213.7977812,
+    "ast_hash": "fead011cb7c45a11b257bec40ca4d27b",
+    "semantic_hash": ""
+  },
+  "backend/ml/frameworks/tensorflow/handlers.py": {
+    "mtime": 1772735141.9281683,
+    "ast_hash": "f37211ccf3d6c2db344b8ce373ce4cf3",
+    "semantic_hash": ""
+  },
+  "backend/ml/frameworks/tensorflow/models.py": {
+    "mtime": 1773537879.6031778,
+    "ast_hash": "8ddfff2606fff75ff8cbb1f60847ea38",
+    "semantic_hash": ""
+  },
+  "backend/ml/frameworks/tensorflow/serialization.py": {
+    "mtime": 1773537945.8724368,
+    "ast_hash": "d28ffc7d6e396012b0be3b9d4653f179",
+    "semantic_hash": ""
+  },
+  "backend/ml/frameworks/tensorflow/trainer.py": {
+    "mtime": 1773537879.603454,
+    "ast_hash": "84c94e82217f127e708affc47fc40e13",
+    "semantic_hash": ""
+  },
+  "backend/ml/ml_data.py": {
+    "mtime": 1773847492.9834657,
+    "ast_hash": "d0711d0c3a1c6b1642168b0c6fc38825",
+    "semantic_hash": ""
+  },
+  "backend/ml/ml_util.py": {
+    "mtime": 1771048037.4640932,
+    "ast_hash": "fcff8ce005847148ae313caa3de4b1b5",
+    "semantic_hash": ""
+  },
+  "backend/ml/pytorch.py": {
+    "mtime": 1773847492.981327,
+    "ast_hash": "e925c5794c1f86765d93a4df7dc86164",
+    "semantic_hash": ""
+  },
+  "backend/ml/tensorflow.py": {
+    "mtime": 1773847492.9825616,
+    "ast_hash": "19eee3d611daab5cfbc6875629e2a4f5",
+    "semantic_hash": ""
+  },
+  "backend/server/__init__.py": {
+    "mtime": 1773847564.7466195,
+    "ast_hash": "6f7f05bd7e6d5e48ec6ec4beaf5ed9f4",
+    "semantic_hash": ""
+  },
+  "backend/server/app.py": {
+    "mtime": 1773847528.1509626,
+    "ast_hash": "5409f64daeec47b93374ba88663b2d32",
+    "semantic_hash": ""
+  },
+  "backend/server/http.py": {
+    "mtime": 1773850442.556266,
+    "ast_hash": "9bf645153b2d7d295315579134a386a9",
+    "semantic_hash": ""
+  },
+  "backend/server/ml.py": {
+    "mtime": 1772751378.7719233,
+    "ast_hash": "e39c0c2dbafc6cb7d28aa60dcb0377bc",
+    "semantic_hash": ""
+  },
+  "backend/server/routes/__init__.py": {
+    "mtime": 1773847578.1367855,
+    "ast_hash": "25450fe2eaea903c5a808671290f6943",
+    "semantic_hash": ""
+  },
+  "backend/server/routes/core.py": {
+    "mtime": 1773850442.555618,
+    "ast_hash": "05c0c41dd706f8707cd4fc50554e7a31",
+    "semantic_hash": ""
+  },
+  "backend/server/routes/deps.py": {
+    "mtime": 1773847528.150303,
+    "ast_hash": "f85d704ce951281cea42c29f206549bb",
+    "semantic_hash": ""
+  },
+  "backend/server/routes/ml_framework.py": {
+    "mtime": 1773847564.7438662,
+    "ast_hash": "4e0314fef14556e8955254afd226ea55",
+    "semantic_hash": ""
+  },
+  "backend/shared/__init__.py": {
+    "mtime": 1772751132.3983228,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "backend/shared/agent_langchain.py": {
+    "mtime": 1773851004.1664207,
+    "ast_hash": "0d8dba4249975ff7ce47704d13e3170a",
+    "semantic_hash": ""
+  },
+  "backend/shared/agui.py": {
+    "mtime": 1773850442.5544648,
+    "ast_hash": "2c4011c2a996a92822dbd6a899659a26",
+    "semantic_hash": ""
+  },
+  "backend/shared/agui_runtime/__init__.py": {
+    "mtime": 1772733721.779645,
+    "ast_hash": "cd8f9bf08eaa0f4d40efbdb21684c662",
+    "semantic_hash": ""
+  },
+  "backend/shared/agui_runtime/actions.py": {
+    "mtime": 1773364093.8139834,
+    "ast_hash": "89df5bfa910de2cc85e355dfcbd19d2f",
+    "semantic_hash": ""
+  },
+  "backend/shared/agui_runtime/intents.py": {
+    "mtime": 1772735062.5066743,
+    "ast_hash": "8be8a025d3ba58d47803bfcdb585bb63",
+    "semantic_hash": ""
+  },
+  "backend/shared/agui_runtime/ml_actions.py": {
+    "mtime": 1773435463.3683305,
+    "ast_hash": "af23594fa19bbd4b721d2dbb25b9d50c",
+    "semantic_hash": ""
+  },
+  "backend/shared/agui_runtime/payloads.py": {
+    "mtime": 1773259014.4630742,
+    "ast_hash": "64754c11bc0a069452dad224474454dc",
+    "semantic_hash": ""
+  },
+  "backend/shared/chartspec.py": {
+    "mtime": 1772415891.5172722,
+    "ast_hash": "5812a14598378d0ae1c0e08e3ce7d7f9",
+    "semantic_hash": ""
+  },
+  "backend/shared/chat_application_service.py": {
+    "mtime": 1773849596.1460648,
+    "ast_hash": "5152d06297b4e63274da1e7482ab26a5",
+    "semantic_hash": ""
+  },
+  "backend/shared/google_gemini.py": {
+    "mtime": 1773851004.1655443,
+    "ast_hash": "110e57e6bde3761c7b1210c191089907",
+    "semantic_hash": ""
+  },
+  "backend/shared/tools/__init__.py": {
+    "mtime": 1769294288.521117,
+    "ast_hash": "f368cca345d67beb7ec57cb673be6b7c",
+    "semantic_hash": ""
+  },
+  "backend/shared/tools/sklearn_tools/__init__.py": {
+    "mtime": 1772740501.1123948,
+    "ast_hash": "618e92875890e62a627640ed63cf79a5",
+    "semantic_hash": ""
+  },
+  "backend/shared/tools/sklearn_tools/metrics.py": {
+    "mtime": 1772746009.0531952,
+    "ast_hash": "fd3f8f722e7d16645ffef1ad04f29bdf",
+    "semantic_hash": ""
+  },
+  "backend/shared/tools/sklearn_tools/preprocessing.py": {
+    "mtime": 1772740501.1110885,
+    "ast_hash": "6450958757fae094c652c576ea0a219f",
+    "semantic_hash": ""
+  },
+  "backend/shared/tools/sklearn_tools/selection.py": {
+    "mtime": 1772740501.1112385,
+    "ast_hash": "c1cdf570279801171f981649d30cdd45",
+    "semantic_hash": ""
+  },
+  "backend/shared/tools/sklearn_tools/shared.py": {
+    "mtime": 1772741713.7258747,
+    "ast_hash": "5c2f56d981959a24990f6222abf192be",
+    "semantic_hash": ""
+  },
+  "backend/vercel.json": {
+    "mtime": 1772921120.1091878,
+    "ast_hash": "2994cbe6d70e7457abf1f32b564bb1f2",
+    "semantic_hash": ""
+  },
+  "package.json": {
+    "mtime": 1763264349.6143746,
+    "ast_hash": "46c38a727a36fa3a9ea077b5f4869f3c",
+    "semantic_hash": ""
+  },
+  "tsconfig.base.json": {
+    "mtime": 1763228756.9781024,
+    "ast_hash": "be2af826ccc81f732d3e978938f6b0dd",
+    "semantic_hash": ""
+  },
+  "tsconfig.json": {
+    "mtime": 1763228759.9144256,
+    "ast_hash": "480e29403d3a595a7152fec0a998122c",
+    "semantic_hash": ""
+  },
+  "web/nextjs/eslint.config.mjs": {
+    "mtime": 1768853739.1762753,
+    "ast_hash": "dfa1f5f6a7037bf39dc510f30b180002",
+    "semantic_hash": ""
+  },
+  "web/nextjs/next-env.d.ts": {
+    "mtime": 1773360088.3999975,
+    "ast_hash": "d0f8375ae1199dc7acd3977fc33b78b8",
+    "semantic_hash": ""
+  },
+  "web/nextjs/next.config.ts": {
+    "mtime": 1772916237.33151,
+    "ast_hash": "67e84cf4f0fd9b5bf45c3e13af59bcb0",
+    "semantic_hash": ""
+  },
+  "web/nextjs/package.json": {
+    "mtime": 1772916248.390106,
+    "ast_hash": "418254347a80fa7418abec65304ba5f6",
+    "semantic_hash": ""
+  },
+  "web/nextjs/postcss.config.mjs": {
+    "mtime": 1768853739.1770446,
+    "ast_hash": "239f3ebf717465dc636818a1a619398d",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/app/api/ai/[...path]/route.unit.test.ts": {
+    "mtime": 1773254057.7674053,
+    "ast_hash": "f7915c167e45767dca00d73b61488141",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/core/config/aiApi.unit.test.ts": {
+    "mtime": 1773254124.4976535,
+    "ast_hash": "5f166decd66b046aad9481b8b795715a",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ag-ui-chat/logic/agUiModelSelector.logic.unit.test.ts": {
+    "mtime": 1773846930.6241248,
+    "ast_hash": "1e1d361ba662f646a5254897e59290b0",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ag-ui-chat/logic/agUiReadableContext.logic.unit.test.ts": {
+    "mtime": 1773846930.6276243,
+    "ast_hash": "9a90a8c57fb2d6f2cee6c91ecfedb4b0",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ag-ui-chat/logic/agUiToolsCatalog.logic.unit.test.ts": {
+    "mtime": 1773846930.6210423,
+    "ast_hash": "85b8eb1b174086abaa86b7a25742076a",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ag-ui-chat/logic/agUiWorkspaceView.logic.unit.test.ts": {
+    "mtime": 1773846930.620274,
+    "ast_hash": "49e076fb36389d9f892d54ee193b1e3e",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ag-ui-chat/logic/copilotFrontendToolActions.logic.unit.test.ts": {
+    "mtime": 1773846930.6290429,
+    "ast_hash": "f0180267abf4a1d56fc56c49e4d51838",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ag-ui-chat/logic/copilotMessagePersistence.logic.unit.test.ts": {
+    "mtime": 1773846930.621774,
+    "ast_hash": "0ee389f478a5e4e42243f552f748c1b0",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ag-ui-chat/logic/copilotToolResultPresentation.logic.unit.test.ts": {
+    "mtime": 1773846930.6248875,
+    "ast_hash": "cbc89cd7676af2e3e2e0dfe1bafecb2c",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ag-ui-chat/logic/frontendTools.logic.unit.test.ts": {
+    "mtime": 1773846930.6189709,
+    "ast_hash": "5360b3869972d0ec746f4e07d5d029af",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ag-ui-chat/react/hooks/useCopilotFrontendTools.hooks.unit.test.ts": {
+    "mtime": 1773846930.603456,
+    "ast_hash": "42d97523a93464a4a701b492809bb5fa",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ag-ui-chat/react/orchestrators/copilotMessagePersistence.orchestrator.unit.test.tsx": {
+    "mtime": 1773846930.610837,
+    "ast_hash": "0dcda6eaf6e6a912e4f6ded8b0215ec9",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ag-ui-chat/react/state/agUiModelStore.unit.test.ts": {
+    "mtime": 1773846930.6128166,
+    "ast_hash": "6dfbbcb13f083d44aa13d2a352f89c74",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ag-ui-chat/react/views/components/AgUiToolsModal.unit.test.tsx": {
+    "mtime": 1773846930.585864,
+    "ast_hash": "988c27f0867178f071ed9719e4e73958",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ag-ui-chat/react/views/components/CopilotAssistantMessage.unit.test.tsx": {
+    "mtime": 1773846930.5838668,
+    "ast_hash": "655bc688e10b546bdbb986cf7f6cc060",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ag-ui-chat/react/views/components/CopilotAssistantMessageLegacy.unit.test.ts": {
+    "mtime": 1773846930.6003375,
+    "ast_hash": "bedf7d0aa9e6fd4901bad15fe0f66e8e",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ag-ui-chat/react/views/components/useCopilotFrontendTools.registration.unit.test.tsx": {
+    "mtime": 1773846930.5864344,
+    "ast_hash": "8ada47a44685acfad20e1bc0b916e511",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/agentic-research/ai/tools/chartTools.unit.test.ts": {
+    "mtime": 1773846930.5877645,
+    "ast_hash": "d597b81fea35820e1fc1f848d3ce6ac9",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/agentic-research/ai/tools/datasetTools.unit.test.ts": {
+    "mtime": 1773846930.591111,
+    "ast_hash": "9a9d51538c231941a1285bd4d76ff628",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/agentic-research/api/agenticResearchApi.adapter.unit.test.ts": {
+    "mtime": 1773846930.5809593,
+    "ast_hash": "91b805251d9d82e9a97babd7fdf3884d",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/agentic-research/api/agenticResearchApi.unit.test.ts": {
+    "mtime": 1773846930.5829434,
+    "ast_hash": "3674e13b60d6f0bdd261e24217293a81",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/agentic-research/logic/agenticResearchChart.logic.unit.test.ts": {
+    "mtime": 1773846930.5994854,
+    "ast_hash": "5dfd541144512be2379b235b43c8ff6e",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/agentic-research/logic/agenticResearchChartStore.logic.unit.test.ts": {
+    "mtime": 1773846930.6283517,
+    "ast_hash": "eef81cbe4d27f416a1b3713226790c89",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/agentic-research/logic/agenticResearchDataset.logic.unit.test.ts": {
+    "mtime": 1773846930.6060085,
+    "ast_hash": "39cebe02fd91303519ac73d3a62e83ed",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/agentic-research/logic/agenticResearchManifest.logic.unit.test.ts": {
+    "mtime": 1773846930.6255567,
+    "ast_hash": "8880472765a8a4c96c4b5c48123c8329",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/agentic-research/logic/agenticResearchTools.logic.unit.test.ts": {
+    "mtime": 1773846930.601623,
+    "ast_hash": "57e5500175e8c41ba56fcd1f36b67108",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/agentic-research/react/ai/adapters/useAgenticResearchAiSurface.unit.test.tsx": {
+    "mtime": 1773846930.595045,
+    "ast_hash": "2ea4c5d674722f41acad9500e06f1e81",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/agentic-research/react/ai/views/AgenticResearchAiTools.unit.test.tsx": {
+    "mtime": 1773846930.5889616,
+    "ast_hash": "ea434ab75b55c01fb0e1750879881a4d",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/agentic-research/react/hooks/useAgenticResearch.hooks.unit.test.tsx": {
+    "mtime": 1773846930.5845187,
+    "ast_hash": "22d23e4d24f0bf077fa4367160db036e",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/agentic-research/react/orchestrators/agenticResearchOrchestrator.unit.test.tsx": {
+    "mtime": 1773846930.5825028,
+    "ast_hash": "46c71f2391f6bd547c00b74c566e40cc",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/agentic-research/react/state/adapters/agenticResearchState.adapter.unit.test.tsx": {
+    "mtime": 1773846930.5989058,
+    "ast_hash": "b2dae1edec2ab49dbfd4de51ac9ece33",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/agentic-research/react/state/adapters/chartActions.adapter.unit.test.tsx": {
+    "mtime": 1773846930.6012306,
+    "ast_hash": "8a4963f9034bb3243b02d9a999c309a4",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/agentic-research/react/state/zustand/agenticResearchChartStore.unit.test.ts": {
+    "mtime": 1773846930.59436,
+    "ast_hash": "059d9bf758e5e6e771d589af55f64c13",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/agentic-research/react/state/zustand/agenticResearchStore.hooks.unit.test.tsx": {
+    "mtime": 1773846930.5870275,
+    "ast_hash": "5488f8a0961e6805b41fd91372868cf0",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/agentic-research/react/state/zustand/agenticResearchStore.unit.test.ts": {
+    "mtime": 1773846930.5904315,
+    "ast_hash": "8cd70a88b4e60da9869c201c25dcffc9",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/agentic-research/react/views/components/DatasetCombobox.unit.test.tsx": {
+    "mtime": 1773846930.5814822,
+    "ast_hash": "fe076a3e9ba08ba8b670cb01d9d91fbc",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/agentic-research/unit/dr-001.dataset-options-order.unit.test.ts": {
+    "mtime": 1773846930.6196136,
+    "ast_hash": "cc4c74e99bfcf4c64325067bdccc8e83",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/agentic-research/unit/dr-003.reorder-chart-remainder.unit.test.ts": {
+    "mtime": 1773846978.497298,
+    "ast_hash": "0ee1227d36d3852b09fcee6f8398668d",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/agentic-research/unit/req-001.default-dataset-selection.unit.test.ts": {
+    "mtime": 1773846930.6178691,
+    "ast_hash": "6edf6706331c3d577d16a4ef0e67ee31",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/agentic-research/unit/req-002.dataset-reset-on-load.unit.test.ts": {
+    "mtime": 1773846930.6172345,
+    "ast_hash": "9754dfe6b84da49890e463b44a51ece1",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/agentic-research/unit/req-003.active-chart-precedence.unit.test.ts": {
+    "mtime": 1773846978.5010114,
+    "ast_hash": "c0a5cfa303b967d4aeaab5be53870754",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/agentic-research/unit/req-004.invalid-tool-error-codes.unit.test.ts": {
+    "mtime": 1773846978.4988477,
+    "ast_hash": "a637b70b66e175b099ee209df178de69",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/agentic-research/unit/req-005.chart-dedupe-prepend.unit.test.ts": {
+    "mtime": 1773846978.501679,
+    "ast_hash": "8eb10ec4334d8085be70031c134af5cd",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/agentic-research/utils/datatable.util.unit.test.ts": {
+    "mtime": 1773846930.5963097,
+    "ast_hash": "64d9ab94a3006c60c5725dd9da7968b9",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ai-chat/api/chatApi.adapter.unit.test.ts": {
+    "mtime": 1773846930.3835802,
+    "ast_hash": "b5c6d33f7c0d612c7c7d4fb3b595c044",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ai-chat/api/chatApi.unit.test.ts": {
+    "mtime": 1773846930.3880033,
+    "ast_hash": "8544ce97b7adb1d36a5f3b3d44483472",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ai-chat/fixtures/chatLogicDeps.fixture.ts": {
+    "mtime": 1773846930.3724332,
+    "ast_hash": "c5142bb6e16eaa3a45096bc7b74dae12",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ai-chat/integration/ab-001.no-cross-feature-domain-imports.integration.test.ts": {
+    "mtime": 1773847053.76868,
+    "ast_hash": "f07a29ece05db25f45b331ab9afd1acb",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ai-chat/integration/ab-002.screen-context-injection.integration.test.ts": {
+    "mtime": 1773846930.349319,
+    "ast_hash": "66ea8dda6c92764d1d87b63f0efbaa02",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ai-chat/integration/ab-003.logic-framework-agnostic.integration.test.ts": {
+    "mtime": 1773846930.3580089,
+    "ast_hash": "7664cc3f6b5dbdfa14709d702e7d92f7",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ai-chat/integration/dr-004.err-001.invalid-payload-normalization.integration.test.ts": {
+    "mtime": 1773846930.366433,
+    "ast_hash": "42ef9d1a92d21d7b76725441ef1aef8a",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ai-chat/integration/err-002.fetch-models-fallback.integration.test.ts": {
+    "mtime": 1773852083.2016935,
+    "ast_hash": "099830a68b652699daa4928bbde00d74",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ai-chat/integration/err-004.clipboard-failure.integration.test.ts": {
+    "mtime": 1773846930.355364,
+    "ast_hash": "475b8f4b242813f4eba62f70cd5a2410",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ai-chat/integration/err-005.timeout-retryable-contract.integration.test.ts": {
+    "mtime": 1773846930.3594759,
+    "ast_hash": "338eee8d8a356b948c166a97c6fa8f86",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ai-chat/integration/req-001.empty-input-short-circuit.integration.test.ts": {
+    "mtime": 1773852083.203368,
+    "ast_hash": "bbd8ee9c8c2fd2c761b24db909626a31",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ai-chat/integration/req-001.submit-order.integration.test.ts": {
+    "mtime": 1773852083.2012048,
+    "ast_hash": "d7fb5bf6748e56111718d104ff1174af",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ai-chat/integration/req-002.sending-reset.integration.test.ts": {
+    "mtime": 1773852083.2025075,
+    "ast_hash": "3086e23a2f15a3d859b59cd739092d02",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ai-chat/integration/req-005.contract-location.integration.test.ts": {
+    "mtime": 1773847499.2051463,
+    "ast_hash": "575278992d13db798a4e34603dd5f5e8",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ai-chat/integration/req-006.page-agnostic-dataset.wiring.integration.test.ts": {
+    "mtime": 1773846930.35238,
+    "ast_hash": "3615374495cb0cbbcd06906fe3533731",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ai-chat/integration/req-007.abort-unmount.integration.test.ts": {
+    "mtime": 1773852083.2055187,
+    "ast_hash": "c752a88cd361110489aa8df39baa5944",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ai-chat/integration/req-008.invalid-attachments.integration.test.ts": {
+    "mtime": 1773846930.3517303,
+    "ast_hash": "226ce95e11f250cc4c066a757a3bec2b",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ai-chat/integration/req-009.models-timeout.integration.test.ts": {
+    "mtime": 1773846930.3700576,
+    "ast_hash": "11d742943cbdb913cb89297fd196c3a2",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ai-chat/logic/chatApiNormalization.logic.unit.test.ts": {
+    "mtime": 1773846930.3348386,
+    "ast_hash": "3b7fe726461dd1e5325b9df595b3b411",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ai-chat/logic/chatOrchestrator.logic.unit.test.ts": {
+    "mtime": 1773852083.200345,
+    "ast_hash": "300dd19d42c3965fbc841947e23ee9e2",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ai-chat/logic/chatStore.logic.unit.test.ts": {
+    "mtime": 1773846930.3332446,
+    "ast_hash": "68d482d87115d84b1ef9ad583d31d015",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ai-chat/logic/chatSubmission.logic.unit.test.ts": {
+    "mtime": 1773846930.3400364,
+    "ast_hash": "a421181619da0e1579326a24b4a3a228",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ai-chat/react/hooks/useChat.hooks.runtime.unit.test.tsx": {
+    "mtime": 1773852083.200799,
+    "ast_hash": "f9677836700138f19d08df67058a509b",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ai-chat/react/hooks/useChat.hooks.unit.test.tsx": {
+    "mtime": 1773846930.3384767,
+    "ast_hash": "19068d4a7e1b6d9031c9262aec5699f8",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ai-chat/react/hooks/useChatSidebar.web.runtime.unit.test.tsx": {
+    "mtime": 1773846930.3459446,
+    "ast_hash": "a81e9bd0803f02cb27914d2ae57ae8da",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ai-chat/react/orchestrators/chatOrchestrator.unit.test.tsx": {
+    "mtime": 1773846930.350823,
+    "ast_hash": "fdfd6eb571ff0ef6cb80d5685730eca7",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ai-chat/react/state/adapters/aiChatState.adapter.unit.test.tsx": {
+    "mtime": 1773846930.360749,
+    "ast_hash": "1cb8722694114cdf51195726dae17fb2",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ai-chat/react/state/zustand/aiChatStore.unit.test.ts": {
+    "mtime": 1773846930.3575325,
+    "ast_hash": "5452279d828478a12e1a855817d2e198",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ai-chat/react/views/components/ChatBar.unit.test.tsx": {
+    "mtime": 1773846930.3323622,
+    "ast_hash": "69f7fe8cfc6f5e6716cf64fd28be09fa",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ai-chat/react/views/components/ChatSidebar.unit.test.tsx": {
+    "mtime": 1773846930.334251,
+    "ast_hash": "7904855930de50a3be020713a39c0369",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ai-chat/react/views/components/CopilotChatSidebar.unit.test.tsx": {
+    "mtime": 1773846930.329661,
+    "ast_hash": "17085070ecac5cd2a468e1e24d8c310e",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ai-chat/unit/dr-002.history-window.boundary.unit.test.ts": {
+    "mtime": 1773846930.3906956,
+    "ast_hash": "9c4a8db380e1f5270f5d40ac51a20169",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ai-chat/unit/dr-003.history-cursor.totality.unit.test.ts": {
+    "mtime": 1773846930.3945887,
+    "ast_hash": "6265e3aa28aa4e6f6c5d0be1a639e483",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ai-chat/unit/dr-005.fallback-model-order.stability.unit.test.ts": {
+    "mtime": 1773846930.4041603,
+    "ast_hash": "fbbb8c29e61c9f848869e46810ad9d47",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ai-chat/unit/req-003.chart-fanout.unit.test.ts": {
+    "mtime": 1773846978.4898663,
+    "ast_hash": "a899096a0af57cc84ca9ab8527eb8ddf",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ai-chat/unit/req-004.model-selection.unit.test.ts": {
+    "mtime": 1773846930.4018853,
+    "ast_hash": "a7ca2da87e6a871192c230aa7222ff8f",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ml-model-ui/react/hooks/useModelPreviewModel.hooks.unit.test.tsx": {
+    "mtime": 1773846930.5596268,
+    "ast_hash": "c9f13eec185f6acc23decffd9171ded2",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ml-model-ui/react/views/components/ModelPreviewModal.unit.test.tsx": {
+    "mtime": 1773846930.5514545,
+    "ast_hash": "5b2d2234453d6997bd43bde20002a547",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ml-model-ui/utils/modelPreview.util.unit.test.ts": {
+    "mtime": 1773846930.563092,
+    "ast_hash": "1dcef3f95760e5fc5f619761aa0c1de5",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ml/ai/agUi/mlTrainingTools.adapter.unit.test.ts": {
+    "mtime": 1773846930.6133935,
+    "ast_hash": "570cfa7e5960db8395089f8b283f9cbd",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ml/api/mlDataApi.unit.test.ts": {
+    "mtime": 1773846930.605262,
+    "ast_hash": "74f9e47c9d2a11c04975908979d4ecb0",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ml/api/pytorchApi.unit.test.ts": {
+    "mtime": 1773846930.6095238,
+    "ast_hash": "a80bb92fa61de83afc9b5155d12254d8",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ml/api/tensorflowApi.unit.test.ts": {
+    "mtime": 1773846930.6030495,
+    "ast_hash": "33a06b0f03d67730afe43b0985861624",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ml/config/datasetTrainingDefaults.unit.test.ts": {
+    "mtime": 1773846930.6297774,
+    "ast_hash": "c4c73a2c0fced10d2f03204b80cde56e",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ml/config/trainingModeExplainers.unit.test.ts": {
+    "mtime": 1773846930.623481,
+    "ast_hash": "56467dcc21ce974fb7773166bbcd517d",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ml/react/ai/tools/pytorchFormBridgePatch.tools.unit.test.ts": {
+    "mtime": 1773846930.596889,
+    "ast_hash": "0ff63d3f9b0d3d1e008643c1bf4cfb25",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ml/react/ai/tools/tensorflowFormBridgePatch.tools.unit.test.ts": {
+    "mtime": 1773846930.593202,
+    "ast_hash": "56ce18aa498a708286ae9b078fd83c17",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ml/react/ai/tools/usePytorchFormBridge.tools.unit.test.tsx": {
+    "mtime": 1773846930.5981672,
+    "ast_hash": "7c4d3bc6c2f6e97c11fae7c0618dadf7",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ml/react/ai/tools/useTensorflowFormBridge.tools.unit.test.tsx": {
+    "mtime": 1773846930.589756,
+    "ast_hash": "ee25cbd668b429bb7f92ead25b1152fd",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ml/react/hooks/logic/distillationView.logic.unit.test.ts": {
+    "mtime": 1773846930.567785,
+    "ast_hash": "dbdaf517cedacec3fcda64d52aeea582",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ml/react/hooks/logic/trainingShared.logic.unit.test.ts": {
+    "mtime": 1773846930.5643947,
+    "ast_hash": "51c1003366932fc77d78a8c8a2b60df4",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ml/react/hooks/ml.hooks.base.unit.test.tsx": {
+    "mtime": 1773846930.5730503,
+    "ast_hash": "2bc7fe786aefd8df94f77bdb8ba839d7",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ml/react/hooks/usePytorchTraining.hooks.unit.test.tsx": {
+    "mtime": 1773846930.5786254,
+    "ast_hash": "c9c2c7955dcb5236447bd5a29b851eff",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ml/react/hooks/usePytorchTrainingIntegration.hooks.unit.test.tsx": {
+    "mtime": 1773846930.553524,
+    "ast_hash": "0dcd74b35f9a41808fefd68ca1da03c8",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ml/react/hooks/useTensorflowTraining.hooks.unit.test.tsx": {
+    "mtime": 1773846930.5571477,
+    "ast_hash": "9e9fa9c88c549fc2fb7cd845c1f654bb",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ml/react/hooks/useTensorflowTrainingIntegration.hooks.unit.test.tsx": {
+    "mtime": 1773846930.5850239,
+    "ast_hash": "7dee28cfd37be685cbc6c7279bbbe1b0",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ml/react/hooks/useTrainingRunsSectionModel.hooks.unit.test.tsx": {
+    "mtime": 1773846930.5607085,
+    "ast_hash": "89fcc354bbe17dee1c44849cd73226af",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ml/react/logic/mlTrainingModals.logic.unit.test.ts": {
+    "mtime": 1773846930.6067855,
+    "ast_hash": "8b963f44ea7bb22bad2d6b7b80a5e494",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ml/react/logic/trainingHookDecisions.logic.unit.test.ts": {
+    "mtime": 1773846930.60264,
+    "ast_hash": "126ec1ca62bb024cbc6f6bc178d0fa94",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ml/react/logic/trainingInputValidation.logic.unit.test.ts": {
+    "mtime": 1773846930.5974214,
+    "ast_hash": "0dab321cfc276923bf41513f1716570b",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ml/react/logic/trainingRunsSection.logic.unit.test.ts": {
+    "mtime": 1773846930.6008031,
+    "ast_hash": "b8d4ede59d11bcbe53b6692690bd9000",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ml/react/orchestrators/mlDatasetOrchestrator.integration.test.tsx": {
+    "mtime": 1773846930.6158671,
+    "ast_hash": "7e6604382e99d2f25f679c8c999c3067",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ml/react/orchestrators/mlDatasetOrchestrator.unit.test.tsx": {
+    "mtime": 1773846930.6152835,
+    "ast_hash": "aa727db02d5e3dd78d7b380291d40d30",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ml/react/orchestrators/pytorchTraining.orchestrator.unit.test.ts": {
+    "mtime": 1773852083.2042003,
+    "ast_hash": "a13034739bbd7189f6c864a5d3b0a28c",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ml/react/orchestrators/tensorflowTraining.orchestrator.unit.test.ts": {
+    "mtime": 1773852083.2062426,
+    "ast_hash": "24238fc3cf26ad5ff18b0c9359cc5ea6",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ml/react/state/adapters/mlDataset.adapter.unit.test.tsx": {
+    "mtime": 1773846930.5923052,
+    "ast_hash": "61a588856a8acc11968f53c9ad29aba9",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ml/react/state/adapters/mlTrainingRuns.adapter.unit.test.tsx": {
+    "mtime": 1773846930.5884354,
+    "ast_hash": "978e47c33cb82455a9384652d32d2577",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ml/react/state/zustand/mlDataStore.unit.test.tsx": {
+    "mtime": 1773846930.5854287,
+    "ast_hash": "e7a1ab0cb151756bde7ff7e6fb89d6b8",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ml/react/state/zustand/mlTrainingRunsStore.unit.test.ts": {
+    "mtime": 1773846930.5834706,
+    "ast_hash": "b80b58478023befdaaee08f70eecc9d9",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ml/react/views/components/FieldHelp.unit.test.tsx": {
+    "mtime": 1773846930.5449238,
+    "ast_hash": "4ecae74460cf44bd013c5e34a8be4d1c",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ml/react/views/components/MlTrainingModals.unit.test.tsx": {
+    "mtime": 1773846930.5474467,
+    "ast_hash": "81e6a038e99bd27c9f4d98c1ab6568ac",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ml/react/views/components/TrainingRunsSection.unit.test.tsx": {
+    "mtime": 1773846930.5425467,
+    "ast_hash": "6afa3b97cb18962ef39d336f6c42c6c1",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ml/test-utils/trainingOrchestrator.test-utils.ts": {
+    "mtime": 1772650432.6890147,
+    "ast_hash": "5ee74a08984bb58caa18bb0905fb813c",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ml/utils/bayesianOptimizer.util.unit.test.ts": {
+    "mtime": 1773846930.6167486,
+    "ast_hash": "2e05380559468869f366151edc9c2902",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ml/utils/displayFormat.util.unit.test.ts": {
+    "mtime": 1773846930.6144755,
+    "ast_hash": "1439178014bba4c0e104801b71cfc05b",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ml/utils/index.unit.test.ts": {
+    "mtime": 1773846930.6184886,
+    "ast_hash": "3665636633c051195e84e7639b2876cb",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ml/utils/trainingRuns.util.unit.test.ts": {
+    "mtime": 1773846930.6148813,
+    "ast_hash": "0465db6096c3f714a08aaf43664eccbd",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ml/utils/trainingUiShared.unit.test.ts": {
+    "mtime": 1773846930.6227877,
+    "ast_hash": "2cb7f56ae810b1f2e6bc3414bb1be659",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ml/validators/index.unit.test.ts": {
+    "mtime": 1773846930.5820875,
+    "ast_hash": "892c43cbb45c0f720d8c224febc58352",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/ml/validators/trainingSweep.validators.unit.test.ts": {
+    "mtime": 1773846930.5999115,
+    "ast_hash": "07ec40f2fb3372b9d9707241436ed296",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/recharts/chartOrchestrator.test.ts": {
+    "mtime": 1773846930.4621923,
+    "ast_hash": "958854b9448bef78862e6c8c129bae6c",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/recharts/logic/chartFormatting.logic.unit.test.ts": {
+    "mtime": 1773846930.5030985,
+    "ast_hash": "34665951ff1f95363972119710f8c466",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/recharts/logic/echartsOptions.logic.unit.test.ts": {
+    "mtime": 1773846930.4991426,
+    "ast_hash": "5d8c4ed4943388a5d56dd6cf6f5085e7",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/recharts/react/hooks/useChartRendererModel.hooks.unit.test.tsx": {
+    "mtime": 1773846930.4260535,
+    "ast_hash": "d657b8f8fbe04e9655e4c43d7dfe255e",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/recharts/react/hooks/useEChartsRenderer.hooks.unit.test.tsx": {
+    "mtime": 1773846930.431582,
+    "ast_hash": "3ce0f05739668db853be2d662d83bf74",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/recharts/react/state/adapters/chartActions.adapter.unit.test.tsx": {
+    "mtime": 1773846930.4518418,
+    "ast_hash": "358e8c9732e2e8edadea40959867fece",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/recharts/react/state/adapters/chartManagement.adapter.unit.test.tsx": {
+    "mtime": 1773846930.4485714,
+    "ast_hash": "336977062893c5c2057008ec3c4c4c02",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/recharts/react/state/zustand/chartStore.unit.test.ts": {
+    "mtime": 1773846930.4385858,
+    "ast_hash": "2d3be9957c9592e5b0b39c7a4a70d1e7",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/recharts/react/views/components/ChartRenderer.unit.test.tsx": {
+    "mtime": 1773846930.4171972,
+    "ast_hash": "f08255f46ff5c33ac14da40c97ca8066",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/features/recharts/react/views/components/EChartsRenderer.unit.test.tsx": {
+    "mtime": 1773846930.420003,
+    "ast_hash": "2030fd0873cac22ba24ee8d3a49df65e",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/ui/components/Datatable/DataTable.unit.test.tsx": {
+    "mtime": 1773851923.5513344,
+    "ast_hash": "e615814f123469e25fae88b0cdb98f78",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/ui/components/General/Modal.unit.test.tsx": {
+    "mtime": 1773851806.1562438,
+    "ast_hash": "ab6a4039bf2dd8abbd1fac703d2e9731",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/ui/components/General/TabbedSidebarWrapper.unit.test.tsx": {
+    "mtime": 1773851817.1973073,
+    "ast_hash": "cc8deb51fdac36a41e34e9384ab51684",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/ui/components/General/button.unit.test.tsx": {
+    "mtime": 1773851788.1999679,
+    "ast_hash": "cd29186cc57829293a01d35bed268cf2",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/ui/components/General/command.unit.test.tsx": {
+    "mtime": 1773851849.0285773,
+    "ast_hash": "68512fcb1054d1f72d2f7093836acc5b",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/ui/components/General/popover.unit.test.tsx": {
+    "mtime": 1773851788.200168,
+    "ast_hash": "c92970751e41efcb125b4c9307bf40b9",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/ui/patterns/CsvDatasetCombobox.unit.test.tsx": {
+    "mtime": 1773851835.1032333,
+    "ast_hash": "a1cad5ec85f30416461ae6d71e3b446a",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/ui/patterns/Nav/Navbar.unit.test.tsx": {
+    "mtime": 1780769372.3102577,
+    "ast_hash": "5bdab86c0f0eb3c2916e6e574fc5bce5",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/ui/providers/CopilotKitProvider.unit.test.tsx": {
+    "mtime": 1773851806.1564648,
+    "ast_hash": "b8fc61724d7f1802d786f16a8b5dfdde",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/ui/screens/AgenticResearchPage.test.tsx": {
+    "mtime": 1773850927.2007048,
+    "ast_hash": "659a0c2ed4ac477def51866f3b848bfb",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/ui/screens/AgenticResearchPage/views/AgenticResearchPageScreen.unit.test.tsx": {
+    "mtime": 1773850927.1963196,
+    "ast_hash": "b786b7657a85eadc96b3d54772a3b7af",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/ui/screens/LandingCharts.test.tsx": {
+    "mtime": 1773846978.4786584,
+    "ast_hash": "156e74b3cf69640cac6714969e5c78ff",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/__tests__/ui/screens/LandingPage/views/LandingPageScreen.unit.test.tsx": {
+    "mtime": 1773850927.1954453,
+    "ast_hash": "6223ec2573dafe78939ceed8344b809b",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/app/ag-ui/layout.tsx": {
+    "mtime": 1772301846.5768807,
+    "ast_hash": "f35a492fd268750dad3a18a4e0d9d908",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/app/ag-ui/page.tsx": {
+    "mtime": 1773846930.319501,
+    "ast_hash": "753e507490b3e686ada9594dcf6fbafc",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/app/agentic-research/page.tsx": {
+    "mtime": 1773850927.1936338,
+    "ast_hash": "028cad258cd8adfdd2d30095bc057224",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/app/api/ai/[...path]/route.ts": {
+    "mtime": 1773256925.052909,
+    "ast_hash": "4ce7d22fefacec416e502e0bbe040340",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/app/api/copilotkit/route.ts": {
+    "mtime": 1773846930.3281803,
+    "ast_hash": "253ca5987213099e2543f5649256d134",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/app/chat/page.tsx": {
+    "mtime": 1773850927.1923091,
+    "ast_hash": "7e582397468e1b790005a998ac864310",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/app/layout.tsx": {
+    "mtime": 1773846930.3207512,
+    "ast_hash": "216c2d6ba63d71c33a2ec808b4074cf7",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/app/ml/knowledge-distillation/page.tsx": {
+    "mtime": 1773846930.3364472,
+    "ast_hash": "5718bc0a4db5277f5ff9fd369d10b68a",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/app/ml/pytorch/page.tsx": {
+    "mtime": 1773849464.8388593,
+    "ast_hash": "4f8fa2fac78e31df344495f8f94ed67d",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/app/ml/tensorflow/page.tsx": {
+    "mtime": 1773849464.8409479,
+    "ast_hash": "1df8111b5db51bfae01905f86a98b86a",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/app/page-vercel.tsx": {
+    "mtime": 1768862132.096342,
+    "ast_hash": "24d1a8854ff3ac34e66ae026893ce359",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/app/page.tsx": {
+    "mtime": 1773850927.1914897,
+    "ast_hash": "44023e36bb63aa20250f46bfabb3f2c7",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/core/config/aiApi.ts": {
+    "mtime": 1773254057.7655969,
+    "ast_hash": "d905c4c4724b9866e37beff1c16b6ce0",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/__specs__/copilot-chat.api.spec.ts": {
+    "mtime": 1771820519.0812402,
+    "ast_hash": "a2ade4edadc565af5fdffd280035c930",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/__specs__/copilot-chat.orchestrator.spec.ts": {
+    "mtime": 1772667116.7502592,
+    "ast_hash": "14c9c33dc8c5971f6d7a947127de1668",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/__specs__/copilot-chat.state.spec.ts": {
+    "mtime": 1771820519.0866444,
+    "ast_hash": "179fc458767faa15dd7ca2e621d93a89",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/__specs__/copilot-chat.ui.spec.ts": {
+    "mtime": 1771828086.1481485,
+    "ast_hash": "e0f3ee98054198469777184636d3277d",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/__types__/copilotChat.types.ts": {
+    "mtime": 1770694869.333813,
+    "ast_hash": "584ad3c03931595fd9b9077b922e682d",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/__types__/logic/copilotAssistantPayload.types.ts": {
+    "mtime": 1773846978.4907503,
+    "ast_hash": "785569ed79f1a4f881db5ed21d84ba86",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/__types__/logic/copilotFrontendToolsFlow.types.ts": {
+    "mtime": 1773846930.56636,
+    "ast_hash": "6c2aa58e437cf2e282a8d25e6715fb2c",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/__types__/logic/frontendTools.types.ts": {
+    "mtime": 1773846978.4888592,
+    "ast_hash": "399b9cc8023052aa5794208ab0371153",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/__types__/react/orchestrators/copilotAssistantMessageOrchestrator.types.ts": {
+    "mtime": 1773846930.5917885,
+    "ast_hash": "6b94aebe787f1765f3da767f61201271",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/__types__/react/orchestrators/copilotChartBridge.types.ts": {
+    "mtime": 1773846978.4857929,
+    "ast_hash": "06dc995957a9f0660cd795a250e9d008",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/__types__/react/state/agUiModel.types.ts": {
+    "mtime": 1772989562.7088077,
+    "ast_hash": "d9840f206f3c12e6b50288b3b62e1fe3",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/__types__/react/state/agUiWorkspace.types.ts": {
+    "mtime": 1772667641.3050416,
+    "ast_hash": "f75cf7a74d245c2503a8624125d32f5a",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/__types__/react/state/copilotMessage.types.ts": {
+    "mtime": 1772667641.3091366,
+    "ast_hash": "95d6efffaba63b283982522c55878fad",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/__types__/react/views/copilotAssistantMessage.types.ts": {
+    "mtime": 1773846930.5764022,
+    "ast_hash": "bb853ad4672c8b5244f8d16c5348aed6",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/__types__/react/views/copilotChatProvider.types.ts": {
+    "mtime": 1772667641.3215473,
+    "ast_hash": "a4050adc3a850a9041438504f03ce04f",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/__types__/react/views/copilotSidebar.types.ts": {
+    "mtime": 1772667641.3180068,
+    "ast_hash": "a810f6f825448977815c6c512a0ef49f",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/__types__/react/views/copilotTools.types.ts": {
+    "mtime": 1773846930.5696473,
+    "ast_hash": "f236a814496096e7279b1ba023b9be8b",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/api/agUiModelApi.ts": {
+    "mtime": 1773846930.577546,
+    "ast_hash": "f4fc4e6a794351a643047614278d4641",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/api/copilotRuntime.adapter.ts": {
+    "mtime": 1773846930.580549,
+    "ast_hash": "078325722fe9b30058986ee43aa9d83d",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/api/hooks/useAgUiCopilotReadableContext.hooks.ts": {
+    "mtime": 1773846930.5739331,
+    "ast_hash": "923fb9f52f1f4dbffd9ca654e7d262aa",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/api/hooks/useCopilotFrontendTools.hooks.ts": {
+    "mtime": 1773846930.5687048,
+    "ast_hash": "c510c9b70e52b33e1f8553d7998ec414",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/config/agUiModel.config.ts": {
+    "mtime": 1773846930.5382936,
+    "ast_hash": "d1d766b67954c1f7e3415ffeba8df63d",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/config/copilotRuntime.config.ts": {
+    "mtime": 1773846930.541301,
+    "ast_hash": "02f5578f42f0c220125f8297f44bde07",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/config/frontendTools.config.ts": {
+    "mtime": 1773104978.3283627,
+    "ast_hash": "f3420585e63bacdf501a8400b94ed3e6",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/logic/agUiContext.logic.ts": {
+    "mtime": 1773846930.5171504,
+    "ast_hash": "f0d05f279b1b4e128bbf64759a4012c7",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/logic/agUiToolsCatalog.logic.ts": {
+    "mtime": 1773846930.5222554,
+    "ast_hash": "23bad90bd90f5e64ebb1800390652969",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/logic/agUiWorkspace.logic.ts": {
+    "mtime": 1773846930.5388756,
+    "ast_hash": "8a4379cbac3a9c13b1766a9f8bda0bb6",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/logic/copilotAssistantPayload.util.ts": {
+    "mtime": 1773846978.4828398,
+    "ast_hash": "407442f831753e725bdd2c73dfc919d3",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/logic/copilotFrontendToolActions.logic.ts": {
+    "mtime": 1773846930.5375206,
+    "ast_hash": "8816b19750d8f3c0f6caa195ca4cd88a",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/logic/copilotFrontendToolsFlow.logic.ts": {
+    "mtime": 1773846930.5148017,
+    "ast_hash": "9eb10f200e2b5b42931f7506fd36b177",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/logic/copilotMessagePersistence.logic.ts": {
+    "mtime": 1772682436.1027455,
+    "ast_hash": "702d28053a23b6d7cdf44f98299469c8",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/logic/copilotToolResultPresentation.logic.ts": {
+    "mtime": 1773846930.5313275,
+    "ast_hash": "bcb35700d061e862596f6c98e0d4c30d",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/logic/frontendTools.adapter.ts": {
+    "mtime": 1773846930.526394,
+    "ast_hash": "613594d42260e22c0af89fe7f97d74df",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/logic/frontendTools.logic.ts": {
+    "mtime": 1773846930.534714,
+    "ast_hash": "c5daf6ff8cd0d30475a53f290474498b",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/logic/messagePersistence.util.ts": {
+    "mtime": 1772914774.491132,
+    "ast_hash": "48bc856a511f251da6bee3632974c2f0",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/react/hooks/useAgUiModelSelector.hooks.ts": {
+    "mtime": 1773846930.5106647,
+    "ast_hash": "1c6f77c82115bdf29fdcd3fe12898244",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/react/hooks/useAgUiPageQuerySync.hooks.ts": {
+    "mtime": 1773846930.510226,
+    "ast_hash": "a5f47f1e719ab6be5f7a66d1a4452929",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/react/hooks/useAgUiWorkspace.hooks.ts": {
+    "mtime": 1773846930.5162942,
+    "ast_hash": "db0633db357f536ead236b1c794fe516",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/react/orchestrators/agUiModelSelector.orchestrator.ts": {
+    "mtime": 1773846930.5351088,
+    "ast_hash": "617898ba32d917ad81fa9c9a33e44e4c",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/react/orchestrators/agUiPageQuerySync.orchestrator.ts": {
+    "mtime": 1773846930.525062,
+    "ast_hash": "00f90d4f244826ba069cc7182d0c0c5d",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/react/orchestrators/agUiWorkspace.orchestrator.ts": {
+    "mtime": 1773846930.5395129,
+    "ast_hash": "2716d87d752c8f687fb7a8d50a04e215",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/react/orchestrators/copilotAssistantMessage.orchestrator.ts": {
+    "mtime": 1773846930.5364678,
+    "ast_hash": "446b6231ec619f1a1a8d73304120bea8",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/react/orchestrators/copilotChartBridge.orchestrator.ts": {
+    "mtime": 1773846978.484932,
+    "ast_hash": "141e96430c411f0132631cc7dba9e1d7",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/react/orchestrators/copilotMessagePersistence.orchestrator.ts": {
+    "mtime": 1773846930.5330417,
+    "ast_hash": "0eac00d4227280671444bab5f194cfa4",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/react/registry/agUiWorkspace.registry.tsx": {
+    "mtime": 1773849464.8344796,
+    "ast_hash": "0305bac0e74f9e29f58a503fcda91b35",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/react/state/adapters/agUiModelState.adapter.ts": {
+    "mtime": 1773846930.5618396,
+    "ast_hash": "29e4827ea1b803a16d682f4adac98d41",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/react/state/adapters/agUiWorkspaceState.adapter.ts": {
+    "mtime": 1773846930.5579095,
+    "ast_hash": "c922da3a04ed528d1d9692a6e124ad89",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/react/state/adapters/copilotMessageState.adapter.ts": {
+    "mtime": 1773846930.5651312,
+    "ast_hash": "5b9d75ef07e28da266f78de27a97b5ec",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/react/state/zustand/agUiModelStore.ts": {
+    "mtime": 1773846930.550184,
+    "ast_hash": "820b828dc187e48923e905f00b7043b0",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/react/state/zustand/agUiWorkspaceStore.ts": {
+    "mtime": 1773846930.548332,
+    "ast_hash": "cd9c43cc71c6566cecc3d9080fa984e8",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/react/state/zustand/copilotMessageStore.ts": {
+    "mtime": 1773846930.5460906,
+    "ast_hash": "cd1cc23d160b964d71826e0ed4a77247",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/react/views/components/AgUiCopilotReadableContext.tsx": {
+    "mtime": 1773846930.425236,
+    "ast_hash": "86644d7855feeb95d55ffb95d1b69925",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/react/views/components/AgUiModelSelector.tsx": {
+    "mtime": 1773846930.434616,
+    "ast_hash": "86c075391ead3a55d228a29f2d1a3c65",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/react/views/components/AgUiPageQuerySync.tsx": {
+    "mtime": 1773846930.4304817,
+    "ast_hash": "0b6662077ac7d4436b5cb604ead31494",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/react/views/components/AgUiTabSwitchTool.tsx": {
+    "mtime": 1773846930.4399765,
+    "ast_hash": "4cd3549dc8d21df352e64c9a6ab6226b",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/react/views/components/AgUiToolsModal.tsx": {
+    "mtime": 1773846930.4232762,
+    "ast_hash": "f02d9fb03c4b23a473b10212090bf17b",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/react/views/components/AgUiWorkspace.tsx": {
+    "mtime": 1773849464.8380265,
+    "ast_hash": "15ca4a6dc20cdd6685d1018a5ba3d712",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/react/views/components/CopilotAssistantMessage.tsx": {
+    "mtime": 1773846930.4443216,
+    "ast_hash": "2be0e13e088717b606b7acf79367aec4",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/react/views/components/CopilotAssistantMessageLegacy.tsx": {
+    "mtime": 1773846930.43658,
+    "ast_hash": "5d78c595d3acc37883fa2eff73d1b3fc",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/react/views/components/CopilotFrontendTools.tsx": {
+    "mtime": 1773846930.4892533,
+    "ast_hash": "e81a1ed670663e7509403eb6e3ea13f7",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/react/views/components/CopilotSidebar.tsx": {
+    "mtime": 1773846930.4505372,
+    "ast_hash": "59eb45812f223deb35d431d7a7100620",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/react/views/providers/CopilotChatProvider.tsx": {
+    "mtime": 1773846930.5025263,
+    "ast_hash": "0f39e76b1e80a73c9752c2eaecf15109",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/react/views/providers/CopilotEffectsProvider.tsx": {
+    "mtime": 1773846930.50589,
+    "ast_hash": "f3f220669814d71e07d3b9975c206c45",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/__specs__/agentic-research.api.spec.ts": {
+    "mtime": 1771822235.8974423,
+    "ast_hash": "1b71ad4241c87bf49a24584155ab4bf9",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/__specs__/agentic-research.errors.spec.ts": {
+    "mtime": 1771822235.9153838,
+    "ast_hash": "dbd273348bac531693714bc0378ea82d",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/__specs__/agentic-research.frontend-tools.spec.ts": {
+    "mtime": 1771822248.775161,
+    "ast_hash": "3076716d537dad832dc90e11619b4a2c",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/__specs__/agentic-research.orchestrator.spec.ts": {
+    "mtime": 1772602268.42327,
+    "ast_hash": "b59855c43886b605330017fe134facab",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/__specs__/agentic-research.state.spec.ts": {
+    "mtime": 1773180424.8888361,
+    "ast_hash": "8c1e5bfdf7b15bd95c3007851bbdd432",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/__specs__/agentic-research.store.spec.ts": {
+    "mtime": 1771822261.5739872,
+    "ast_hash": "0e282613c6230710541faaffbd7fdab0",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/__specs__/agentic-research.ui.spec.ts": {
+    "mtime": 1772313643.6790192,
+    "ast_hash": "38203a84825cecb1b241bb1025adcf4a",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/__specs__/agentic-research.utils.spec.ts": {
+    "mtime": 1771822257.2143502,
+    "ast_hash": "8d1ed09ea945278b9da52c46c67ded55",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/__types__/agenticResearch.types.ts": {
+    "mtime": 1773846978.498037,
+    "ast_hash": "e5e8eef8ad3fb879ac270fc12569af41",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/__types__/ai/tools/types.ts": {
+    "mtime": 1773846978.5003026,
+    "ast_hash": "bf780f59a2151d28313706725d10f1f9",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/__types__/api/agenticResearchApi.types.ts": {
+    "mtime": 1773846978.4995744,
+    "ast_hash": "fe3a0b6a1b325b7af46df0ca3d74e893",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/__types__/api/agenticResearchApiAdapter.types.ts": {
+    "mtime": 1773846930.5703294,
+    "ast_hash": "a2a5050d7b50f7a53f3523d477fa7853",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/__types__/logic/agenticResearchChart.types.ts": {
+    "mtime": 1773846978.4958224,
+    "ast_hash": "440d1f0f9f34351e7d38a1727d8ec29e",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/__types__/logic/agenticResearchChartStore.types.ts": {
+    "mtime": 1773846978.496565,
+    "ast_hash": "a1109d3c15e92f586685a5394d9c9d32",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/__types__/logic/agenticResearchDataset.types.ts": {
+    "mtime": 1773846930.5768642,
+    "ast_hash": "d7fb26993067d26a4406956e1617af27",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/__types__/logic/agenticResearchManifest.types.ts": {
+    "mtime": 1773846930.5637286,
+    "ast_hash": "58a637748eafec1d00ba7ad8b29481e9",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/__types__/logic/agenticResearchTools.types.ts": {
+    "mtime": 1772495137.7596502,
+    "ast_hash": "26de7258e398fec3011825502aacf2e1",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/__types__/react/ai/agenticResearchAiSurface.types.ts": {
+    "mtime": 1773846930.5495558,
+    "ast_hash": "6322ce92a189fba69d8aa127c20014ef",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/__types__/react/ai/agenticResearchAiTools.types.ts": {
+    "mtime": 1772915141.7261412,
+    "ast_hash": "7744e87a7fc5068d3ccf3b231faac508",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/__types__/react/orchestrators/agenticResearchOrchestrator.types.ts": {
+    "mtime": 1773846930.5528414,
+    "ast_hash": "9dc513759bcfbe0c278716c6022b699e",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/__types__/react/state/agenticResearchChartStore.types.ts": {
+    "mtime": 1773846978.5022864,
+    "ast_hash": "37db3aa2d6b91a8276a9ebfe0b61c70a",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/__types__/react/state/agenticResearchStore.types.ts": {
+    "mtime": 1773846930.5625494,
+    "ast_hash": "e553a82e3de8faac1eefefc4e2d22f59",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/__types__/react/views/datasetCombobox.types.ts": {
+    "mtime": 1773846930.5430856,
+    "ast_hash": "6b6b2756ee3a0693b097058e595878ca",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/__types__/utils/datatable.types.ts": {
+    "mtime": 1772495489.340668,
+    "ast_hash": "6b6775551c8aed90adb79995a0de45f6",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/ai/tools/chartTools.ts": {
+    "mtime": 1773846978.4949625,
+    "ast_hash": "0e91f6effd05588c90b7ef60f50005b2",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/ai/tools/datasetTools.ts": {
+    "mtime": 1773846930.5336244,
+    "ast_hash": "24f1d034aa03478ce1928e1ee4665cb4",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/api/agenticResearchApi.adapter.ts": {
+    "mtime": 1773846930.5232477,
+    "ast_hash": "01899ea9decffb8629f7accd8c7ce170",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/api/agenticResearchApi.ts": {
+    "mtime": 1773846978.4940717,
+    "ast_hash": "fe40fad0c418dec696aec422692b8f1b",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/config/frontendTools.config.ts": {
+    "mtime": 1772418158.2567422,
+    "ast_hash": "f9d044d7a554975ec7b4d5a50f7a3ce1",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/logic/agenticResearchChart.logic.ts": {
+    "mtime": 1773846978.4924185,
+    "ast_hash": "2749699c17f272f8fbd102a9454eb407",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/logic/agenticResearchChartStore.logic.ts": {
+    "mtime": 1773846930.548933,
+    "ast_hash": "c05549fb77c3c567344b4716caa1e143",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/logic/agenticResearchDataset.logic.ts": {
+    "mtime": 1773846930.5508106,
+    "ast_hash": "db6b993749b4d86102076606dbd4f99b",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/logic/agenticResearchManifest.logic.ts": {
+    "mtime": 1773846930.5438452,
+    "ast_hash": "f426d8514ed55d9c2dee517481ac22d6",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/logic/agenticResearchTools.logic.ts": {
+    "mtime": 1773846930.5560052,
+    "ast_hash": "af9de99a1851ac807fe09cac204e5cba",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/react/ai/adapters/useAgenticResearchAiSurface.ts": {
+    "mtime": 1773846930.4467702,
+    "ast_hash": "72721729b443bec942d011b70a075396",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/react/ai/views/AgenticResearchAiTools.tsx": {
+    "mtime": 1773846930.4391527,
+    "ast_hash": "7c5e948c3fd685edeb6d55c1fc84b971",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/react/hooks/useAgenticResearch.hooks.ts": {
+    "mtime": 1773846930.4337437,
+    "ast_hash": "894a7dbda97410e9c8235c4b4147d012",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/react/orchestrators/agenticResearchOrchestrator.ts": {
+    "mtime": 1773846930.4541233,
+    "ast_hash": "11fe4dfbd53209b4d76f7fd3287a6d83",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/react/state/adapters/agenticResearchState.adapter.ts": {
+    "mtime": 1773846930.5111797,
+    "ast_hash": "95595441218a52a1b223502dd6bffefc",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/react/state/adapters/chartActions.adapter.ts": {
+    "mtime": 1773846930.5097213,
+    "ast_hash": "f1acec30827d67ed3607659533a1161d",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/react/state/zustand/agenticResearchChartStore.ts": {
+    "mtime": 1773846930.5052469,
+    "ast_hash": "b1b49e4572384c0d34630d3374751705",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/react/state/zustand/agenticResearchStore.ts": {
+    "mtime": 1773846930.5017064,
+    "ast_hash": "5efe199be881400077007fc10d47ece3",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/react/views/components/DatasetCombobox.tsx": {
+    "mtime": 1773846930.4267337,
+    "ast_hash": "52307334cd7ac3a75e54ebb2177b37d5",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/react/views/screens/AgenticResearchAgUiSurface.tsx": {
+    "mtime": 1773849464.8336773,
+    "ast_hash": "01d130d1ff3d9d5d8e7927187c4dd40b",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/react/views/screens/AgenticResearchWorkspaceSurface.tsx": {
+    "mtime": 1773849464.8334887,
+    "ast_hash": "f53f7e7ed12f411e93959426379d0fea",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/utils/datatable.util.ts": {
+    "mtime": 1773846930.5419629,
+    "ast_hash": "60478c684c1456d789739c4a609eb177",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ai-chat/__specs__/ai-chat.api.spec.ts": {
+    "mtime": 1772481325.845532,
+    "ast_hash": "bd9e05cc408982f952ed238076bb6eb2",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ai-chat/__specs__/ai-chat.orchestrator.spec.ts": {
+    "mtime": 1772481325.8604498,
+    "ast_hash": "63fd72d21d05e97b8bad9c907fcb08b1",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ai-chat/__specs__/ai-chat.state.spec.ts": {
+    "mtime": 1773250632.9287543,
+    "ast_hash": "cf78f733b9bbd57ea98b41b9de2eb7bb",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ai-chat/__specs__/ai-chat.ui.spec.ts": {
+    "mtime": 1773250632.9282882,
+    "ast_hash": "3cce927b291de2ceb1d46d278ae8e341",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ai-chat/__types__/api.types.ts": {
+    "mtime": 1773846978.4813638,
+    "ast_hash": "5a3ba1fa9d88b659b59f6ddc3ee4ca5a",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ai-chat/__types__/chat.types.ts": {
+    "mtime": 1773846978.478189,
+    "ast_hash": "2c2c99972092839526a74ad149196c6a",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ai-chat/__types__/logic/chatComposition.types.ts": {
+    "mtime": 1773846978.4803855,
+    "ast_hash": "45b639521a9b3ea5cb68f34744126390",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ai-chat/__types__/logic/chatOrchestrator.types.ts": {
+    "mtime": 1773846930.3368533,
+    "ast_hash": "9f5892919c9eb28d41d0517ee2e72e39",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ai-chat/__types__/logic/chatStore.types.ts": {
+    "mtime": 1773846930.339298,
+    "ast_hash": "964ae09ba44edcc91d5f2ddde8e31d6e",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ai-chat/__types__/logic/chatSubmission.types.ts": {
+    "mtime": 1773846930.3452682,
+    "ast_hash": "3ac0f1807e5c6ab1804c2b2de3f14355",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ai-chat/__types__/logic/modelSelection.types.ts": {
+    "mtime": 1773846930.348578,
+    "ast_hash": "fca2ac4f660e4fc1963a8d475e649b85",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ai-chat/__types__/uiFeedback.types.ts": {
+    "mtime": 1773250473.997732,
+    "ast_hash": "7237d0c9df1481e24fd548e6998f1dbb",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ai-chat/api/chatApi.adapter.ts": {
+    "mtime": 1773846930.3307946,
+    "ast_hash": "17e0ff9ed2cce2e6f1e5ebb3e5e75ed7",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ai-chat/api/chatApi.ts": {
+    "mtime": 1773846930.3292227,
+    "ast_hash": "48886d8791d71bea3e5d586a38192903",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ai-chat/logic/chatApiNormalization.logic.ts": {
+    "mtime": 1773846978.4776738,
+    "ast_hash": "675828bea4b8e5d832b26aaa245482e7",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ai-chat/logic/chatComposition.logic.ts": {
+    "mtime": 1773846930.4011877,
+    "ast_hash": "c14dc39763a0fc20ddb8155348ae4a27",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ai-chat/logic/chatOrchestrator.logic.ts": {
+    "mtime": 1773846930.403555,
+    "ast_hash": "4301cd9373f9680dd077a670d32f52c6",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ai-chat/logic/chatStore.logic.ts": {
+    "mtime": 1773846930.3993547,
+    "ast_hash": "812f3261b71141db353792a5cf263a04",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ai-chat/logic/chatSubmission.logic.ts": {
+    "mtime": 1773846930.4105723,
+    "ast_hash": "cca09d33020fadb6913a2f0e5a2437be",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ai-chat/logic/modelSelection.logic.ts": {
+    "mtime": 1773846930.4049132,
+    "ast_hash": "e69dd067250387141fe01ff2622e04c9",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ai-chat/react/compositions/useChatSurface.orchestrator.ts": {
+    "mtime": 1773850927.188879,
+    "ast_hash": "27631f0602e952675274f4c792859146",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ai-chat/react/hooks/useChat.hooks.ts": {
+    "mtime": 1773846930.3218858,
+    "ast_hash": "82ed0d3df4df83a87774547f3e78c378",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ai-chat/react/hooks/useChatSidebar.web.ts": {
+    "mtime": 1773846930.324202,
+    "ast_hash": "cf5c4ad3c0bdb0bfbde014bb1ae600fd",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ai-chat/react/orchestrators/chatOrchestrator.ts": {
+    "mtime": 1773850927.1895854,
+    "ast_hash": "d3b18fa2f23696a96d1e21a323c9a6ef",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ai-chat/react/state/adapters/aiChatState.adapter.ts": {
+    "mtime": 1773846930.3408182,
+    "ast_hash": "59f026ccac26ed6c3e752aab81dcfe06",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ai-chat/react/state/zustand/aiChatStore.ts": {
+    "mtime": 1773846930.3352911,
+    "ast_hash": "e32e5b9224b6f97d4798e491f84a4003",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ai-chat/react/views/components/ChatBar.tsx": {
+    "mtime": 1773846930.3191142,
+    "ast_hash": "cdaf3ad9e80b1225d0032cd7573f3f48",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ai-chat/react/views/components/ChatSidebar.tsx": {
+    "mtime": 1773846930.3161528,
+    "ast_hash": "32021999defe7798a6476983214ee577",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ai-chat/react/views/components/CopilotChatSidebar.tsx": {
+    "mtime": 1772487335.4331207,
+    "ast_hash": "36809a907e8a88792a4244cd1d814464",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ai-chat/react/views/components/UIFeedback.tsx": {
+    "mtime": 1773846930.3175526,
+    "ast_hash": "11145f0842cec767d1e1ea331d88e93b",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/charts/contracts/chart.types.ts": {
+    "mtime": 1773846989.9637358,
+    "ast_hash": "cb7c476c659722db664a826d300331b7",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml-model-ui/__types__/react/views/modelPreviewModal.types.ts": {
+    "mtime": 1772832962.3062277,
+    "ast_hash": "43e89ceab55077f63536e106055d2f8c",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml-model-ui/react/hooks/useModelPreviewModel.hooks.ts": {
+    "mtime": 1773846930.5521052,
+    "ast_hash": "c50a329b186a1ac83e73047d2b59faab",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml-model-ui/react/views/components/ModelPreviewModal.tsx": {
+    "mtime": 1773846930.5478878,
+    "ast_hash": "2e3e441f51ef6d414933101ae8129ed3",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml-model-ui/utils/modelPreview.util.ts": {
+    "mtime": 1773846930.5747907,
+    "ast_hash": "983e64209cdc4898ee8c300d9f64d1d6",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/__specs__/ml-training.api.spec.ts": {
+    "mtime": 1771822516.4800332,
+    "ast_hash": "c2c6b4555b6cd88ec3a618bf6e1b95d8",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/__specs__/ml-training.errors.spec.ts": {
+    "mtime": 1771822516.5144944,
+    "ast_hash": "bcbd56e7a6d1d443ea5f234a5b2e525e",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/__specs__/ml-training.orchestrator.spec.ts": {
+    "mtime": 1771822516.498516,
+    "ast_hash": "865250492a73e265d3cca56313dbd5e5",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/__specs__/ml-training.state.spec.ts": {
+    "mtime": 1771822516.489822,
+    "ast_hash": "3c0aed8d27263de34c2d39f0fd526f1e",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/__specs__/ml-training.ui.spec.ts": {
+    "mtime": 1771822516.5067492,
+    "ast_hash": "0651b4c1d10299f027b6b4d606ec3d00",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/__types__/ai/agUi/mlTrainingTooling.types.ts": {
+    "mtime": 1773161979.667592,
+    "ast_hash": "5887e7324075609b5ca2592acda38b71",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/__types__/api/mlDataApi.types.ts": {
+    "mtime": 1773846930.490744,
+    "ast_hash": "c3931a570b69d43d1fbd1ad244f96472",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/__types__/api/pytorchApi.types.ts": {
+    "mtime": 1772514115.7926247,
+    "ast_hash": "96cfd75c849b4f4889aa4f4b91d9c9b0",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/__types__/api/tensorflowApi.types.ts": {
+    "mtime": 1772514122.3332744,
+    "ast_hash": "b5876f89d28092af89b3c3796d0defa7",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/__types__/config/datasetTrainingDefaults.types.ts": {
+    "mtime": 1772498200.6072288,
+    "ast_hash": "4fffab2797abaef07180f4b0f642ddd8",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/__types__/logic/trainingHookDecisions.types.ts": {
+    "mtime": 1773846930.5257638,
+    "ast_hash": "94c9437089ed70b0e5ab514821a8a56a",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/__types__/logic/trainingInputValidation.types.ts": {
+    "mtime": 1773846930.5193179,
+    "ast_hash": "12e3422f8b1996e72b0b4fd1799ded03",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/__types__/logic/trainingRuntime.types.ts": {
+    "mtime": 1772660143.226012,
+    "ast_hash": "eb05e7b1861e2271322428d8989212c7",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/__types__/logic/trainingShared.types.ts": {
+    "mtime": 1773846930.515608,
+    "ast_hash": "d21cf5d0e04be630cf68cc6b2a8f45f4",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/__types__/mlData.types.ts": {
+    "mtime": 1771821202.2600217,
+    "ast_hash": "108c003f4f708d73d2188a5ddcbf385e",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/__types__/react/ai/tools/pytorchFormBridge.tools.types.ts": {
+    "mtime": 1773846930.5203695,
+    "ast_hash": "4c2ad39eebb0a66d80a11f96dcf3bc80",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/__types__/react/ai/tools/tensorflowFormBridge.tools.types.ts": {
+    "mtime": 1773846930.5126097,
+    "ast_hash": "4b0bfbbf7fc139fcd52a3fffed88703a",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/__types__/react/hooks/mlTrainingUiBase.types.ts": {
+    "mtime": 1773846930.5080633,
+    "ast_hash": "d74156d668c1be25e24598be2ab138b0",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/__types__/react/hooks/pytorchTraining.types.ts": {
+    "mtime": 1773846930.4501,
+    "ast_hash": "167630684a996b67604abd6385074be9",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/__types__/react/hooks/tensorflowTraining.types.ts": {
+    "mtime": 1773846930.452363,
+    "ast_hash": "15da5cd71c91049fab1013f168b33c3b",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/__types__/react/hooks/trainingFramework.dependencies.types.ts": {
+    "mtime": 1773846930.504172,
+    "ast_hash": "77972da6c060ed4812789a893be863b5",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/__types__/react/hooks/trainingFramework.types.ts": {
+    "mtime": 1773846930.4433706,
+    "ast_hash": "61ccc0e0de1af8e580044f26c851661f",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/__types__/react/hooks/trainingIntegration.types.ts": {
+    "mtime": 1773846930.4998505,
+    "ast_hash": "61591d17e4d0b0869328535b58252635",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/__types__/react/hooks/trainingRunsSection.hooks.types.ts": {
+    "mtime": 1773846930.4842434,
+    "ast_hash": "429c57cd474cc3352b98551f024dae6b",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/__types__/react/orchestrators/mlDatasetOrchestrator.types.ts": {
+    "mtime": 1773846930.536941,
+    "ast_hash": "abcb8ce75927bdc134fca320fb861cfb",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/__types__/react/orchestrators/pytorchTrainingOrchestrator.types.ts": {
+    "mtime": 1773846930.5406659,
+    "ast_hash": "ca53a74fa709307e491aaa4eb184cc87",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/__types__/react/orchestrators/tensorflowTrainingOrchestrator.types.ts": {
+    "mtime": 1773846930.5285933,
+    "ast_hash": "0db6299b0687c76da78a37eb17c4283e",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/__types__/react/orchestrators/trainingOrchestratorShared.types.ts": {
+    "mtime": 1773846930.534281,
+    "ast_hash": "e250531ebaeca1b290e7eb219fdc2dcf",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/__types__/react/state/mlTrainingRunsStore.types.ts": {
+    "mtime": 1773846930.4495175,
+    "ast_hash": "be23608a409bd3d8f752479ff8df1228",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/__types__/react/views/fieldHelp.types.ts": {
+    "mtime": 1772498295.7696981,
+    "ast_hash": "c12539a4b2e686e8b7dedf2d6fc18ace",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/__types__/react/views/mlTrainingModals.types.ts": {
+    "mtime": 1773846930.4356327,
+    "ast_hash": "0adc5fa95a6c719d643fa998b25a5dba",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/__types__/react/views/trainingRunsSection.types.ts": {
+    "mtime": 1773846930.4370587,
+    "ast_hash": "52c8a51169a84052be975486eafd7993",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/__types__/utils/bayesianOptimizer.types.ts": {
+    "mtime": 1772502300.7288764,
+    "ast_hash": "f334dd60c906f538ea605c33c7bc546b",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/__types__/utils/trainingRuns.types.ts": {
+    "mtime": 1772498200.6113992,
+    "ast_hash": "68b5341fe35e15fdfdb537d0549edff2",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/__types__/utils/trainingUiShared.types.ts": {
+    "mtime": 1773846930.508853,
+    "ast_hash": "234bd33d07497d25b78dd05f36055d30",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/__types__/validators/trainingSweep.types.ts": {
+    "mtime": 1772498200.626253,
+    "ast_hash": "f73cf8d5d27afc9937e077d97930118f",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/ai/agUi/mlTrainingFrameworkMetadata.logic.ts": {
+    "mtime": 1773846930.5036547,
+    "ast_hash": "f2097b6afa2204d4bba39524f51f45be",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/ai/agUi/mlTrainingToolActions.logic.ts": {
+    "mtime": 1773105089.6438537,
+    "ast_hash": "2fa3228180483c54ba47fdfa578b99a4",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/ai/agUi/mlTrainingTools.adapter.ts": {
+    "mtime": 1773846930.4555266,
+    "ast_hash": "2c48c304e1842bb9f1cfa0ccaad964eb",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/ai/agUi/mlTrainingTools.logic.ts": {
+    "mtime": 1773161979.6788828,
+    "ast_hash": "f508502e6b9b6b5ac9fdfac16fc6748d",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/ai/agUi/mlTrainingToolsFlow.logic.ts": {
+    "mtime": 1773846930.4914756,
+    "ast_hash": "f07a0820f68e935d1a074e6367556d75",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/api/mlDataApi.ts": {
+    "mtime": 1773846930.4451873,
+    "ast_hash": "632b9a1c8fe9701434556bc1cd2eb1e8",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/api/pytorchApi.ts": {
+    "mtime": 1773846930.4416544,
+    "ast_hash": "05fdf67c3a1fd41510364ec8f0aa6f45",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/api/tensorflowApi.ts": {
+    "mtime": 1773846930.437996,
+    "ast_hash": "96b357f5f2c07de5155e851eb44ae6a7",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/config/datasetTrainingDefaults.ts": {
+    "mtime": 1773846930.4123344,
+    "ast_hash": "f5daa4514ab889a75ec9582dc231f2a4",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/config/trainingModeExplainers.ts": {
+    "mtime": 1773846930.4157667,
+    "ast_hash": "234052ba8c9d67ac510a5fbb3420b785",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/logic/distillationView.logic.ts": {
+    "mtime": 1773846930.3964334,
+    "ast_hash": "a2b4b5aa693ab81aeab188494e1ac4ce",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/logic/mlTrainingModals.logic.ts": {
+    "mtime": 1772516478.8559337,
+    "ast_hash": "2e36e809ed5619cd25c5991b518ecc27",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/logic/trainingHookDecisions.logic.ts": {
+    "mtime": 1773846930.4070618,
+    "ast_hash": "124cd27a2175a65022545cd21986f48f",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/logic/trainingInputValidation.logic.ts": {
+    "mtime": 1773846930.4055068,
+    "ast_hash": "7452f87cc618cfd2376e2d693d7a8e19",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/logic/trainingRunsSection.logic.ts": {
+    "mtime": 1773846930.418641,
+    "ast_hash": "1273970568da97810f3dd30bea22f980",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/logic/trainingRuntime.logic.ts": {
+    "mtime": 1773846930.4030175,
+    "ast_hash": "47062db704e9682eb1c596397b1156c7",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/logic/trainingShared.logic.ts": {
+    "mtime": 1773846930.4090152,
+    "ast_hash": "28462f8801b4171e85dca1ac0f2296ce",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/react/ai/tools/pytorchFormBridgePatch.tools.ts": {
+    "mtime": 1773846930.4423563,
+    "ast_hash": "a61769bb1638cf2ced68da40fc35dd5e",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/react/ai/tools/tensorflowFormBridgePatch.tools.ts": {
+    "mtime": 1773846930.4614072,
+    "ast_hash": "75a2aa4fdef7540211a88b0a69fb3913",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/react/ai/tools/usePytorchFormBridge.tools.ts": {
+    "mtime": 1773846930.4511716,
+    "ast_hash": "991ce6c54f3fa4767b86169a5b55de11",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/react/ai/tools/useTensorflowFormBridge.tools.ts": {
+    "mtime": 1773846930.4478266,
+    "ast_hash": "4bbe3c9d47239ceb877af5d89e5f93f9",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/react/hooks/ml.hooks.base.ts": {
+    "mtime": 1773846930.4193437,
+    "ast_hash": "78560fc3b298fac6496aab230e2c1e04",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/react/hooks/training.hooks.ts": {
+    "mtime": 1773846930.4352055,
+    "ast_hash": "9df2688bf8d33dc13edcec089b2cff20",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/react/hooks/trainingFramework.dependencies.ts": {
+    "mtime": 1773846930.429073,
+    "ast_hash": "c508be787926339ac9689560cd944d1e",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/react/hooks/trainingFramework.hooks.ts": {
+    "mtime": 1773846930.4114485,
+    "ast_hash": "ff1ba71fd94b3b5044b2a339207a6aa1",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/react/hooks/usePytorchTraining.hooks.ts": {
+    "mtime": 1773846930.4078388,
+    "ast_hash": "54f1eb377d1cd4f38563f12469887309",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/react/hooks/useTensorflowTraining.hooks.ts": {
+    "mtime": 1773846930.4213588,
+    "ast_hash": "f9aef562f12a12377cef1b167642fe62",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/react/hooks/useTrainingRunsSectionModel.dependencies.ts": {
+    "mtime": 1773846930.4240124,
+    "ast_hash": "5e6fdaf04faa6112c1d10d59ac981541",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/react/hooks/useTrainingRunsSectionModel.hooks.tsx": {
+    "mtime": 1773846930.4326222,
+    "ast_hash": "4230389b4f05762f071c0151a60aeb61",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/react/orchestrators/mlDataset.orchestrator.ts": {
+    "mtime": 1773846930.5005202,
+    "ast_hash": "c2d341cd27c52918a8d6725033bb54b6",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/react/orchestrators/pytorchTraining.orchestrator.ts": {
+    "mtime": 1773846930.5045907,
+    "ast_hash": "f8578965edfaf313b77812ea4d5a5abc",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/react/orchestrators/tensorflowTraining.orchestrator.ts": {
+    "mtime": 1773846930.5073195,
+    "ast_hash": "1fca8b1685066d6d8a551fc9d64c8e3d",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/react/orchestrators/training.orchestrator.shared.ts": {
+    "mtime": 1773846930.5065763,
+    "ast_hash": "e4a604a0aaa51fc23b755c410f843af0",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/react/state/adapters/mlDataset.adapter.ts": {
+    "mtime": 1773846930.5270882,
+    "ast_hash": "bf839e615a99af916b2ca86ba491f474",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/react/state/adapters/mlTrainingRuns.adapter.ts": {
+    "mtime": 1773846930.524276,
+    "ast_hash": "6082a118424d8b6fbe58245e2416536f",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/react/state/zustand/mlDataStore.ts": {
+    "mtime": 1773846930.517918,
+    "ast_hash": "32a649a273d61020c25feedc5f3ae860",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/react/state/zustand/mlTrainingRunsStore.ts": {
+    "mtime": 1773846930.5134926,
+    "ast_hash": "069b2ee6c9cac03c9983782e3992881b",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/react/views/components/FieldHelp.tsx": {
+    "mtime": 1773846930.3914824,
+    "ast_hash": "db76b21052d243c5c747d3a493fbe5a2",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/react/views/components/MlTrainingModals.tsx": {
+    "mtime": 1773846930.3956044,
+    "ast_hash": "5317101f6a280038900b8b960b0fbf77",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/react/views/components/TrainingRunsSection.tsx": {
+    "mtime": 1773846930.402416,
+    "ast_hash": "1493a20c408e2c1eb834866a374e9c40",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/react/views/screens/PytorchAgUiSurface.tsx": {
+    "mtime": 1773849464.833849,
+    "ast_hash": "abba631aea96fbc9eb501aa7cb6a5591",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/react/views/screens/PytorchTrainingScreen.tsx": {
+    "mtime": 1773846930.3254092,
+    "ast_hash": "de43ada2e98e55997c2d4bf9c9f796ad",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/react/views/screens/TensorflowAgUiSurface.tsx": {
+    "mtime": 1773849464.834057,
+    "ast_hash": "5648575a9096647d552777aadd35ee29",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/react/views/screens/TensorflowTrainingScreen.tsx": {
+    "mtime": 1773846930.3442137,
+    "ast_hash": "e75927e36dd7ee4299eb5372d9217110",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/utils/bayesianOptimizer.util.ts": {
+    "mtime": 1773846930.4407635,
+    "ast_hash": "05019be65dec98e1dacd192055d2d6fc",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/utils/displayFormat.util.ts": {
+    "mtime": 1772500648.1651132,
+    "ast_hash": "800d5d893f29d55989e1c76de4d1076c",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/utils/index.ts": {
+    "mtime": 1773846930.4360838,
+    "ast_hash": "4a9e8d10e11d3a95ba21569db1ee4550",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/utils/trainingRuns.util.ts": {
+    "mtime": 1773846930.437456,
+    "ast_hash": "ccaeec9c65b158562a041bef2a51c53a",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/utils/trainingUiShared.tsx": {
+    "mtime": 1773846930.4332414,
+    "ast_hash": "c203abc195f6c4d0e0f5761d8bfce8d4",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/validators/index.ts": {
+    "mtime": 1773846930.4341588,
+    "ast_hash": "b1e30c3bd758085c672b03ccb6187ff1",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/validators/trainingSweep.validators.ts": {
+    "mtime": 1773846930.4321961,
+    "ast_hash": "b10157605506224bf814cc2f3d17f2b8",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/recharts/__specs__/recharts.api.spec.ts": {
+    "mtime": 1771822516.5518749,
+    "ast_hash": "797d9997320fd16970555c95b5973433",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/recharts/__specs__/recharts.errors.spec.ts": {
+    "mtime": 1771822516.5734339,
+    "ast_hash": "9221fb495ac431b54b5744e5dfeabb15",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/recharts/__specs__/recharts.orchestrator.spec.ts": {
+    "mtime": 1771822516.5615244,
+    "ast_hash": "1171ae851e1ebf105e8b8fcc1460dc92",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/recharts/__specs__/recharts.state.spec.ts": {
+    "mtime": 1772601917.0217865,
+    "ast_hash": "e51c8c6fd42c764a642a8b525ada1d10",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/recharts/__specs__/recharts.ui.spec.ts": {
+    "mtime": 1771822516.566897,
+    "ast_hash": "bee04457d41c957cd2f97f677161b7b9",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/recharts/__types__/logic/chartFormatting.types.ts": {
+    "mtime": 1773846978.483621,
+    "ast_hash": "83efe02b8a3db23b66d4408f6564363b",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/recharts/__types__/logic/echartsOptions.types.ts": {
+    "mtime": 1773846978.4841695,
+    "ast_hash": "0e55e7e341cd330f1410743ba16770b1",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/recharts/__types__/react/hooks/chartRenderer.hooks.types.ts": {
+    "mtime": 1773846978.477012,
+    "ast_hash": "4c98c8a032ab93828e6e7071aa8a90e2",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/recharts/__types__/react/hooks/echartsRenderer.hooks.types.ts": {
+    "mtime": 1773846978.476561,
+    "ast_hash": "bc3d3b7e73ea6d486ad7e5d5c2b23801",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/recharts/__types__/react/orchestrators/chartOrchestrator.types.ts": {
+    "mtime": 1773846930.368336,
+    "ast_hash": "30f0939e919dd2929b49a275eafe3711",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/recharts/__types__/react/state/chartActionsAdapter.types.ts": {
+    "mtime": 1773846978.4817998,
+    "ast_hash": "a2f2c7acd0bea97ee07bd2c3e9d50515",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/recharts/__types__/react/state/chartManagementAdapter.types.ts": {
+    "mtime": 1773846978.4808233,
+    "ast_hash": "ebbce9e9b9ba3c163850e58b8c9f7de9",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/recharts/__types__/react/state/chartStore.types.ts": {
+    "mtime": 1773846978.4798722,
+    "ast_hash": "95b09bd40d6ce49dd3bd3efbb43da7b8",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/recharts/__types__/react/views/chartRenderer.types.ts": {
+    "mtime": 1773846978.475566,
+    "ast_hash": "3736843d616336b019c9823b323063de",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/recharts/__types__/react/views/echartsRenderer.types.ts": {
+    "mtime": 1773846978.473721,
+    "ast_hash": "605b7257c6bf5c129319891a6fcedbe1",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/recharts/logic/chartFormatting.logic.ts": {
+    "mtime": 1773846930.365725,
+    "ast_hash": "bb1c9697b885e336a358c70d13304aa7",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/recharts/logic/echartsOptions.logic.ts": {
+    "mtime": 1773846930.3692794,
+    "ast_hash": "b1bdeda8fb64ad6bb8f49ff4596b82c6",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/recharts/react/ai/state/adapters/chartActions.adapter.ts": {
+    "mtime": 1773846930.3270488,
+    "ast_hash": "c3ac3eb8ff36f957e258b5e0d8d82fab",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/recharts/react/ai/state/zustand/aiChartStore.ts": {
+    "mtime": 1773846930.32337,
+    "ast_hash": "ba65f935f9c9ef4d50af47f0a231e0d2",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/recharts/react/hooks/useChartRendererModel.hooks.ts": {
+    "mtime": 1773846930.3168774,
+    "ast_hash": "d7f224dd1bf5f46b699edb91aac184e0",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/recharts/react/hooks/useEChartsRenderer.hooks.ts": {
+    "mtime": 1773846930.3186924,
+    "ast_hash": "3a0f58c1077bff01daa6bbd2b1262319",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/recharts/react/orchestrators/chartOrchestrator.ts": {
+    "mtime": 1773846930.331779,
+    "ast_hash": "7d4588390c14b3b0d70818bfc34997f9",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/recharts/react/state/adapters/chartManagement.adapter.ts": {
+    "mtime": 1773846930.34191,
+    "ast_hash": "5898bfceb4fa9f718a569f9a04170ab1",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/recharts/react/state/zustand/chartStore.ts": {
+    "mtime": 1773846930.3358028,
+    "ast_hash": "87371b352430261a661df7046bb0d7cb",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/recharts/react/views/components/ChartRenderer.tsx": {
+    "mtime": 1773846978.4678857,
+    "ast_hash": "8f00865359ef025355aa47b53c1c059c",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/recharts/react/views/components/EChartsRenderer.tsx": {
+    "mtime": 1773846930.3157032,
+    "ast_hash": "7b77dca46a88175ea9a365c21ce1bbe9",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/recharts/react/views/screens/ChartsWorkspaceSurface.tsx": {
+    "mtime": 1773850442.5573175,
+    "ast_hash": "cdfbd43a8a15020bc81ebabbb4b123be",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/lib/utils.ts": {
+    "mtime": 1769894499.718773,
+    "ast_hash": "553b2b52e369616f6701f8fbc9ffb68a",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/test/setup.ts": {
+    "mtime": 1771811703.3444014,
+    "ast_hash": "3709e3aa95abf0544678f0f2d9b46702",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/ui/components/Datatable/DataTable.tsx": {
+    "mtime": 1772914481.2246153,
+    "ast_hash": "bb334290875dbaad005593ebfe2e7817",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/ui/components/General/Modal.tsx": {
+    "mtime": 1771981742.8386557,
+    "ast_hash": "edf27885f8705e617809f2af0311f24f",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/ui/components/General/TabbedSidebarWrapper.tsx": {
+    "mtime": 1771215185.7500868,
+    "ast_hash": "71f93bc42be8996c43cece6aa36db1e4",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/ui/components/General/button.tsx": {
+    "mtime": 1769894508.879303,
+    "ast_hash": "587a8d1465ace29c047a7558a289d1e2",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/ui/components/General/command.tsx": {
+    "mtime": 1769894532.0865705,
+    "ast_hash": "0178ddd1f2099902d03b31b4d896bf55",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/ui/components/General/popover.tsx": {
+    "mtime": 1769894515.7083633,
+    "ast_hash": "cfb05245bb44734d5d179c62d756fd12",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/ui/patterns/CsvDatasetCombobox.tsx": {
+    "mtime": 1773846930.3303277,
+    "ast_hash": "877a1d5997ee505499d0bb4eb4c4decb",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/ui/patterns/Nav/Navbar.tsx": {
+    "mtime": 1780769366.3200617,
+    "ast_hash": "3bc6800b6ae702a97cae57cc62d5cf3b",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/ui/providers/CopilotKitProvider.tsx": {
+    "mtime": 1770097753.1277933,
+    "ast_hash": "69588e6b9e41f6c520d30fdcfb18041c",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/ui/screens/AgenticResearchPage/chat/orchestrators/agenticResearchChatOrchestrator.ts": {
+    "mtime": 1773849464.836242,
+    "ast_hash": "2148cfd440f6481a4abd65f454ffa425",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/ui/screens/AgenticResearchPage/views/AgenticResearchPageScreen.tsx": {
+    "mtime": 1773850927.1951442,
+    "ast_hash": "5f4c0d5675b1d49ae301ce7c2a1ad636",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/ui/screens/LandingCharts.tsx": {
+    "mtime": 1773846930.321206,
+    "ast_hash": "22a5fdce43ee6433b8a51fc0444bcfd6",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/ui/screens/LandingPage/chat/orchestrators/landingChatOrchestrator.ts": {
+    "mtime": 1773850927.1942518,
+    "ast_hash": "f2ad764a36f1bae1979cf9ceb404ae04",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/ui/screens/LandingPage/chat/state/adapters/landingChatState.adapter.ts": {
+    "mtime": 1773850927.194462,
+    "ast_hash": "4da4aea40b1d5d60f17cce0befa0dbc7",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/ui/screens/LandingPage/chat/state/zustand/landingChatStore.ts": {
+    "mtime": 1773846930.347741,
+    "ast_hash": "6fdfc3fa3e4d1f04998fe4872ca71ed8",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/ui/screens/LandingPage/chat/views/LandingChatSidebar.tsx": {
+    "mtime": 1773850927.194695,
+    "ast_hash": "015cfeb8bf27eddb8b77ceb676b3e782",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/ui/screens/LandingPage/views/LandingPageScreen.tsx": {
+    "mtime": 1773850927.1940274,
+    "ast_hash": "79dba1b88611f44ec5e36edcc1a027ed",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/ui/screens/LandingPage/views/components/UIFeedback.tsx": {
+    "mtime": 1773252948.3058312,
+    "ast_hash": "1bf059bc3ce054e87de325c8a228649f",
+    "semantic_hash": ""
+  },
+  "web/nextjs/tsconfig.json": {
+    "mtime": 1768853739.1956959,
+    "ast_hash": "ee17fd1c97c735e9f3564e3f5251f125",
+    "semantic_hash": ""
+  },
+  "web/nextjs/vitest.config.ts": {
+    "mtime": 1771811699.2865539,
+    "ast_hash": "6bd2d8a62e6e4efcb6b949c247eb8005",
+    "semantic_hash": ""
+  },
+  "web/sample-data/coin_bitcoin.json": {
+    "mtime": 1768870089.0863042,
+    "ast_hash": "8e3bdcc2d8f2d1852da0d96782778bfb",
+    "semantic_hash": ""
+  },
+  "web/sample-data/coin_cardano.json": {
+    "mtime": 1768870095.9240499,
+    "ast_hash": "1bbbe05e1886e191d5ccba0c2f0729dc",
+    "semantic_hash": ""
+  },
+  "web/sample-data/coin_ethereum.json": {
+    "mtime": 1768857591.9430268,
+    "ast_hash": "77d3f2f8584f0e6106f4e368beb07ec0",
+    "semantic_hash": ""
+  },
+  "web/sample-data/coin_solana.json": {
+    "mtime": 1768870092.4681773,
+    "ast_hash": "083854a813ecc7493416dcfc2cf250a7",
+    "semantic_hash": ""
+  },
+  "web/sample-data/coin_usd-coin.json": {
+    "mtime": 1768870084.8711195,
+    "ast_hash": "a42248fc66820337ff2cbb7a170a02d4",
+    "semantic_hash": ""
+  },
+  "web/sample-data/coins-markets_top50_usd.json": {
+    "mtime": 1768870083.136855,
+    "ast_hash": "49bfe2628fcabc6ceab022982538cc6a",
+    "semantic_hash": ""
+  },
+  "web/sample-data/market-chart_bitcoin_30d_usd.json": {
+    "mtime": 1768870053.7826579,
+    "ast_hash": "40b78aeb47566edabf11a0602e5cf0c9",
+    "semantic_hash": ""
+  },
+  "web/sample-data/market-chart_cardano_30d_usd.json": {
+    "mtime": 1768870058.6945899,
+    "ast_hash": "1d3d4b7b28d2f74adc3761c75386ef3e",
+    "semantic_hash": ""
+  },
+  "web/sample-data/market-chart_ethereum_30d_usd.json": {
+    "mtime": 1768870055.1702406,
+    "ast_hash": "ff84a075dba0c561808deb5a0b173fef",
+    "semantic_hash": ""
+  },
+  "web/sample-data/market-chart_solana_30d_usd.json": {
+    "mtime": 1768870062.8702328,
+    "ast_hash": "89b5a023d3a8cd1e88b28b0550ae71c8",
+    "semantic_hash": ""
+  },
+  "web/sample-data/market-chart_usd-coin_30d_usd.json": {
+    "mtime": 1768870065.237809,
+    "ast_hash": "d89e752ef48cc709e01e1eb3aa1456a9",
+    "semantic_hash": ""
+  },
+  "web/sample-data/simple-price_selected_usd.json": {
+    "mtime": 1768870061.4524586,
+    "ast_hash": "52515efd7e990fc5052c3e2e1de3efc8",
+    "semantic_hash": ""
+  },
+  "ADS-project-knowledge/README.md": {
+    "mtime": 1778009395.6050746,
+    "ast_hash": "459ea28f457f2bc3c6a8bccdb4d9c83a",
+    "semantic_hash": ""
+  },
+  "ADS-project-knowledge/governance/constitution.md": {
+    "mtime": 1778009395.7014177,
+    "ast_hash": "522ecd3c978d248bf934abf9c7308845",
+    "semantic_hash": ""
+  },
+  "ADS-project-knowledge/memory/learnings.md": {
+    "mtime": 1778009395.8020658,
+    "ast_hash": "91c95fe50255e2e163a9be53a5eb3785",
+    "semantic_hash": ""
+  },
+  "ADS-project-knowledge/memory/memory-store.md": {
+    "mtime": 1778009395.9081867,
+    "ast_hash": "9c0515dd056514a6a75827c7dd1fd7bd",
+    "semantic_hash": ""
+  },
+  "ADS-project-knowledge/memory/project_memory.md": {
+    "mtime": 1778009395.751733,
+    "ast_hash": "69c489a304609a715ea168596a954a8e",
+    "semantic_hash": ""
+  },
+  "ADS-project-knowledge/memory/project_notes.md": {
+    "mtime": 1778009395.8467798,
+    "ast_hash": "2e71b9a0fa3d4a54a9b738ad2be887a6",
+    "semantic_hash": ""
+  },
+  "AGENTS.md": {
+    "mtime": 1771887853.5865293,
+    "ast_hash": "e00164b04058f3417b45e43ea4b0a899",
+    "semantic_hash": ""
+  },
+  "ARCHITECTURE.md": {
+    "mtime": 1768878673.0867388,
+    "ast_hash": "bc42646ebb2213ae0c05e055e2e8b192",
+    "semantic_hash": ""
+  },
+  "CLAUDE.md": {
+    "mtime": 1775847604.7010844,
+    "ast_hash": "bd62f83ba81f252d5d841c33cf1965b9",
+    "semantic_hash": ""
+  },
+  "GEMINI.md": {
+    "mtime": 1772409689.3772674,
+    "ast_hash": "8c24e504671c7077b153a1ac0193ac27",
+    "semantic_hash": ""
+  },
+  "Project-Learnings.md": {
+    "mtime": 1770661880.537677,
+    "ast_hash": "e042cab71de153fd645a1e65fa781d7d",
+    "semantic_hash": ""
+  },
+  "backend/AGENT.md": {
+    "mtime": 1772917072.6408687,
+    "ast_hash": "a8126904df7b0af10b03984008a4414f",
+    "semantic_hash": ""
+  },
+  "backend/__specs__/README.md": {
+    "mtime": 1772068655.9282534,
+    "ast_hash": "39397d0c408d2528141757222bb23e7e",
+    "semantic_hash": ""
+  },
+  "backend/__specs__/ml/core/artifacts.spec.md": {
+    "mtime": 1772068711.3194654,
+    "ast_hash": "15b4a0169be88fca0b888c16edb7f5fb",
+    "semantic_hash": ""
+  },
+  "backend/__specs__/ml/core/contracts.spec.md": {
+    "mtime": 1772068711.2908525,
+    "ast_hash": "1c9caf7e0454d83eece832b37f9f91cb",
+    "semantic_hash": ""
+  },
+  "backend/__specs__/ml/core/handler_utils.spec.md": {
+    "mtime": 1772068711.3819697,
+    "ast_hash": "f8a0fb56416ff7c11343d82b0cc65e68",
+    "semantic_hash": ""
+  },
+  "backend/__specs__/ml/core/mode_catalog.spec.md": {
+    "mtime": 1772068711.366353,
+    "ast_hash": "40d0bee70108d6edb9dd4570fd7216f1",
+    "semantic_hash": ""
+  },
+  "backend/__specs__/ml/core/preprocessing.spec.md": {
+    "mtime": 1772068711.305076,
+    "ast_hash": "b29dea468c25d4ad3771a1b8667714bf",
+    "semantic_hash": ""
+  },
+  "backend/__specs__/ml/core/request_helpers.spec.md": {
+    "mtime": 1772068711.3504276,
+    "ast_hash": "6859ebfd2b93fb24a97b4b695880c383",
+    "semantic_hash": ""
+  },
+  "backend/__specs__/ml/core/types.spec.md": {
+    "mtime": 1772068711.3355393,
+    "ast_hash": "78c1a92b96462574470bc07c1f4665d8",
+    "semantic_hash": ""
+  },
+  "backend/__specs__/ml/frameworks/pytorch/data/data.feature.spec.md": {
+    "mtime": 1772080801.2577152,
+    "ast_hash": "926bf507cf497df21e4581712c0f2583",
+    "semantic_hash": ""
+  },
+  "backend/__specs__/ml/frameworks/pytorch/data/data.spec-dod.md": {
+    "mtime": 1772082843.1689122,
+    "ast_hash": "a4d41aac7bb856e80a012b255c425566",
+    "semantic_hash": ""
+  },
+  "backend/__specs__/ml/frameworks/pytorch/data/spec-manifest.md": {
+    "mtime": 1772079392.7960114,
+    "ast_hash": "94cf8a6fb1a0619aefe963a603465d41",
+    "semantic_hash": ""
+  },
+  "backend/__specs__/ml/frameworks/pytorch/distill/distill.behavior.spec.md": {
+    "mtime": 1772080801.2641494,
+    "ast_hash": "5a5bdde653ea3c3ca70f818c3937a6a1",
+    "semantic_hash": ""
+  },
+  "backend/__specs__/ml/frameworks/pytorch/distill/distill.feature.spec.md": {
+    "mtime": 1772080801.2627344,
+    "ast_hash": "e1a782a1f1a305cfefd06a74c26d2ef8",
+    "semantic_hash": ""
+  },
+  "backend/__specs__/ml/frameworks/pytorch/distill/distill.spec-dod.md": {
+    "mtime": 1772082843.1419551,
+    "ast_hash": "45716fd3df6294cd30bd2f3c8fde5582",
+    "semantic_hash": ""
+  },
+  "backend/__specs__/ml/frameworks/pytorch/distill/spec-manifest.md": {
+    "mtime": 1772080783.787554,
+    "ast_hash": "bd3fecd372d942f97bfb471dea85ba37",
+    "semantic_hash": ""
+  },
+  "backend/__specs__/ml/frameworks/pytorch/handlers/handlers.behavior.spec.md": {
+    "mtime": 1772080801.2677727,
+    "ast_hash": "14984c98193c00086ac426ceedf70e24",
+    "semantic_hash": ""
+  },
+  "backend/__specs__/ml/frameworks/pytorch/handlers/handlers.errors.spec.md": {
+    "mtime": 1772080801.269863,
+    "ast_hash": "584f27629be1755db7747c251354dc14",
+    "semantic_hash": ""
+  },
+  "backend/__specs__/ml/frameworks/pytorch/handlers/handlers.feature.spec.md": {
+    "mtime": 1772080801.2657554,
+    "ast_hash": "e820ac7a7628040195bd4c9a86ed3da3",
+    "semantic_hash": ""
+  },
+  "backend/__specs__/ml/frameworks/pytorch/handlers/handlers.spec-dod.md": {
+    "mtime": 1772082843.1827042,
+    "ast_hash": "cd3a3f5c8b92ccad9cfa22ac4e89db80",
+    "semantic_hash": ""
+  },
+  "backend/__specs__/ml/frameworks/pytorch/handlers/spec-manifest.md": {
+    "mtime": 1772080790.620142,
+    "ast_hash": "486092d1342249fc70ff06dcebcc4b0e",
+    "semantic_hash": ""
+  },
+  "backend/__specs__/ml/frameworks/pytorch/models/models.feature.spec.md": {
+    "mtime": 1772080801.259225,
+    "ast_hash": "851073414a3748b463c3d4e2dc656b02",
+    "semantic_hash": ""
+  },
+  "backend/__specs__/ml/frameworks/pytorch/models/models.spec-dod.md": {
+    "mtime": 1772082843.1551318,
+    "ast_hash": "64df4bc275b1689d3ed8f61ba6f0924e",
+    "semantic_hash": ""
+  },
+  "backend/__specs__/ml/frameworks/pytorch/models/spec-manifest.md": {
+    "mtime": 1772079398.3035483,
+    "ast_hash": "d8955408f063a29a999db8423babaf47",
+    "semantic_hash": ""
+  },
+  "backend/__specs__/ml/frameworks/pytorch/serialization/serialization.feature.spec.md": {
+    "mtime": 1772080801.2738168,
+    "ast_hash": "076ffbf606972ddaf92ceef348479650",
+    "semantic_hash": ""
+  },
+  "backend/__specs__/ml/frameworks/pytorch/serialization/serialization.spec-dod.md": {
+    "mtime": 1772082843.1280289,
+    "ast_hash": "6ee134cfa7f6746dcc1f6ead2726bf9a",
+    "semantic_hash": ""
+  },
+  "backend/__specs__/ml/frameworks/pytorch/serialization/spec-manifest.md": {
+    "mtime": 1772079421.2016141,
+    "ast_hash": "58ced001696df863cb6c6558cb2f7612",
+    "semantic_hash": ""
+  },
+  "backend/__specs__/ml/frameworks/pytorch/trainer/spec-manifest.md": {
+    "mtime": 1772080777.9660897,
+    "ast_hash": "67dd3a7365be4ab90a7d7539cc522202",
+    "semantic_hash": ""
+  },
+  "backend/__specs__/ml/frameworks/pytorch/trainer/trainer.behavior.spec.md": {
+    "mtime": 1772080801.2611623,
+    "ast_hash": "261943d5bf809e2f4a3e0c52321c7e5d",
+    "semantic_hash": ""
+  },
+  "backend/__specs__/ml/frameworks/pytorch/trainer/trainer.feature.spec.md": {
+    "mtime": 1772080801.2602918,
+    "ast_hash": "d6cedf8f53fcaf59c23b35fd3211c064",
+    "semantic_hash": ""
+  },
+  "backend/__specs__/ml/frameworks/pytorch/trainer/trainer.spec-dod.md": {
+    "mtime": 1772082843.196533,
+    "ast_hash": "6111a6b0b00b81958a9456fccb5114f5",
+    "semantic_hash": ""
+  },
+  "backend/__specs__/ml/legacy/distill.spec.md": {
+    "mtime": 1772068711.622106,
+    "ast_hash": "8835ecc11a3a76d8b70be7c82bbfdeb4",
+    "semantic_hash": ""
+  },
+  "backend/__specs__/ml/legacy/pytorch.spec.md": {
+    "mtime": 1772068711.5817723,
+    "ast_hash": "1d076787bb3637f305b715540b9fac9b",
+    "semantic_hash": ""
+  },
+  "backend/__specs__/ml/legacy/tensorflow.spec.md": {
+    "mtime": 1772068711.6043036,
+    "ast_hash": "9a319959c59701baabf014ebd06ceccc",
+    "semantic_hash": ""
+  },
+  "backend/__specs__/traceability/ml-runtime-traceability.spec.md": {
+    "mtime": 1772068717.6191266,
+    "ast_hash": "9637fb03ff6de8fef978bc71340c7bc4",
+    "semantic_hash": ""
+  },
+  "backend/__specs__/traceability/pytorch-backend-traceability.spec.md": {
+    "mtime": 1772069904.7716012,
+    "ast_hash": "e12ceb5ae067c5017e3d90ba563223cc",
+    "semantic_hash": ""
+  },
+  "backend/data/sample_data/bank-additional/bank-additional-names.txt": {
+    "mtime": 1395833256.0,
+    "ast_hash": "aec0451bc97d21b70e7acf88eb22448d",
+    "semantic_hash": ""
+  },
+  "backend/data/sample_data/bank/bank-names.txt": {
+    "mtime": 1329232248.0,
+    "ast_hash": "7e607b880abeffbd82c7b69f67af8271",
+    "semantic_hash": ""
+  },
+  "backend/ml/README.md": {
+    "mtime": 1773847638.0382557,
+    "ast_hash": "fd2de1a5f4e0ba633d394323e0cf8722",
+    "semantic_hash": ""
+  },
+  "backend/ml/TODO_modularization.md": {
+    "mtime": 1772748541.1758542,
+    "ast_hash": "366bcc2ebf55e8e865455ffe0e25f605",
+    "semantic_hash": ""
+  },
+  "backend/ml/core/README.md": {
+    "mtime": 1772061233.7009254,
+    "ast_hash": "92ea221903f64232d85624f936b724c6",
+    "semantic_hash": ""
+  },
+  "backend/ml/docs/architecture.md": {
+    "mtime": 1772060778.0311089,
+    "ast_hash": "ef0115b6bc297a8284edf7812cc34ad8",
+    "semantic_hash": ""
+  },
+  "backend/ml/frameworks/README.md": {
+    "mtime": 1772060771.8806098,
+    "ast_hash": "e040210485c54014e35fa73be818381a",
+    "semantic_hash": ""
+  },
+  "backend/requirements-vercel.txt": {
+    "mtime": 1773372844.729009,
+    "ast_hash": "21fd299dc09940920e3bf32ac2cb0c5b",
+    "semantic_hash": ""
+  },
+  "backend/requirements.txt": {
+    "mtime": 1773372844.7276156,
+    "ast_hash": "fe9ca31e9ca76e885c3c077e164da0be",
+    "semantic_hash": ""
+  },
+  "backend/shared/docs/AGUI.md": {
+    "mtime": 1772315358.4843006,
+    "ast_hash": "999e025f6a803e011037391f8e8ac286",
+    "semantic_hash": ""
+  },
+  "backend/shared/docs/README.md": {
+    "mtime": 1772917082.4696386,
+    "ast_hash": "6c8e5c39c8cac74395c5cd3ff6961d32",
+    "semantic_hash": ""
+  },
+  "project-specification.md": {
+    "mtime": 1763575171.092081,
+    "ast_hash": "e33031b6eb495e2ed053b2ddebf2625d",
+    "semantic_hash": ""
+  },
+  "web/__specs__/features/ai/ai.chat.spec.md": {
+    "mtime": 1768879481.690927,
+    "ast_hash": "98712d76da63fd1ce91abffd2d278bfa",
+    "semantic_hash": ""
+  },
+  "web/nextjs/README.md": {
+    "mtime": 1772479975.3226554,
+    "ast_hash": "d32c35c54974c07e7793420eab4b4ef6",
+    "semantic_hash": ""
+  },
+  "web/nextjs/project-specification.md": {
+    "mtime": 1768855261.4158165,
+    "ast_hash": "b6441cbffdc5224cba4703c44c91a52e",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/README.md": {
+    "mtime": 1772678179.4497452,
+    "ast_hash": "8b761d2ff96ba629725b3811d4b44539",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/TODO.md": {
+    "mtime": 1772418741.949445,
+    "ast_hash": "55a3f85d558a8653bde70c23cb3d5564",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/__specs__/004-ag-ui-tool-routing/ag-ui-tool-routing.api.spec.md": {
+    "mtime": 1772667086.1260204,
+    "ast_hash": "51b6470b8d41618c5587fbec3af757f3",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/__specs__/004-ag-ui-tool-routing/ag-ui-tool-routing.behavior.spec.md": {
+    "mtime": 1772667086.145538,
+    "ast_hash": "04c13de8ad6a47a631ee610728781452",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/__specs__/004-ag-ui-tool-routing/ag-ui-tool-routing.errors.spec.md": {
+    "mtime": 1772667086.1412923,
+    "ast_hash": "82e087d8266fad3a71520aaa8ac2c9ce",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/__specs__/004-ag-ui-tool-routing/ag-ui-tool-routing.feature.spec.md": {
+    "mtime": 1772675862.8674464,
+    "ast_hash": "900345d14bb2c578a804591f4df1744d",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/__specs__/004-ag-ui-tool-routing/ag-ui-tool-routing.orchestrator.spec.md": {
+    "mtime": 1772667086.1345806,
+    "ast_hash": "c26497b43aac977af0a6daefa2fc1f05",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/__specs__/004-ag-ui-tool-routing/ag-ui-tool-routing.spec-dod.md": {
+    "mtime": 1772667086.153329,
+    "ast_hash": "422370bf2875798dea02768dbca9e83c",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/__specs__/004-ag-ui-tool-routing/ag-ui-tool-routing.spec-manifest.md": {
+    "mtime": 1772667086.1569772,
+    "ast_hash": "fe1e060a919e06d3d3a30bbbb959c4cf",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/__specs__/004-ag-ui-tool-routing/ag-ui-tool-routing.state.spec.md": {
+    "mtime": 1772675866.3714023,
+    "ast_hash": "1d67b445545732c46486138e5938e833",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/__specs__/004-ag-ui-tool-routing/ag-ui-tool-routing.traceability.spec.md": {
+    "mtime": 1773846978.4822521,
+    "ast_hash": "8f6bc56a44164b4e42c0c86b85d4d818",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/__specs__/004-ag-ui-tool-routing/ag-ui-tool-routing.ui.spec.md": {
+    "mtime": 1772675869.814533,
+    "ast_hash": "061e2634f4b4c74f0dfdb5558743fdc9",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ag-ui-chat/__specs__/copilot-chat.spec.md": {
+    "mtime": 1771820519.0764482,
+    "ast_hash": "d4a793bfc553c4ccadcbeb7881aaaf12",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/README.md": {
+    "mtime": 1773846978.4915621,
+    "ast_hash": "f10d82da43bf955247d475bd0db1e82c",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/__specs__/agentic-research.behavior.spec.md": {
+    "mtime": 1771822235.919899,
+    "ast_hash": "c75e0cd0594f27350f0b059c3f2515db",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/__specs__/agentic-research.spec.md": {
+    "mtime": 1771822235.8888838,
+    "ast_hash": "1532d1bbb506ddac5b18e0a9c09a5370",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/__specs__/agentic-research.traceability.spec.md": {
+    "mtime": 1773846978.4932024,
+    "ast_hash": "20875cc460efbc244a9b5a0d121bec06",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/agentic-research/__specs__/checklists/spec-dod.md": {
+    "mtime": 1771823230.22455,
+    "ast_hash": "3912c9b9aa7bf9ac4134a8db18f112f1",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ai-chat/README.md": {
+    "mtime": 1773847053.7694972,
+    "ast_hash": "fd2b3cec626ed74f37e298eeb0f5753c",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ai-chat/__specs__/CHANGELOG.md": {
+    "mtime": 1773846978.4760823,
+    "ast_hash": "52fba97bf2a09d11be271dfbc8658eff",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ai-chat/__specs__/ai-chat.behavior.spec.md": {
+    "mtime": 1772481325.817771,
+    "ast_hash": "5918dcb0471ba0f36a0f15518189760b",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ai-chat/__specs__/ai-chat.errors.spec.md": {
+    "mtime": 1773250632.927703,
+    "ast_hash": "65e15aea3bf60fea4be8e2f436b7dd04",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ai-chat/__specs__/ai-chat.spec.md": {
+    "mtime": 1773847053.7692516,
+    "ast_hash": "2511de3b502159da681435905a470737",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ai-chat/__specs__/ai-chat.traceability.spec.md": {
+    "mtime": 1773846978.4690244,
+    "ast_hash": "d39b4bb2a95f58ad9b9bd24f53573255",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ai-chat/__specs__/spec-manifest.md": {
+    "mtime": 1773250632.9290452,
+    "ast_hash": "7cbdc60e79e34c29368e7ef9b2285198",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml-model-ui/README.md": {
+    "mtime": 1773850556.2710302,
+    "ast_hash": "015119283a0c3fb1af8f745fd8c3aec7",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/README.md": {
+    "mtime": 1773846978.4881353,
+    "ast_hash": "ac8cae87ca8cb6b1f6f9c1baf1157120",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/__specs__/checklists/spec-dod.md": {
+    "mtime": 1771822516.5386846,
+    "ast_hash": "599d07dbe1dc93a92d98cf561572aca3",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/__specs__/ml-training.behavior.spec.md": {
+    "mtime": 1771822516.5211616,
+    "ast_hash": "86e2bf82d7ac8e6367190148cfacdec4",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/__specs__/ml-training.spec.md": {
+    "mtime": 1771822516.4708602,
+    "ast_hash": "233a018ceea86a899859e3627cb74f42",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/ml/__specs__/ml-training.traceability.spec.md": {
+    "mtime": 1772650420.1748593,
+    "ast_hash": "8f99b2d4a50179eb23f009cb113ee447",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/recharts/README.md": {
+    "mtime": 1773846978.486646,
+    "ast_hash": "c24a2cdf603f3cc0aac341be89a213fe",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/recharts/__specs__/checklists/spec-dod.md": {
+    "mtime": 1771822516.595948,
+    "ast_hash": "b28d5b21361d2d3c0fb7d1d63f873869",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/recharts/__specs__/recharts.behavior.spec.md": {
+    "mtime": 1771822516.5804813,
+    "ast_hash": "89bb7e0af3d11a91d9ef92a71cb5242c",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/recharts/__specs__/recharts.spec.md": {
+    "mtime": 1771822516.546668,
+    "ast_hash": "7fe9c070a2e9349103247c5c07479646",
+    "semantic_hash": ""
+  },
+  "web/nextjs/src/features/recharts/__specs__/recharts.traceability.spec.md": {
+    "mtime": 1771822516.5883143,
+    "ast_hash": "043ee98e536b71bfa3efa5612681cbf0",
+    "semantic_hash": ""
+  },
+  "backend/data/sample_data/toxicity-2/Classification_figure.png": {
+    "mtime": 1684860638.0,
+    "ast_hash": "52947b5f8fdd73a44e883f55d8887b95",
+    "semantic_hash": ""
+  },
+  "web/nextjs/public/file.svg": {
+    "mtime": 1768853739.175587,
+    "ast_hash": "d09f95206c3fa0bb9bd9fefabfd0ea71",
+    "semantic_hash": ""
+  },
+  "web/nextjs/public/globe.svg": {
+    "mtime": 1768853739.1778526,
+    "ast_hash": "2aaafa6a49b6563925fe440891e32717",
+    "semantic_hash": ""
+  },
+  "web/nextjs/public/next.svg": {
+    "mtime": 1768853739.1777613,
+    "ast_hash": "8e061864f388b47f33a1c3780831193e",
+    "semantic_hash": ""
+  },
+  "web/nextjs/public/vercel.svg": {
+    "mtime": 1768853739.1783648,
+    "ast_hash": "c0af2f507b369b085b35ef4bbe3bcf1e",
+    "semantic_hash": ""
+  },
+  "web/nextjs/public/window.svg": {
+    "mtime": 1768853739.1784544,
+    "ast_hash": "a2760511c65806022ad20adf74370ff3",
+    "semantic_hash": ""
+  }
+}

@@ -20,7 +20,7 @@ load_dotenv()  # This loads the variables from .env into the environment
 # - AIMessage: The model’s response. You append this after you call the model.
 
 
-ensure_google_api_key_in_env()
+ensure_google_api_key_in_env(raise_on_missing=False)
 
 
 

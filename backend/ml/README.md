@@ -9,9 +9,13 @@ It is being migrated from monolithic framework files into modular framework/core
 
 ## Current Structure
 
-### Legacy runtime modules (still active)
-- `pytorch.py`: compatibility entrypoint; delegates runtime operations to framework modules.
-- `tensorflow.py`: compatibility entrypoint; delegates runtime operations to framework modules.
+### CLI entrypoints
+- `cli/pytorch.py`: canonical PyTorch CLI/runtime entrypoint.
+- `cli/tensorflow.py`: canonical TensorFlow CLI/runtime entrypoint.
+
+### Legacy runtime modules
+- `pytorch.py`: compatibility wrapper that re-exports the PyTorch CLI surface.
+- `tensorflow.py`: compatibility wrapper that re-exports the TensorFlow CLI surface.
 
 ### Shared core modules (new)
 - `core/contracts.py`: payload parsing + common bounds validators.
@@ -20,7 +24,7 @@ It is being migrated from monolithic framework files into modular framework/core
 - `core/types.py`: shared runtime dataclasses.
 - `core/request_helpers.py`: shared request parsing helpers.
 
-### Framework adapters (new)
+### Framework adapters
 - `frameworks/pytorch/handlers.py`: API handler adapter surface.
 - `frameworks/pytorch/trainer.py`: concrete train/predict runtime and exports.
 - `frameworks/pytorch/models.py`, `data.py`, `distill.py`, `serialization.py`: flat PyTorch runtime slices.

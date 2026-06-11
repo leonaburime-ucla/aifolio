@@ -30,10 +30,11 @@ _MODEL_CACHE: Dict[str, ChatGoogleGenerativeAI] = {}
 _GENAI_CONFIGURED = False
 
 
-def ensure_google_api_key_in_env() -> str | None:
+def ensure_google_api_key_in_env(*, raise_on_missing: bool = True) -> str | None:
     """
     Ensure GOOGLE_API_KEY is set in the environment.
-    Returns the resolved key, or None if not found (logs a warning).
+    Returns the resolved key.
+    Raises ValueError when no key is configured unless `raise_on_missing=False`.
     """
     gemini_key = os.getenv("GEMINI_API_KEY")
     google_key = os.getenv("GOOGLE_API_KEY")
@@ -44,6 +45,8 @@ def ensure_google_api_key_in_env() -> str | None:
         os.environ["GOOGLE_API_KEY"] = gemini_key
         return gemini_key
     logger.warning("Missing GOOGLE_API_KEY or GEMINI_API_KEY – LLM endpoints will fail.")
+    if raise_on_missing:
+        raise ValueError("Missing GOOGLE_API_KEY or GEMINI_API_KEY.")
     return None
 
 

@@ -38,7 +38,45 @@ def test_save_and_load_bundle_roundtrip_with_mocked_loader(tmp_path, monkeypatch
     )
 
     model_path = save_bundle(bundle, tmp_path)
-    monkeypatch.setattr("ml.frameworks.tensorflow.serialization.tf.keras.models.load_model", lambda _p: _FakeModel())
+    monkeypatch.setattr(
+        "ml.frameworks.tensorflow.serialization.tf.keras.models.load_model",
+        lambda _p, custom_objects=None: _FakeModel(),
+    )
     restored = load_bundle(model_path)
     assert restored.task == "regression"
     assert restored.model_config == {"hidden_dim": 8}
+
+
+def test_load_bundle_passes_custom_objects_for_quantile_regression(tmp_path, monkeypatch):
+    vectorizer = DictVectorizer()
+    vectorizer.fit([{"a": 1.0}])
+    scaler = StandardScaler().fit(np.array([[1.0]], dtype=np.float32))
+    bundle = ModelBundle(
+        model=_FakeModel(),
+        task="regression",
+        vectorizer=vectorizer,
+        scaler=scaler,
+        feature_medians=np.array([0.0], dtype=np.float32),
+        label_encoder=None,
+        target_scaler=None,
+        target_column="y",
+        input_dim=1,
+        output_dim=1,
+        class_names=None,
+        model_config={"training_mode": "quantile_regression"},
+    )
+
+    model_path = save_bundle(bundle, tmp_path)
+    calls = {}
+
+    def _fake_load_model(path, custom_objects=None):
+        calls["path"] = path
+        calls["custom_objects"] = custom_objects
+        return _FakeModel()
+
+    monkeypatch.setattr("ml.frameworks.tensorflow.serialization.tf.keras.models.load_model", _fake_load_model)
+
+    restored = load_bundle(model_path)
+    assert restored.task == "regression"
+    assert "pinball_loss" in calls["custom_objects"]
+    assert "quantile_pinball_loss_p80" in calls["custom_objects"]

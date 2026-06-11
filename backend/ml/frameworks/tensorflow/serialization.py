@@ -8,6 +8,25 @@ from pathlib import Path
 import tensorflow as tf
 
 from ...core.types import Metrics, ModelBundle
+from .models import quantile_pinball_loss_p80
+from .models import quantile_pinball_loss
+
+
+def _quantile_regression_custom_objects() -> dict[str, object]:
+    """Return custom objects required to restore non-built-in TF losses."""
+    return {
+        "pinball_loss": quantile_pinball_loss_p80,
+        "quantile_pinball_loss_p80": quantile_pinball_loss_p80,
+        "quantile_pinball_loss": quantile_pinball_loss,
+    }
+
+
+def _load_model_custom_objects(model_config: dict[str, object] | None) -> dict[str, object] | None:
+    """Resolve the custom_objects map needed to deserialize the saved model."""
+    training_mode = str((model_config or {}).get("training_mode", "")).strip()
+    if training_mode == "quantile_regression":
+        return _quantile_regression_custom_objects()
+    return None
 
 
 def save_bundle(bundle: ModelBundle, output_dir: str | Path, metrics: Metrics | None = None) -> Path:
@@ -51,7 +70,12 @@ def load_bundle(path: str | Path, map_location: str = "cpu") -> ModelBundle:
     with meta_path.open("rb") as handle:
         payload = pickle.load(handle)
 
-    model = tf.keras.models.load_model(model_path)
+    custom_objects = _load_model_custom_objects(payload.get("model_config"))
+    if custom_objects is None:
+        model = tf.keras.models.load_model(model_path)
+    else:
+        # Quantile-regression models use a custom pinball loss and need it rebound here.
+        model = tf.keras.models.load_model(model_path, custom_objects=custom_objects)
 
     return ModelBundle(
         model=model,

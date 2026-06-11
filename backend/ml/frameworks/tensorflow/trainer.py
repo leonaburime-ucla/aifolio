@@ -29,7 +29,11 @@ def _build_fit_targets(
     y_train: Any,
     y_test: Any,
 ) -> tuple[Any, Any]:
-    """Build fit/eval targets for special multi-output training modes."""
+    """Build fit/eval targets for special multi-output training modes.
+
+    Keras expects a dict keyed by output name when the model has more than one
+    head. Standard single-output modes continue to use the raw y arrays.
+    """
     if training_mode == "multi_task_learning":
         return (
             {"main_output": y_train, "aux_output": y_train},
@@ -99,6 +103,7 @@ def train_model_from_file(
     date_columns: list[str] | None = None,
     device: str | None = None,
 ) -> tuple[ModelBundle, Metrics]:
+    """Train a TensorFlow tabular model from a file-backed dataset."""
     set_seed(cfg.random_seed)
     _ = device
 
@@ -146,10 +151,12 @@ def train_model_from_file(
         dropout=cfg.dropout,
         learning_rate=cfg.learning_rate,
     )
+    # Build Keras-compatible targets for single-output or multi-output modes.
     y_train_fit, y_test_fit = _build_fit_targets(cfg.training_mode, x_train, x_test, y_train, y_test)
 
     fit_kwargs: dict[str, Any] = {}
     if task == "classification" and cfg.training_mode == "imbalance_aware":
+        # Class weights rebalance skewed labels at fit time.
         fit_kwargs["class_weight"] = _build_class_weight_map(y_train, output_dim)
 
     model.fit(x_train, y_train_fit, epochs=cfg.epochs, batch_size=cfg.batch_size, verbose=0, **fit_kwargs)
@@ -160,6 +167,7 @@ def train_model_from_file(
     test_loss = float(test_eval[0] if isinstance(test_eval, (list, tuple)) else test_eval)
 
     if task == "classification":
+        # Always score the primary prediction head even when the model has aux outputs.
         probs = _main_output(model.predict(x_test, verbose=0))
         predicted_classes = np.argmax(probs, axis=1)
         test_accuracy = float(np.mean(predicted_classes == y_test))
@@ -220,7 +228,8 @@ def predict_rows(bundle: ModelBundle, rows: list[dict[str, Any]], device: str | 
 
     x_np = impute_non_finite_with_reference_medians(x_np, medians)
     x_np = bundle.scaler.transform(x_np).astype(np.float32)
-    outputs = bundle.model.predict(x_np, verbose=0)
+    # Normalize Keras outputs so multi-head modes use the primary prediction head.
+    outputs = _main_output(bundle.model.predict(x_np, verbose=0))
 
     if bundle.task == "classification":
         indices = outputs.argmax(axis=1)
@@ -228,8 +237,7 @@ def predict_rows(bundle: ModelBundle, rows: list[dict[str, Any]], device: str | 
             return bundle.label_encoder.inverse_transform(indices).tolist()
         return indices.tolist()
 
-    preds = outputs
-    return _regression_predictions_to_list(preds, bundle.target_scaler)
+    return _regression_predictions_to_list(outputs, bundle.target_scaler)
 
 
 __all__ = [

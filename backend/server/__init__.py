@@ -1,6 +1,6 @@
 """Top-level server package exports."""
 
-from server.http import app
+from server.app import app
 from server.ml import framework_status, run_predict_endpoint, run_training_or_distill_endpoint
 
 __all__ = [
@@ -9,4 +9,3 @@ __all__ = [
     "run_training_or_distill_endpoint",
     "run_predict_endpoint",
 ]
-

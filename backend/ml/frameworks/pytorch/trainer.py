@@ -35,7 +35,12 @@ def _build_tree_teacher_targets(
     classifier_cls: type[RandomForestClassifier] = RandomForestClassifier,
     regressor_cls: type[RandomForestRegressor] = RandomForestRegressor,
 ) -> tuple[torch.Tensor | None, torch.Tensor | None]:
-    """Fit a tree teacher and return soft targets for distillation."""
+    """Fit a tree teacher and return soft targets for distillation.
+
+    Classification returns teacher probabilities so the student can match the
+    softened class distribution. Regression returns teacher predictions as a
+    continuous soft target.
+    """
     x_train_np = x_train.detach().cpu().numpy()
     if task == "classification":
         y_train_np = y_train.detach().cpu().numpy()
@@ -65,6 +70,15 @@ def train_model_from_file(
     date_columns: list[str] | None = None,
     device: str | None = None,
 ) -> tuple[ModelBundle, Metrics]:
+    """Train a PyTorch tabular model from file-backed data.
+
+    High-level stages:
+    - load/clean rows and infer the task
+    - vectorize + scale into tensors
+    - build the requested architecture and loss
+    - optionally distill from a tree teacher during training
+    - evaluate and package the trained artifacts into a ModelBundle
+    """
     random.seed(cfg.random_seed)
     np.random.seed(cfg.random_seed)
     torch.manual_seed(cfg.random_seed)
@@ -114,6 +128,7 @@ def train_model_from_file(
     y_train = y_train.to(torch_device)
     y_test = y_test.to(torch_device)
 
+    # Choose the supervision rule based on task and special training mode.
     if task == "classification":
         if cfg.training_mode == "imbalance_aware":
             class_weights = compute_class_weights(y_train, output_dim=output_dim, device=torch_device)
@@ -129,6 +144,7 @@ def train_model_from_file(
     tree_teacher_preds: torch.Tensor | None = None
     tree_temperature = 2.0
     if cfg.training_mode == "tree_teacher_distillation":
+        # Train a stronger tree teacher once, then reuse its soft targets in each batch.
         tree_teacher_probs, tree_teacher_preds = _build_tree_teacher_targets(
             x_train=x_train,
             y_train=y_train,
@@ -146,6 +162,7 @@ def train_model_from_file(
             xb = x_train[batch]
             yb = y_train[batch]
             if xb.shape[0] < 2:
+                # BatchNorm needs more than one sample; skip degenerate batches.
                 continue
 
             optimizer.zero_grad()
@@ -155,6 +172,7 @@ def train_model_from_file(
                 if task == "classification":
                     assert tree_teacher_probs is not None
                     soft_targets = tree_teacher_probs[batch]
+                    # Match the teacher distribution rather than only hard labels.
                     soft_loss = nn.functional.kl_div(
                         nn.functional.log_softmax(student_logits / tree_temperature, dim=1),
                         soft_targets,
@@ -163,6 +181,7 @@ def train_model_from_file(
                 else:
                     assert tree_teacher_preds is not None
                     soft_loss = nn.functional.mse_loss(student_logits, tree_teacher_preds[batch])
+                # Blend supervised learning with teacher imitation.
                 loss = 0.5 * hard_loss + 0.5 * soft_loss
             else:
                 loss = compute_loss(model, xb, yb, criterion)
@@ -226,6 +245,7 @@ def train_model_from_file(
 
 
 def predict_rows(bundle: ModelBundle, rows: list[dict[str, Any]], device: str | None = None) -> list[Any]:
+    """Run inference using the preprocessing artifacts captured in a bundle."""
     if not rows:
         return []
 
@@ -249,6 +269,7 @@ def predict_rows(bundle: ModelBundle, rows: list[dict[str, Any]], device: str | 
         outputs = bundle.model(x)
 
     if bundle.task == "classification":
+        # Argmax converts logits into the predicted class index.
         indices = outputs.argmax(dim=1).cpu().numpy().tolist()
         if bundle.label_encoder is not None:
             return bundle.label_encoder.inverse_transform(np.array(indices)).tolist()

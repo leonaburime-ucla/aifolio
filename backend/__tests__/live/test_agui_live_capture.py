@@ -341,6 +341,37 @@ def _run_serial_sequence(
     return results
 
 
+def _run_mixed_surface_sequence(
+    scenario: str,
+    *,
+    steps: list[dict[str, Any]],
+) -> list[tuple[LiveTurnResult, Path]]:
+    prior_messages: list[dict[str, Any]] = []
+    thread_id = f"live-{scenario}"
+    results: list[tuple[LiveTurnResult, Path]] = []
+    for index, step in enumerate(steps, start=1):
+        prompt = str(step["prompt"])
+        active_tab = str(step["active_tab"])
+        tools = list(step["tools"])
+        turn, capture_path = _run_turn(
+            scenario,
+            prompt,
+            active_tab=active_tab,
+            thread_id=thread_id,
+            run_id=f"turn-{index}",
+            tools=tools,
+            prior_messages=prior_messages,
+        )
+        results.append((turn, capture_path))
+        prior_messages.extend(
+            [
+                {"id": f"user-turn-{index}", "role": "user", "content": prompt},
+                _assistant_history_message(turn, message_id=f"assistant-turn-{index}"),
+            ]
+        )
+    return results
+
+
 @pytest.mark.skipif(not _backend_is_reachable(), reason="Live backend is not reachable on AGUI_LIVE_BASE_URL.")
 def test_live_capture_agentic_research_then_charts(capfd: pytest.CaptureFixture[str]) -> None:
     thread_id = "live-seq-ar-to-charts"
@@ -679,3 +710,136 @@ def test_live_capture_tensorflow_serial_commands(capfd: pytest.CaptureFixture[st
     print(json.dumps({"scenario": "tensorflow-serial-commands", "turns": summary}, indent=2))
     captured = capfd.readouterr()
     assert "tensorflow-serial-commands" in captured.out
+
+
+@pytest.mark.skipif(not _backend_is_reachable(), reason="Live backend is not reachable on AGUI_LIVE_BASE_URL.")
+def test_live_capture_full_long_context_thread(capfd: pytest.CaptureFixture[str]) -> None:
+    steps = [
+        {
+            "active_tab": "charts",
+            "tools": CHART_TOOLS,
+            "prompt": "Create a line chart of Solana and Bitcoin for the past 5 months.",
+        },
+        {
+            "active_tab": "charts",
+            "tools": CHART_TOOLS,
+            "prompt": (
+                "Show a line chart of Manhattan vs London vs Paris average rent since 2000 "
+                "as a share of average salary in each of those cities respectively."
+            ),
+        },
+        {
+            "active_tab": "agentic-research",
+            "tools": AGENTIC_RESEARCH_TOOLS,
+            "prompt": "Run PCA Transform",
+        },
+        {
+            "active_tab": "agentic-research",
+            "tools": AGENTIC_RESEARCH_TOOLS,
+            "prompt": "Run NMF Decomposition and PLSR",
+        },
+        {
+            "active_tab": "agentic-research",
+            "tools": AGENTIC_RESEARCH_TOOLS,
+            "prompt": "Change the dataset to fraud detection and run Lasso Regression",
+        },
+        {
+            "active_tab": "pytorch",
+            "tools": PYTORCH_TOOLS,
+            "prompt": (
+                "Use the fraud detection dataset. Switch the training algorithm from neural net "
+                "to TabResNet. Set batch sizes to 33 and 40, hidden dims to 64 and 96, and "
+                "dropouts to 0.1 and 0.2."
+            ),
+        },
+        {
+            "active_tab": "pytorch",
+            "tools": PYTORCH_TOOLS,
+            "prompt": (
+                "Change from customer churn to fraud detection. Set task to classification, "
+                "choose a different target column, set test sizes to 0.2 and 0.3, and start "
+                "training runs."
+            ),
+        },
+        {
+            "active_tab": "pytorch",
+            "tools": PYTORCH_TOOLS,
+            "prompt": (
+                "Randomize PyTorch form fields with one value each, keep the current algorithm, "
+                "and start training runs."
+            ),
+        },
+        {
+            "active_tab": "pytorch",
+            "tools": PYTORCH_TOOLS,
+            "prompt": "Switch the algorithm to calibrated classifier and set sweep values on.",
+        },
+        {
+            "active_tab": "tensorflow",
+            "tools": TENSORFLOW_TOOLS,
+            "prompt": (
+                "Use the house prices dataset. Switch the training algorithm from neural net to "
+                "wide and deep. Set test sizes to 0.25 and 0.3, batch sizes to 32 and 64, and "
+                "hidden dims to 128 and 256."
+            ),
+        },
+        {
+            "active_tab": "tensorflow",
+            "tools": TENSORFLOW_TOOLS,
+            "prompt": (
+                "Change from customer churn to house prices. Set task to regression, set epochs "
+                "to 20 and 40, and start training runs."
+            ),
+        },
+        {
+            "active_tab": "tensorflow",
+            "tools": TENSORFLOW_TOOLS,
+            "prompt": "Randomize TensorFlow form fields with one value each, and keep the current algorithm.",
+        },
+        {
+            "active_tab": "tensorflow",
+            "tools": TENSORFLOW_TOOLS,
+            "prompt": "Switch the algorithm to entity embeddings, and turn auto-distill on.",
+        },
+    ]
+    results = _run_mixed_surface_sequence("full-long-context-thread", steps=steps)
+
+    charts_allowed = {tool["name"] for tool in CHART_TOOLS}
+    pytorch_allowed = {tool["name"] for tool in PYTORCH_TOOLS}
+    tensorflow_allowed = {tool["name"] for tool in TENSORFLOW_TOOLS}
+    agentic_research_allowed = {tool["name"] for tool in AGENTIC_RESEARCH_TOOLS}
+
+    summary: list[dict[str, Any]] = []
+    for index, (turn, capture_path) in enumerate(results, start=1):
+        _assert_protocol_shape(turn)
+        summary.append(
+            {
+                "run_id": turn.run_id,
+                "active_tab": turn.active_tab,
+                "capture": str(capture_path),
+                "tools": turn.tool_call_names,
+                "chart_count": _chart_spec_count(turn.assistant_payload),
+                "message_preview": turn.assistant_message[:200],
+            }
+        )
+
+        if turn.active_tab == "charts":
+            _assert_no_cross_surface_contamination(turn)
+            _assert_tool_calls_are_tab_scoped(turn, allowed_tool_names=charts_allowed)
+            assert _chart_spec_count(turn.assistant_payload) >= 1
+        elif turn.active_tab == "agentic-research":
+            _assert_tool_calls_are_tab_scoped(turn, allowed_tool_names=agentic_research_allowed)
+            if index == 5:
+                _assert_agentic_research_analysis_turn(turn)
+        elif turn.active_tab == "pytorch":
+            _assert_no_cross_surface_contamination(turn)
+            _assert_tool_calls_are_tab_scoped(turn, allowed_tool_names=pytorch_allowed)
+            assert turn.tool_call_names
+        elif turn.active_tab == "tensorflow":
+            _assert_no_cross_surface_contamination(turn)
+            _assert_tool_calls_are_tab_scoped(turn, allowed_tool_names=tensorflow_allowed)
+            assert turn.tool_call_names
+
+    print(json.dumps({"scenario": "full-long-context-thread", "turns": summary}, indent=2))
+    captured = capfd.readouterr()
+    assert "full-long-context-thread" in captured.out
