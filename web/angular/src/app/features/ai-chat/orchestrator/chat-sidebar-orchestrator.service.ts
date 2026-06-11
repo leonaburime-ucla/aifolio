@@ -2,6 +2,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { sendChatMessage, sendChatMessageDirect } from '@aifolio/frontend-core/chat';
 import type { ChatHistoryDirection, ChatHistoryMessage, ChatMessage, ChatModelOption, ScreenFeedback } from '@aifolio/contracts/entities/chat';
 import type { ChartSpec } from '@aifolio/contracts/entities/chart';
+import { AI_API_BASE_URL } from '../../../core/config/ai-api.config';
 import { ChartStoreService } from '../../../shared/state/chart-store.service';
 import { ChatApiService } from '../api/chat-api.service';
 
@@ -12,7 +13,7 @@ export class ChatSidebarOrchestrator {
   private readonly api = inject(ChatApiService);
   private readonly chartStore = inject(ChartStoreService);
 
-  readonly baseUrl = signal('/api/ai');
+  readonly baseUrl = signal(AI_API_BASE_URL);
   readonly mode = signal<ChatMode>('direct');
   readonly datasetId = signal<string | null>(null);
   readonly messages = signal<ChatMessage[]>([]);

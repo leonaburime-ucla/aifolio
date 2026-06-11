@@ -36,6 +36,21 @@ ng build
 
 This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
 
+## Vercel Deployment Settings
+
+| Field            | Value                  |
+|------------------|------------------------|
+| Root Directory   | `web/angular`          |
+| Install Command  | `npm run vercel:install` |
+| Build Command    | `npm run build`        |
+| Output Directory | `dist/angular/browser` |
+
+## Environment Variables
+
+| Variable                    | Description          |
+|-----------------------------|----------------------|
+| `ANGULAR_PUBLIC_AI_API_URL` | Backend API base URL |
+
 ## Running unit tests
 
 To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:

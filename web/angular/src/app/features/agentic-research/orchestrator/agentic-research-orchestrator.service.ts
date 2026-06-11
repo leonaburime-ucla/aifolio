@@ -1,5 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { formatToolName, groupSklearnTools, resolveDefaultDatasetId, toDatasetOptions } from '@aifolio/frontend-core/agentic-research';
+import { AI_API_BASE_URL } from '../../../core/config/ai-api.config';
 import type { DatasetOption } from '../../../shared/types/dataset-option';
 import { ChartStoreService } from '../../../shared/state/chart-store.service';
 import { AgenticResearchApiService } from '../api/agentic-research-api.service';
@@ -9,7 +10,7 @@ export class AgenticResearchOrchestrator {
   private readonly api = inject(AgenticResearchApiService);
   readonly chartStore = inject(ChartStoreService);
 
-  readonly baseUrl = signal('/api/ai');
+  readonly baseUrl = signal(AI_API_BASE_URL);
   readonly datasetOptions = signal<DatasetOption[]>([]);
   readonly selectedDatasetId = signal<string | null>(null);
   readonly tableRows = signal<Record<string, unknown>[]>([]);
