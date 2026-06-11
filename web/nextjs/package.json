@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "vercel:install": "npm --workspaces=false install --package-lock=false && rm -rf ../packages/frontend-core/node_modules ../packages/contracts/node_modules && ln -s ../../nextjs/node_modules ../packages/frontend-core/node_modules && ln -s ../../nextjs/node_modules ../packages/contracts/node_modules",
+    "postbuild": "node scripts/verify-next-runtime.mjs",
+    "vercel:install": "rm -rf node_modules && npm --workspaces=false install --package-lock=false && rm -rf ../packages/frontend-core/node_modules ../packages/contracts/node_modules && ln -s ../../nextjs/node_modules ../packages/frontend-core/node_modules && ln -s ../../nextjs/node_modules ../packages/contracts/node_modules",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
