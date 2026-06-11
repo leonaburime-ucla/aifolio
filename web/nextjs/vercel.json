@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "installCommand": "npm --workspaces=false install --package-lock=false && rm -rf ../packages/frontend-core/node_modules ../packages/contracts/node_modules && ln -s ../../nextjs/node_modules ../packages/frontend-core/node_modules && ln -s ../../nextjs/node_modules ../packages/contracts/node_modules",
+  "installCommand": "npm --workspaces=false run vercel:install",
   "buildCommand": "npm --workspaces=false run build",
   "outputDirectory": ".next",
   "devCommand": "npm --workspaces=false run dev -- --port $PORT"
