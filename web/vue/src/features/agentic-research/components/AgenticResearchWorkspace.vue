@@ -86,6 +86,7 @@ const {
               v-for="spec in chartSpecs"
               :key="spec.id"
               :spec="spec"
+              removable
               @remove="removeChartSpec"
             />
           </div>

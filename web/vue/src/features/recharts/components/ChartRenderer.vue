@@ -1,12 +1,10 @@
 <script setup lang="ts">
-import { toRef, useAttrs } from "vue";
+import { toRef } from "vue";
 import type { ChartSpec } from "~/composables/useChartStore";
 import { useChartRendererOrchestrator } from "../orchestrator";
 
-const props = defineProps<{ spec: ChartSpec }>();
+const props = withDefaults(defineProps<{ spec: ChartSpec; removable?: boolean }>(), { removable: false });
 defineEmits<{ remove: [id: string] }>();
-const attrs = useAttrs();
-const hasRemoveListener = "onRemove" in attrs;
 
 const { chartEl } = useChartRendererOrchestrator(toRef(props, "spec"));
 </script>
@@ -14,7 +12,7 @@ const { chartEl } = useChartRendererOrchestrator(toRef(props, "spec"));
 <template>
   <div class="relative rounded-xl border border-zinc-200 bg-white p-4">
     <button
-      v-if="hasRemoveListener"
+      v-if="removable"
       type="button"
       class="absolute -right-2 -top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-500 shadow-sm transition hover:bg-zinc-50"
       aria-label="Remove chart"
