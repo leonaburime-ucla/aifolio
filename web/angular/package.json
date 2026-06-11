@@ -6,6 +6,7 @@
     "dev": "ng serve --proxy-config proxy.conf.json",
     "start": "ng serve --proxy-config proxy.conf.json",
     "build": "ng build",
+    "vercel:install": "npm install && rm -rf ../packages/frontend-core/node_modules ../packages/contracts/node_modules && ln -s ../../angular/node_modules ../packages/frontend-core/node_modules && ln -s ../../angular/node_modules ../packages/contracts/node_modules",
     "guard:features": "node scripts/verify-feature-boundaries.mjs",
     "watch": "ng build --watch --configuration development",
     "test": "ng test --watch=false"
