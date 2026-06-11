@@ -1,0 +1,46 @@
+{
+  "name": "@aifolio/vue",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "lint": "eslint .",
+    "typecheck": "nuxt typecheck",
+    "test:unit": "vitest run",
+    "test:e2e": "playwright test --config=__tests__/e2e/playwright.config.ts"
+  },
+  "dependencies": {
+    "@aifolio/contracts": "file:../packages/contracts",
+    "@aifolio/frontend-core": "file:../packages/frontend-core",
+    "@pinia/nuxt": "^0.9.0",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.0",
+    "datatables.net": "^2.3.8",
+    "datatables.net-dt": "^2.3.8",
+    "datatables.net-vue3": "^3.0.0",
+    "echarts": "^6.1.0",
+    "lucide-vue-next": "^0.460.0",
+    "nuxt": "^3.16.0",
+    "papaparse": "^5.4.0",
+    "pinia": "^2.3.0",
+    "tailwind-merge": "^2.6.0",
+    "vue": "^3.5.0",
+    "vue-echarts": "^7.0.0",
+    "vue-router": "^4.5.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@nuxt/eslint": "^0.7.0",
+    "@nuxtjs/tailwindcss": "^6.12.0",
+    "@playwright/test": "^1.60.0",
+    "@types/papaparse": "^5.3.0",
+    "@vitest/coverage-v8": "^3.2.6",
+    "@vue/test-utils": "^2.4.0",
+    "jsdom": "^29.1.1",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}
