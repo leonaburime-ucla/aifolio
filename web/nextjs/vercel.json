@@ -1,8 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "installCommand": "cd .. && npm install && rm -rf nextjs/node_modules && ln -s ../node_modules nextjs/node_modules",
-  "buildCommand": "cd .. && npm run build --workspace nextjs",
+  "installCommand": "npm --workspaces=false install --package-lock=false && rm -rf ../packages/frontend-core/node_modules ../packages/contracts/node_modules && ln -s ../../nextjs/node_modules ../packages/frontend-core/node_modules && ln -s ../../nextjs/node_modules ../packages/contracts/node_modules",
+  "buildCommand": "npm --workspaces=false run build",
   "outputDirectory": ".next",
-  "devCommand": "cd .. && npm run dev --workspace nextjs -- --port $PORT"
+  "devCommand": "npm --workspaces=false run dev -- --port $PORT"
 }
