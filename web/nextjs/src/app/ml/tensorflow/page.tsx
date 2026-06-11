@@ -1,5 +1,5 @@
-import TensorFlowPage from "@/app/ml/tensorflow/tensorflow";
+import TensorflowTrainingScreen from "@/features/ml/react/views/screens/TensorflowTrainingScreen";
 
 export default function Page() {
-  return <TensorFlowPage />;
+  return <TensorflowTrainingScreen />;
 }

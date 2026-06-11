@@ -43,14 +43,9 @@ This feature does **not** run model inference itself; backend inference lives in
 - `config/copilotRuntime.config.ts`
   - Client/server runtime config factories.
   - Defines `runtimeUrl` and agent id.
-- `config/frontendTools.config.ts`
-  - Tool name constants.
-  - Route alias mapping + route validation helpers.
+- Reusable AG-UI model defaults, tool names, route aliases, and action factories live in `@aifolio/frontend-core/ag-ui`.
 
 ### orchestrators
-- `orchestrators/frontendTools.logic.ts`
-  - Pure handlers for tool logic (normalize chart payload, route resolution, tab resolution, PyTorch train pass-through).
-  - No React hooks.
 - `react/orchestrators/copilotAssistantMessage.orchestrator.ts`
   - Legacy assistant payload processor used by `CopilotAssistantMessageLegacy`.
   - Parses assistant JSON and pushes chart spec(s) into global chart store.
@@ -111,20 +106,12 @@ This feature does **not** run model inference itself; backend inference lives in
   - `train_pytorch_model`
 
 ### types
-- `types/copilotChat.types.ts`
-  - Shared runtime config and agent type definitions.
+- Shared reusable AG-UI contracts live in `@aifolio/contracts/entities/ag-ui`.
+- React-only props and state-port types are colocated under `react/**`.
 
 ### specs
-- `__specs__/copilot-chat.spec.md`
-  - Feature-level contract/spec narrative.
-- `__specs__/copilot-chat.api.spec.ts`
-  - API-layer expected behavior/spec fragments.
-- `__specs__/copilot-chat.state.spec.ts`
-  - State-layer expected behavior/spec fragments.
-- `__specs__/copilot-chat.ui.spec.ts`
-  - UI-layer expected behavior/spec fragments.
-- `__specs__/copilot-chat.orchestrator.spec.ts`
-  - Orchestrator-layer expected behavior/spec fragments.
+- Feature specs are preserved under `ADS-project-knowledge/specs/001-multi-framework-frontend-core/nextjs-feature-specs/ag-ui-chat`.
+  - Runtime code under `src/features` should not contain `__specs__` folders because Next's TypeScript config includes all `**/*.ts`.
 
 ## Message/Chart Processing Paths
 

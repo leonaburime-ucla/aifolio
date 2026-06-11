@@ -1,10 +1,10 @@
 import { Suspense } from "react";
-import CopilotSidebar from "@/features/ag-ui-chat/typescript/react/views/components/CopilotSidebar";
-import CopilotChatProvider from "@/features/ag-ui-chat/typescript/react/views/providers/CopilotChatProvider";
-import AgUiWorkspace from "@/features/ag-ui-chat/typescript/react/views/components/AgUiWorkspace";
-import AgUiTabSwitchTool from "@/features/ag-ui-chat/typescript/react/views/components/AgUiTabSwitchTool";
-import AgUiCopilotReadableContext from "@/features/ag-ui-chat/typescript/react/views/components/AgUiCopilotReadableContext";
-import AgUiPageQuerySync from "@/features/ag-ui-chat/typescript/react/views/components/AgUiPageQuerySync";
+import CopilotSidebar from "@/features/ag-ui-chat/react/views/components/CopilotSidebar";
+import CopilotChatProvider from "@/features/ag-ui-chat/react/views/providers/CopilotChatProvider";
+import AgUiWorkspace from "@/features/ag-ui-chat/react/views/components/AgUiWorkspace";
+import AgUiTabSwitchTool from "@/features/ag-ui-chat/react/views/components/AgUiTabSwitchTool";
+import AgUiCopilotReadableContext from "@/features/ag-ui-chat/react/views/components/AgUiCopilotReadableContext";
+import AgUiPageQuerySync from "@/features/ag-ui-chat/react/views/components/AgUiPageQuerySync";
 
 export default function AgUiPage() {
   return (

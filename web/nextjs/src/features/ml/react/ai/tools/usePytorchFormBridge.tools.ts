@@ -1,0 +1,106 @@
+import { useEffect, useRef } from "react";
+import type {
+  PytorchFormBridge,
+  PytorchFormBridgeBindings,
+} from "@aifolio/contracts/entities/ml-training";
+import { applyPytorchBridgePatch } from "@aifolio/frontend-core/ml-training";
+
+/**
+ * React hook that binds the global PyTorch tool-call bridge lifecycle to component mount state.
+ *
+ * Relative to sibling modules in this folder:
+ * - `@aifolio/frontend-core/ml-training` contains pure patch logic.
+ * - This file contains only browser-global registration/cleanup side effects.
+ */
+
+declare global {
+  interface Window {
+    __AIFOLIO_PYTORCH_FORM_BRIDGE__?: PytorchFormBridge;
+  }
+}
+
+/**
+ * Waits one macro-task plus one animation frame so React state updates caused by
+ * tool-call patches settle before training is triggered.
+ *
+ * @returns Promise that resolves when queued UI work has had a chance to flush.
+ */
+async function flushUiWork(): Promise<void> {
+  await new Promise<void>((resolve) => {
+    setTimeout(() => resolve(), 0);
+  });
+
+  await new Promise<void>((resolve) => {
+    if (typeof requestAnimationFrame === "function") {
+      requestAnimationFrame(() => resolve());
+      return;
+    }
+    setTimeout(() => resolve(), 0);
+  });
+}
+
+/**
+ * Registers a controlled global bridge that AI tool calls can use to patch the
+ * PyTorch form and trigger training runs.
+ *
+ * Why this exists:
+ * - Keeps route page files focused on JSX composition.
+ * - Concentrates imperative browser-global behavior in feature-level tooling.
+ * - Provides a single, testable contract for external form automation.
+ *
+ * @param bindings Bridge dependencies bound from the PyTorch training integration hook.
+ * @returns Nothing. Registers and cleans up global bridge side effects.
+ */
+export function usePytorchFormBridge(bindings: PytorchFormBridgeBindings): void {
+  const bindingsRef = useRef(bindings);
+
+  useEffect(() => {
+    // Keep global bridge handlers bound to the latest hook callbacks/state.
+    bindingsRef.current = bindings;
+  }, [bindings]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    window.__AIFOLIO_PYTORCH_FORM_BRIDGE__ = {
+      applyPatch: (patch) => {
+        const current = bindingsRef.current;
+        return applyPytorchBridgePatch(patch, {
+          setDatasetId: current.setDatasetId,
+          setTrainingMode: current.setTrainingMode,
+          setTargetColumn: current.setTargetColumn,
+          setTask: current.setTask,
+          runSweepEnabled: current.runSweepEnabled,
+          toggleRunSweep: current.toggleRunSweep,
+          setEpochValuesInput: current.setEpochValuesInput,
+          setBatchSizesInput: current.setBatchSizesInput,
+          setLearningRatesInput: current.setLearningRatesInput,
+          setTestSizesInput: current.setTestSizesInput,
+          setHiddenDimsInput: current.setHiddenDimsInput,
+          setNumHiddenLayersInput: current.setNumHiddenLayersInput,
+          setDropoutsInput: current.setDropoutsInput,
+          setExcludeColumnsInput: current.setExcludeColumnsInput,
+          setDateColumnsInput: current.setDateColumnsInput,
+          autoDistillEnabled: current.autoDistillEnabled,
+          setAutoDistillEnabled: current.setAutoDistillEnabled,
+        });
+      },
+      startTrainingRuns: async () => {
+        try {
+          await flushUiWork();
+          await bindingsRef.current.onTrainClick();
+          return { status: "ok" };
+        } catch (error) {
+          const reason = error instanceof Error ? error.message : "Unknown training bridge error.";
+          return { status: "error", reason };
+        }
+      },
+    };
+
+    return () => {
+      if (window.__AIFOLIO_PYTORCH_FORM_BRIDGE__) {
+        delete window.__AIFOLIO_PYTORCH_FORM_BRIDGE__;
+      }
+    };
+  }, []);
+}

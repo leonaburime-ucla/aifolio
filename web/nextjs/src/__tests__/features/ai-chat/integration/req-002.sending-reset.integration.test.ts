@@ -1,0 +1,120 @@
+import { describe, expect, it, vi } from "vitest";
+import { act, renderHook } from "@testing-library/react";
+import { useChatLogic } from "@/features/ai-chat/react/hooks/useChat.hooks";
+import type { ChatAssistantPayload, ChatDeps } from "@aifolio/contracts/entities/chat";
+import type { ChatUiState } from "@aifolio/contracts/entities/chat";
+import { DEFAULT_CHAT_LOGIC_DEPS } from "@/__tests__/features/ai-chat/fixtures/chatLogicDeps.fixture";
+
+function createDeps(
+  sendMessage: ChatDeps["api"]["sendMessage"],
+  uiState: ChatUiState
+): ChatDeps {
+  return {
+    state: {
+      messages: [],
+      inputHistory: [],
+      historyCursor: null,
+      isSending: false,
+      modelOptions: [],
+      selectedModelId: null,
+      isModelsLoading: false,
+      screenFeedback: null,
+      activeDatasetId: null,
+    },
+    actions: {
+      addMessage: vi.fn(),
+      addInputToHistory: vi.fn(),
+      moveHistoryCursor: vi.fn(() => ""),
+      resetHistoryCursor: vi.fn(),
+      setSending: vi.fn(),
+      setModelOptions: vi.fn(),
+      setSelectedModelId: vi.fn(),
+      setModelsLoading: vi.fn(),
+      setScreenFeedback: vi.fn(),
+      addChartSpec: vi.fn(),
+      onMessageReceived: vi.fn(),
+    },
+    api: {
+      sendMessage,
+      fetchModels: vi.fn(async () => null),
+    },
+    logic: DEFAULT_CHAT_LOGIC_DEPS,
+  };
+}
+
+function createUiState(): ChatUiState {
+  return {
+    value: "hello",
+    showTooltip: false,
+    attachments: [],
+    setShowTooltip: vi.fn(),
+    setValue: vi.fn(),
+    resetValue: vi.fn(),
+    addAttachments: vi.fn(),
+    clearAttachments: vi.fn(),
+    removeAttachment: vi.fn(),
+  };
+}
+
+describe("REQ-002 sending reset on all outcomes", () => {
+  it("sets sending=false and clears attachments after success response", async () => {
+    const uiState = createUiState();
+    const deps = createDeps(
+      vi.fn(async (): Promise<ChatAssistantPayload | null> => ({
+        message: "assistant",
+        chartSpec: null,
+      })),
+      uiState
+    );
+
+    const { result } = renderHook(() => useChatLogic(uiState, deps));
+
+    await act(async () => {
+      await result.current.submit();
+    });
+
+    expect(deps.actions.setSending).toHaveBeenNthCalledWith(1, true);
+    expect(deps.actions.setSending).toHaveBeenLastCalledWith(false);
+    expect(uiState.clearAttachments).toHaveBeenCalledTimes(1);
+  });
+
+  it("sets sending=false and clears attachments after null response", async () => {
+    const uiState = createUiState();
+    const deps = createDeps(vi.fn(async () => null), uiState);
+
+    const { result } = renderHook(() => useChatLogic(uiState, deps));
+
+    await act(async () => {
+      await result.current.submit();
+    });
+
+    expect(deps.actions.setSending).toHaveBeenNthCalledWith(1, true);
+    expect(deps.actions.setSending).toHaveBeenLastCalledWith(false);
+    expect(uiState.clearAttachments).toHaveBeenCalledTimes(1);
+  });
+
+  it("sets sending=false and clears attachments after error", async () => {
+    const uiState = createUiState();
+    const deps = createDeps(
+      vi.fn(async () => {
+        throw new Error("network");
+      }),
+      uiState
+    );
+
+    const { result } = renderHook(() => useChatLogic(uiState, deps));
+
+    await act(async () => {
+      await result.current.submit();
+    });
+
+    expect(deps.actions.setSending).toHaveBeenNthCalledWith(1, true);
+    expect(deps.actions.setSending).toHaveBeenLastCalledWith(false);
+    expect(deps.actions.setScreenFeedback).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        code: "CHAT_REQUEST_FAILED",
+      })
+    );
+    expect(uiState.clearAttachments).toHaveBeenCalledTimes(1);
+  });
+});

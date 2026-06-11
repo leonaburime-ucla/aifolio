@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Navbar from "@/core/views/patterns/Nav/Navbar";
+import Navbar from "@/ui/patterns/Nav/Navbar";
 import "./globals.css";
 import "@xyflow/react/dist/style.css";
 import { Toaster } from "react-hot-toast";

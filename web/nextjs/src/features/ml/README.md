@@ -1,16 +1,17 @@
 # ML Feature
 
 ## Structure
-- `typescript/api`: feature API transport and adapters.
-- `typescript/config`: feature configuration and defaults.
-- `typescript/utils`: framework-agnostic utilities.
-- `typescript/validators`: validation helpers.
-- `typescript/react/orchestrators`: React orchestrators.
-- `typescript/react/hooks`: React hooks.
-- `typescript/react/state`: React state adapters and stores.
-- `typescript/react/views`: React view components.
-- `__types__/typescript`: feature type contracts.
+- `api`: feature API transport and adapters.
+- `config`: feature configuration and defaults.
+- `utils`: framework-agnostic utilities.
+- `validators`: validation helpers.
+- `react/orchestrators`: React orchestrators.
+- `react/hooks`: React hooks.
+- `react/state`: React state adapters and stores.
+- `react/views`: React view components.
 
 ## Notes
 - Keep route files under `app/ml/*` thin and composed from this feature slice.
 - Long-running jobs should be started server-side and polled or streamed in the UI.
+- Versioned specs live in `ADS-project-knowledge/specs/001-multi-framework-frontend-core/nextjs-feature-specs/ml`.
+- Reusable contracts live in `@aifolio/contracts/entities/ml-training`; reusable pure logic lives in `@aifolio/frontend-core/ml-training`; React-only types are colocated with their React modules.

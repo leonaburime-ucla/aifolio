@@ -19,7 +19,11 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@aifolio/contracts/*": ["../packages/contracts/src/*"],
+      "@aifolio/contracts": ["../packages/contracts/src/index.ts"],
+      "@aifolio/frontend-core/*": ["../packages/frontend-core/src/*"],
+      "@aifolio/frontend-core": ["../packages/frontend-core/src/index.ts"]
     }
   },
   "include": [

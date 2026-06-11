@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import CsvDatasetCombobox from "@/core/views/patterns/CsvDatasetCombobox";
+import CsvDatasetCombobox from "@/ui/patterns/CsvDatasetCombobox";
 import {
   DEFAULT_ML_DATASET_ID,
   ML_WINE_DATASET_OPTIONS,
-} from "@/features/ml/typescript/api/mlDataApi";
+} from "@/features/ml/api/mlDataApi";
 
 export default function KnowledgeDistillationPage() {
   const [selectedDatasetId, setSelectedDatasetId] = useState<string | null>(
