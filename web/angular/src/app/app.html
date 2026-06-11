@@ -1,0 +1,20 @@
+<nav class="app-nav">
+  <div class="nav-inner">
+    <div class="nav-links">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">AI Chat</a>
+      <a routerLink="/agentic-research" routerLinkActive="active">Agentic Research</a>
+      <div class="nav-menu">
+        <button type="button" class="nav-menu-button">Machine Learning <span aria-hidden="true">v</span></button>
+        <div class="nav-menu-list">
+          @for (link of mlLinks; track link.path) {
+            <a [routerLink]="link.path" routerLinkActive="active">{{ link.label }}</a>
+          }
+        </div>
+      </div>
+      <a routerLink="/ag-ui" routerLinkActive="active">Agentic UI</a>
+    </div>
+    <a routerLink="/" class="brand-link">AIFolio in Angular by Leon A.</a>
+  </div>
+</nav>
+
+<router-outlet />
