@@ -49,7 +49,7 @@ This will compile your project and store the build artifacts in the `dist/` dire
 
 | Variable                    | Description          |
 |-----------------------------|----------------------|
-| `ANGULAR_PUBLIC_AI_API_URL` | Backend API base URL |
+| `ANGULAR_PUBLIC_AI_API_URL` | Backend API base URL for the `/api/ai` Vercel proxy |
 
 ## Running unit tests
 

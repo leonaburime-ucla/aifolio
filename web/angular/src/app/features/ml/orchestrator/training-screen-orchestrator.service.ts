@@ -27,7 +27,6 @@ import {
   validateTrainingSetup,
 } from '@aifolio/frontend-core/ml-training';
 import type { TrainingMetrics, TrainingRunRow } from '@aifolio/contracts/entities/ml-training';
-import { AI_API_BASE_URL } from '../../../core/config/ai-api.config';
 import type { DatasetOption } from '../../../shared/types/dataset-option';
 import { MlTrainingApiService } from '../api/ml-training-api.service';
 import type { DistillPayload, DistillResponse, Framework, TrainPayload, TrainResponse, TrainingCombo, TrainingRow } from '../model/ml-training.types';
@@ -157,7 +156,7 @@ export class TrainingScreenOrchestrator {
   private configuredFramework: Framework | null = null;
   private readonly snapshotsByTeacher = signal<Record<string, unknown>>({});
 
-  readonly baseUrl = signal(AI_API_BASE_URL);
+  readonly baseUrl = signal('/api/ai');
   readonly framework = signal<Framework>('pytorch');
   readonly datasetOptions = signal<DatasetOption[]>([]);
   readonly selectedDatasetId = signal<string | null>(null);

@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { AfterViewChecked, Component, ElementRef, Input, OnChanges, OnInit, SimpleChanges, ViewChild, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { AI_API_BASE_URL } from '../../../core/config/ai-api.config';
 import { ChatSidebarOrchestrator } from '../orchestrator/chat-sidebar-orchestrator.service';
 
 @Component({
@@ -85,6 +84,6 @@ export class ChatSidebarComponent implements OnInit, OnChanges, AfterViewChecked
   }
 
   private syncConfig(): void {
-    this.chat.configure({ mode: this.mode, datasetId: this.datasetId, baseUrl: AI_API_BASE_URL });
+    this.chat.configure({ mode: this.mode, datasetId: this.datasetId, baseUrl: '/api/ai' });
   }
 }

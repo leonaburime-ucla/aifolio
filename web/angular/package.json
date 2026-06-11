@@ -3,11 +3,8 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "predev": "node scripts/write-public-env.mjs",
     "dev": "ng serve --proxy-config proxy.conf.json",
-    "prestart": "node scripts/write-public-env.mjs",
     "start": "ng serve --proxy-config proxy.conf.json",
-    "prebuild": "node scripts/write-public-env.mjs",
     "build": "ng build",
     "vercel:install": "npm install && rm -rf ../packages/frontend-core/node_modules ../packages/contracts/node_modules && ln -s ../../angular/node_modules ../packages/frontend-core/node_modules && ln -s ../../angular/node_modules ../packages/contracts/node_modules",
     "guard:features": "node scripts/verify-feature-boundaries.mjs",
