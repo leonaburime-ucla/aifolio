@@ -1,9 +1,12 @@
 import type { NextConfig } from "next";
 import path from "node:path";
 
+const workspaceRoot = path.resolve(process.cwd(), "..");
+
 const nextConfig: NextConfig = {
+  outputFileTracingRoot: workspaceRoot,
   turbopack: {
-    root: path.resolve(process.cwd(), ".."),
+    root: workspaceRoot,
   },
   transpilePackages: ["@aifolio/contracts", "@aifolio/frontend-core"],
   typescript: {
