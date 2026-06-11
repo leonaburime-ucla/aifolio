@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build --webpack",
     "postbuild": "node scripts/verify-next-runtime.mjs",
     "vercel:install": "rm -rf node_modules && npm --workspaces=false install --package-lock=false && rm -rf ../packages/frontend-core/node_modules ../packages/contracts/node_modules && ln -s ../../nextjs/node_modules ../packages/frontend-core/node_modules && ln -s ../../nextjs/node_modules ../packages/contracts/node_modules",
     "start": "next start",
