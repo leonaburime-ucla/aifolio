@@ -1,0 +1,9 @@
+{
+  "name": "@aifolio/web",
+  "private": true,
+  "workspaces": [
+    "packages/contracts",
+    "packages/frontend-core",
+    "vue"
+  ]
+}
