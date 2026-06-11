@@ -5,5 +5,13 @@
     "packages/contracts",
     "packages/frontend-core",
     "vue"
-  ]
+  ],
+  "overrides": {
+    "oxc-parser": {
+      "@oxc-parser/binding-linux-x64-gnu": "$@oxc-parser/binding-linux-x64-gnu"
+    }
+  },
+  "optionalDependencies": {
+    "@oxc-parser/binding-linux-x64-gnu": "0.132.0"
+  }
 }
