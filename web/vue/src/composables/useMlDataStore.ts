@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { ref, computed } from "vue";
+import { ref, shallowRef, computed } from "vue";
 
 export interface DatasetOption {
   id: string;
@@ -9,8 +9,8 @@ export interface DatasetOption {
 export const useMlDataStore = defineStore("mlData", () => {
   const datasetOptions = ref<DatasetOption[]>([]);
   const selectedDatasetId = ref<string | null>(null);
-  const rows = ref<Record<string, unknown>[]>([]);
-  const columns = ref<string[]>([]);
+  const rows = shallowRef<Record<string, unknown>[]>([]);
+  const columns = shallowRef<string[]>([]);
   const isLoading = ref(false);
   const error = ref<string | null>(null);
 

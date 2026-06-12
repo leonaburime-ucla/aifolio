@@ -1,4 +1,4 @@
-import { ref, computed } from "vue";
+import { ref, shallowRef, computed } from "vue";
 import {
   groupSklearnTools,
   formatToolName,
@@ -16,19 +16,28 @@ export type UseAgenticResearchOptions = {
   api?: AgenticResearchApi;
 };
 
+type LoadedDataset = {
+  rows: Record<string, unknown>[];
+  columns: string[];
+};
+
+const maxCachedDatasets = 3;
+
 export function useAgenticResearch(options: UseAgenticResearchOptions) {
   const api = options.api ?? createAgenticResearchApi({ baseUrl: options.baseUrl });
 
   const datasetOptions = ref<{ id: string; label: string }[]>([]);
   const selectedDatasetId = ref<string | null>(null);
-  const tableRows = ref<Record<string, unknown>[]>([]);
-  const tableColumns = ref<string[]>([]);
+  const tableRows = shallowRef<Record<string, unknown>[]>([]);
+  const tableColumns = shallowRef<string[]>([]);
   const sklearnTools = ref<string[]>([]);
   const chartSpecs = ref<ChartSpec[]>([]);
   const isLoading = ref(false);
   const error = ref<string | null>(null);
 
   let initialLoadDone = false;
+  let datasetLoadRequestId = 0;
+  const datasetCache = new Map<string, LoadedDataset>();
 
   const toolGroups = computed(() => {
     const grouped = groupSklearnTools({ tools: sklearnTools.value });
@@ -65,20 +74,53 @@ export function useAgenticResearch(options: UseAgenticResearchOptions) {
   }
 
   async function loadDataset(id: string) {
+    const requestId = ++datasetLoadRequestId;
+    const selectedIdAtStart = selectedDatasetId.value;
     isLoading.value = true;
     error.value = null;
+
+    const cached = datasetCache.get(id);
+    if (cached) {
+      datasetCache.delete(id);
+      datasetCache.set(id, cached);
+      applyDataset(cached);
+      isLoading.value = false;
+      return;
+    }
+
     tableRows.value = [];
     tableColumns.value = [];
     try {
       const payload = await api.loadDataset(id);
+      if (requestId !== datasetLoadRequestId || (selectedIdAtStart !== null && id !== selectedDatasetId.value)) return;
       const rows = payload.rows ?? [];
-      tableRows.value = rows;
-      tableColumns.value = payload.columns ?? (rows.length > 0 ? Object.keys(rows[0]) : []);
+      const loaded = {
+        rows,
+        columns: payload.columns ?? (rows.length > 0 ? Object.keys(rows[0]) : []),
+      };
+      cacheDataset(id, loaded);
+      applyDataset(loaded);
     } catch (err) {
+      if (requestId !== datasetLoadRequestId || (selectedIdAtStart !== null && id !== selectedDatasetId.value)) return;
       error.value = err instanceof Error ? err.message : "Failed to load dataset.";
     } finally {
-      isLoading.value = false;
+      if (requestId === datasetLoadRequestId) isLoading.value = false;
     }
+  }
+
+  function cacheDataset(id: string, dataset: LoadedDataset) {
+    datasetCache.delete(id);
+    datasetCache.set(id, dataset);
+    while (datasetCache.size > maxCachedDatasets) {
+      const oldest = datasetCache.keys().next().value;
+      if (!oldest) break;
+      datasetCache.delete(oldest);
+    }
+  }
+
+  function applyDataset(dataset: LoadedDataset) {
+    tableRows.value = dataset.rows;
+    tableColumns.value = dataset.columns;
   }
 
   async function init() {

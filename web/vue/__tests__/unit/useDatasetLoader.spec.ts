@@ -21,6 +21,14 @@ function createMockApi(overrides: Partial<DatasetLoaderApi> = {}): DatasetLoader
   };
 }
 
+function deferredDataset() {
+  let resolve!: (value: { rows: Record<string, unknown>[]; columns?: string[] }) => void;
+  const promise = new Promise<{ rows: Record<string, unknown>[]; columns?: string[] }>((res) => {
+    resolve = res;
+  });
+  return { promise, resolve };
+}
+
 describe("useDatasetLoader", () => {
   let api: DatasetLoaderApi;
   let loader: ReturnType<typeof useDatasetLoader>;
@@ -105,10 +113,59 @@ describe("useDatasetLoader", () => {
       expect(l.tableColumns.value).toEqual(["x", "y", "z"]);
     });
 
+    it("reuses cached rows on repeated loads", async () => {
+      await loader.loadDataset("churn.csv");
+      await loader.loadDataset("churn.csv");
+
+      expect(api.fetchDataset).toHaveBeenCalledTimes(1);
+      expect(loader.tableRows.value).toHaveLength(2);
+    });
+
     it("clears error before loading", async () => {
       loader.datasetError.value = "stale";
       await loader.loadDataset("churn.csv");
       expect(loader.datasetError.value).toBeNull();
+    });
+
+    it("clears stale rows immediately while loading", async () => {
+      const pending = deferredDataset();
+      const slowApi = createMockApi({
+        fetchDataset: vi.fn().mockReturnValue(pending.promise),
+      });
+      const l = useDatasetLoader({ baseUrl: "/api/ai", api: slowApi });
+      l.tableRows.value = [{ old: "row" }];
+      l.tableColumns.value = ["old"];
+
+      const loading = l.loadDataset("next.csv");
+
+      expect(l.tableRows.value).toEqual([]);
+      expect(l.tableColumns.value).toEqual([]);
+
+      pending.resolve({ rows: [{ next: "row" }], columns: ["next"] });
+      await loading;
+    });
+
+    it("ignores late responses from stale dataset requests", async () => {
+      const stale = deferredDataset();
+      const raceApi = createMockApi({
+        fetchDataset: vi.fn((id: string) => {
+          if (id === "stale.csv") return stale.promise;
+          return Promise.resolve({ rows: [{ current: "row" }], columns: ["current"] });
+        }),
+      });
+      const l = useDatasetLoader({ baseUrl: "/api/ai", api: raceApi });
+
+      l.selectedDatasetId.value = "stale.csv";
+      await nextTick();
+      l.selectedDatasetId.value = "current.csv";
+      await nextTick();
+      await new Promise((r) => setTimeout(r, 10));
+
+      stale.resolve({ rows: [{ stale: "row" }], columns: ["stale"] });
+      await new Promise((r) => setTimeout(r, 10));
+
+      expect(l.tableRows.value).toEqual([{ current: "row" }]);
+      expect(l.tableColumns.value).toEqual(["current"]);
     });
 
     it("handles fetch failure", async () => {

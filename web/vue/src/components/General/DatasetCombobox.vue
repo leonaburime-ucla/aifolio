@@ -8,6 +8,7 @@
       @focus="onFocus"
       @input="isSearching = true"
       @blur="onBlur"
+      @keydown.enter.prevent="commitSearch"
     />
     <ul
       v-if="isOpen && filteredOptions.length > 0"
@@ -90,9 +91,28 @@ function selectOption(id: string) {
   emit("change", id);
 }
 
+function findSearchMatch() {
+  const query = search.value.trim().toLowerCase();
+  if (!query) return null;
+  return props.options.find((o) => o.id.toLowerCase() === query || o.label.toLowerCase() === query) ?? null;
+}
+
+function commitSearch() {
+  const match = findSearchMatch();
+  if (match) selectOption(match.id);
+}
+
 function onBlur() {
   setTimeout(() => {
+    const match = findSearchMatch();
+    if (match && match.id !== props.selectedId) {
+      selectOption(match.id);
+      return;
+    }
     isOpen.value = false;
+    isSearching.value = false;
+    const selectedMatch = props.options.find((o) => o.id === props.selectedId);
+    if (selectedMatch) search.value = selectedMatch.label;
   }, 150);
 }
 </script>

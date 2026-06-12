@@ -1,4 +1,4 @@
-import { ref, watch } from "vue";
+import { ref, shallowRef, watch } from "vue";
 import { resolveDefaultTrainingDatasetId } from "@aifolio/frontend-core/ml-training";
 
 export type DatasetLoaderApi = {
@@ -27,15 +27,24 @@ export type UseDatasetLoaderOptions = {
   api?: DatasetLoaderApi;
 };
 
+type LoadedDataset = {
+  rows: Record<string, unknown>[];
+  columns: string[];
+};
+
+const maxCachedDatasets = 3;
+
 export function useDatasetLoader(options: UseDatasetLoaderOptions) {
   const api = options.api ?? createDatasetLoaderApi({ baseUrl: options.baseUrl });
 
   const datasetOptions = ref<{ id: string; label: string }[]>([]);
   const selectedDatasetId = ref<string | null>(null);
-  const tableRows = ref<Record<string, unknown>[]>([]);
-  const tableColumns = ref<string[]>([]);
+  const tableRows = shallowRef<Record<string, unknown>[]>([]);
+  const tableColumns = shallowRef<string[]>([]);
   const targetColumn = ref("");
   const datasetError = ref<string | null>(null);
+  let datasetLoadRequestId = 0;
+  const datasetCache = new Map<string, LoadedDataset>();
 
   async function loadManifest() {
     try {
@@ -54,16 +63,49 @@ export function useDatasetLoader(options: UseDatasetLoaderOptions) {
   }
 
   async function loadDataset(id: string) {
+    const requestId = ++datasetLoadRequestId;
+    const selectedIdAtStart = selectedDatasetId.value;
     datasetError.value = null;
+
+    const cached = datasetCache.get(id);
+    if (cached) {
+      datasetCache.delete(id);
+      datasetCache.set(id, cached);
+      applyDataset(cached);
+      return;
+    }
+
+    tableRows.value = [];
+    tableColumns.value = [];
     try {
       const payload = await api.fetchDataset(id);
-      tableRows.value = payload.rows ?? [];
-      tableColumns.value = payload.columns ?? (tableRows.value.length > 0 ? Object.keys(tableRows.value[0]) : []);
-      if (tableColumns.value.length > 0 && !targetColumn.value) {
-        targetColumn.value = tableColumns.value[tableColumns.value.length - 1];
-      }
+      if (requestId !== datasetLoadRequestId || (selectedIdAtStart !== null && id !== selectedDatasetId.value)) return;
+      const rows = payload.rows ?? [];
+      const columns = payload.columns ?? (rows.length > 0 ? Object.keys(rows[0]) : []);
+      const loaded = { rows, columns };
+      cacheDataset(id, loaded);
+      applyDataset(loaded);
     } catch (err) {
+      if (requestId !== datasetLoadRequestId || (selectedIdAtStart !== null && id !== selectedDatasetId.value)) return;
       datasetError.value = err instanceof Error ? err.message : "Error";
+    }
+  }
+
+  function cacheDataset(id: string, dataset: LoadedDataset) {
+    datasetCache.delete(id);
+    datasetCache.set(id, dataset);
+    while (datasetCache.size > maxCachedDatasets) {
+      const oldest = datasetCache.keys().next().value;
+      if (!oldest) break;
+      datasetCache.delete(oldest);
+    }
+  }
+
+  function applyDataset(dataset: LoadedDataset) {
+    tableRows.value = dataset.rows;
+    tableColumns.value = dataset.columns;
+    if (dataset.columns.length > 0 && !targetColumn.value) {
+      targetColumn.value = dataset.columns[dataset.columns.length - 1];
     }
   }
 
