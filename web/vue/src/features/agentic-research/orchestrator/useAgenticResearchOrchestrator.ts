@@ -6,6 +6,9 @@ import type { UseAgenticResearchOptions } from "../model";
 
 export type UseAgenticResearchOrchestratorOptions = UseAgenticResearchOptions;
 
+export const samplePrompts = ["Run PCA analysis", "Run NMF Decomposition and PLSR"];
+
+
 export function useAgenticResearchOrchestrator(
   options: UseAgenticResearchOrchestratorOptions
 ) {
@@ -23,6 +26,7 @@ export function useAgenticResearchOrchestrator(
     tableColumns: model.tableColumns,
     sklearnTools: model.sklearnTools,
     chartSpecs,
+    samplePrompts,
     isLoading: model.isLoading,
     error: model.error,
     toolGroups: model.toolGroups,

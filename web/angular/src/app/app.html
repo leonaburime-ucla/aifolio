@@ -7,13 +7,13 @@
         <button type="button" class="nav-menu-button">Machine Learning <span aria-hidden="true">v</span></button>
         <div class="nav-menu-list">
           @for (link of mlLinks; track link.path) {
-            <a [routerLink]="link.path" routerLinkActive="active">{{ link.label }}</a>
+          <a [routerLink]="link.path" routerLinkActive="active">{{ link.label }}</a>
           }
         </div>
       </div>
       <a routerLink="/ag-ui" routerLinkActive="active">Agentic UI</a>
     </div>
-    <a routerLink="/" class="brand-link">AIFolio Angular</a>
+    <a routerLink="/" class="brand-link">AIFolio Angular by Leon A.</a>
   </div>
 </nav>
 

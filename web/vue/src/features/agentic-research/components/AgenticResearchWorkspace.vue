@@ -6,7 +6,6 @@ import ChartRenderer from "~/features/recharts/components/ChartRenderer.vue";
 
 const emit = defineEmits<{ "dataset-change": [id: string] }>();
 
-const samplePrompts = ["Run PCA analysis", "Run NMF Decomposition and PLSR"];
 
 const {
   datasetOptions,
@@ -18,6 +17,7 @@ const {
   isLoading,
   error,
   toolGroups,
+  samplePrompts,
   onDatasetChange,
   removeChartSpec,
 } = useAgenticResearchOrchestrator({
