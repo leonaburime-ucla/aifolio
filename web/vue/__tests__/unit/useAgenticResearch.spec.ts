@@ -14,8 +14,8 @@ vi.mock("~/features/agentic-research/api", () => ({
 function createMockApi(overrides: Partial<AgenticResearchApi> = {}): AgenticResearchApi {
   return {
     loadManifest: vi.fn().mockResolvedValue([
-      { id: "churn.csv", label: "churn.csv", description: "Customer churn dataset" },
       { id: "fraud.csv", label: "fraud.csv", description: "Fraud detection dataset" },
+      { id: "customer_churn_telco.csv", label: "customer_churn_telco.csv", description: "Customer churn dataset" },
     ]),
     loadTools: vi.fn().mockResolvedValue([
       "pca_transform",
@@ -50,12 +50,12 @@ describe("useAgenticResearch", () => {
   });
 
   describe("init()", () => {
-    it("loads manifest and selects first dataset", async () => {
+    it("loads manifest and selects the preferred customer churn dataset", async () => {
       await research.init();
 
       expect(research.datasetOptions.value).toHaveLength(2);
-      expect(research.datasetOptions.value[0].id).toBe("churn.csv");
-      expect(research.selectedDatasetId.value).toBe("churn.csv");
+      expect(research.datasetOptions.value[0].id).toBe("fraud.csv");
+      expect(research.selectedDatasetId.value).toBe("customer_churn_telco.csv");
     });
 
     it("loads sklearn tools", async () => {
@@ -72,10 +72,10 @@ describe("useAgenticResearch", () => {
       expect(research.tableColumns.value).toEqual(["customerID", "tenure", "Churn"]);
     });
 
-    it("emits dataset-change callback with first dataset id", async () => {
+    it("emits dataset-change callback with preferred dataset id", async () => {
       await research.init();
 
-      expect(datasetChangeSpy).toHaveBeenCalledWith("churn.csv");
+      expect(datasetChangeSpy).toHaveBeenCalledWith("customer_churn_telco.csv");
     });
 
     it("does not load dataset when manifest returns empty", async () => {
@@ -142,7 +142,7 @@ describe("useAgenticResearch", () => {
       await research.init();
 
       const callCount = vi.mocked(api.loadDataset).mock.calls.length;
-      await research.onDatasetWatch("churn.csv");
+      await research.onDatasetWatch("customer_churn_telco.csv");
       expect(vi.mocked(api.loadDataset).mock.calls.length).toBe(callCount);
     });
 
@@ -263,7 +263,7 @@ describe("useAgenticResearch", () => {
 
       const r = useAgenticResearch({ baseUrl: "/api/ai", api: slowApi });
       // Manually trigger loadDataset path
-      r.selectedDatasetId.value = "churn.csv";
+      r.selectedDatasetId.value = "customer_churn_telco.csv";
       await r.init();
 
       // isLoading should have been true during the call

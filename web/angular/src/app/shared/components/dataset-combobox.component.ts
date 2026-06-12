@@ -13,8 +13,8 @@ import type { DatasetOption } from '../types/dataset-option';
         type="text"
         placeholder="Search datasets..."
         [ngModel]="search()"
-        (ngModelChange)="search.set($event)"
-        (focus)="isOpen.set(true)"
+        (ngModelChange)="onSearchChange($event)"
+        (focus)="openList($event)"
         (blur)="closeSoon()"
       />
 
@@ -45,9 +45,10 @@ export class DatasetComboboxComponent implements OnChanges {
 
   readonly search = signal('');
   readonly isOpen = signal(false);
+  readonly isSearching = signal(false);
 
   readonly filteredOptions = computed(() => {
-    const query = this.search().toLowerCase().trim();
+    const query = this.isOpen() && !this.isSearching() ? '' : this.search().toLowerCase().trim();
     if (!query) return this.options;
     return this.options.filter((option) => option.label.toLowerCase().includes(query));
   });
@@ -62,7 +63,19 @@ export class DatasetComboboxComponent implements OnChanges {
   selectOption(option: DatasetOption): void {
     this.search.set(option.label);
     this.isOpen.set(false);
+    this.isSearching.set(false);
     this.changed.emit(option.id);
+  }
+
+  openList(event: FocusEvent): void {
+    this.isOpen.set(true);
+    this.isSearching.set(false);
+    if (event.target instanceof HTMLInputElement) event.target.select();
+  }
+
+  onSearchChange(value: string): void {
+    this.search.set(value);
+    this.isSearching.set(true);
   }
 
   closeSoon(): void {

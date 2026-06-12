@@ -5,17 +5,23 @@ import {
 } from "@aifolio/frontend-core/agentic-research";
 
 describe("agenticResearchManifest.logic", () => {
-  it("resolveDefaultDatasetId prefers selected id then first dataset then null", () => {
+  it("resolveDefaultDatasetId prefers selected id then customer churn then first dataset then null", () => {
     const datasets = [
       { id: "iris", label: "Iris", description: "Iris dataset" },
-      { id: "wine", label: "Wine", description: "Wine dataset" },
+      { id: "customer_churn_telco.csv", label: "Churn", description: "Customer churn dataset" },
     ];
 
     expect(
-      resolveDefaultDatasetId({ selectedDatasetId: "wine", datasets })
-    ).toBe("wine");
+      resolveDefaultDatasetId({ selectedDatasetId: "iris", datasets })
+    ).toBe("iris");
     expect(
       resolveDefaultDatasetId({ selectedDatasetId: null, datasets })
+    ).toBe("customer_churn_telco.csv");
+    expect(
+      resolveDefaultDatasetId({
+        selectedDatasetId: null,
+        datasets: [{ id: "iris", label: "Iris", description: "Iris dataset" }],
+      })
     ).toBe("iris");
     expect(
       resolveDefaultDatasetId({ selectedDatasetId: null, datasets: [] })

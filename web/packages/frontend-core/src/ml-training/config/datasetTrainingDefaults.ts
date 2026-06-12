@@ -1,5 +1,16 @@
 import type { DatasetTrainingDefaults } from "@aifolio/contracts/entities/ml-training";
+import {
+  DEFAULT_ML_DATASET_ID,
+  resolvePreferredDatasetId,
+  type DatasetIdOption,
+} from "../../config/mlDatasets";
 export type { DatasetTrainingDefaults } from "@aifolio/contracts/entities/ml-training";
+export { DEFAULT_ML_DATASET_ID };
+
+export type ResolveDefaultTrainingDatasetIdInput = {
+  selectedDatasetId: string | null;
+  datasets: DatasetIdOption[];
+};
 
 const DEFAULTS_BY_DATASET_ID: Record<string, DatasetTrainingDefaults> = {
   "customer_churn_telco.csv": {
@@ -58,4 +69,10 @@ export function getTrainingDefaults(datasetId: string | null): DatasetTrainingDe
     task: "auto",
     epochs: 60,
   };
+}
+
+export function resolveDefaultTrainingDatasetId(
+  input: ResolveDefaultTrainingDatasetIdInput
+): string | null {
+  return resolvePreferredDatasetId(input);
 }

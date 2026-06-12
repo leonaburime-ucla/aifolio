@@ -8,7 +8,8 @@ function createMockApi(overrides: Partial<DatasetLoaderApi> = {}): DatasetLoader
   return {
     fetchManifest: vi.fn().mockResolvedValue({
       datasets: [
-        { id: "churn.csv", label: "Churn" },
+        { id: "fraud_detection_phishing_websites.csv", label: "Fraud" },
+        { id: "customer_churn_telco.csv", label: "Customer Churn" },
         { id: "iris.csv" },
       ],
     }),
@@ -34,14 +35,15 @@ describe("useDatasetLoader", () => {
       await loader.loadManifest();
 
       expect(loader.datasetOptions.value).toEqual([
-        { id: "churn.csv", label: "Churn" },
+        { id: "fraud_detection_phishing_websites.csv", label: "Fraud" },
+        { id: "customer_churn_telco.csv", label: "Customer Churn" },
         { id: "iris.csv", label: "iris.csv" },
       ]);
     });
 
-    it("auto-selects first dataset", async () => {
+    it("auto-selects the preferred customer churn dataset", async () => {
       await loader.loadManifest();
-      expect(loader.selectedDatasetId.value).toBe("churn.csv");
+      expect(loader.selectedDatasetId.value).toBe("customer_churn_telco.csv");
     });
 
     it("does not overwrite existing selection", async () => {

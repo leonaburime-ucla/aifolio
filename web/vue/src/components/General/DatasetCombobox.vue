@@ -5,7 +5,8 @@
       type="text"
       class="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-500 focus:outline-none"
       placeholder="Search datasets..."
-      @focus="isOpen = true"
+      @focus="onFocus"
+      @input="isSearching = true"
       @blur="onBlur"
     />
     <ul
@@ -45,6 +46,7 @@ const emit = defineEmits<{ change: [id: string] }>();
 
 const search = ref("");
 const isOpen = ref(false);
+const isSearching = ref(false);
 
 watch(
   () => props.selectedId,
@@ -68,14 +70,23 @@ watch(
 );
 
 const filteredOptions = computed(() => {
-  const q = search.value.toLowerCase();
+  const q = isOpen.value && !isSearching.value ? "" : search.value.toLowerCase();
   if (!q) return props.options;
   return props.options.filter((o) => o.label.toLowerCase().includes(q));
 });
 
+function onFocus(event: FocusEvent) {
+  isOpen.value = true;
+  isSearching.value = false;
+  if (event.target instanceof HTMLInputElement) {
+    event.target.select();
+  }
+}
+
 function selectOption(id: string) {
   search.value = props.options.find((o) => o.id === id)?.label ?? id;
   isOpen.value = false;
+  isSearching.value = false;
   emit("change", id);
 }
 

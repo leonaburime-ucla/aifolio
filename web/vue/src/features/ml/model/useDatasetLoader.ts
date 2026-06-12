@@ -1,4 +1,5 @@
 import { ref, watch } from "vue";
+import { resolveDefaultTrainingDatasetId } from "@aifolio/frontend-core/ml-training";
 
 export type DatasetLoaderApi = {
   fetchManifest: () => Promise<{ datasets: { id: string; label?: string }[] }>;
@@ -40,8 +41,12 @@ export function useDatasetLoader(options: UseDatasetLoaderOptions) {
     try {
       const { datasets } = await api.fetchManifest();
       datasetOptions.value = datasets.map((d) => ({ id: d.id, label: d.label ?? d.id }));
-      if (datasetOptions.value.length > 0 && !selectedDatasetId.value) {
-        selectedDatasetId.value = datasetOptions.value[0].id;
+      const resolved = resolveDefaultTrainingDatasetId({
+        selectedDatasetId: selectedDatasetId.value,
+        datasets: datasetOptions.value,
+      });
+      if (resolved && !selectedDatasetId.value) {
+        selectedDatasetId.value = resolved;
       }
     } catch (err) {
       datasetError.value = err instanceof Error ? err.message : "Error";

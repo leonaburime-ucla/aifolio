@@ -64,7 +64,11 @@ export {
   validateDropouts,
   buildSweepCombinations,
 } from "./lib/trainingSweep";
-export { getTrainingDefaults } from "./config/datasetTrainingDefaults";
+export {
+  DEFAULT_ML_DATASET_ID,
+  getTrainingDefaults,
+  resolveDefaultTrainingDatasetId,
+} from "./config/datasetTrainingDefaults";
 export {
   PYTORCH_MODE_EXPLAINERS,
   TENSORFLOW_MODE_EXPLAINERS,

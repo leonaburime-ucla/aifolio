@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { getTrainingDefaults } from "@aifolio/frontend-core/ml-training";
+import {
+  DEFAULT_ML_DATASET_ID,
+  getTrainingDefaults,
+  resolveDefaultTrainingDatasetId,
+} from "@aifolio/frontend-core/ml-training";
 
 describe("datasetTrainingDefaults", () => {
   it("returns dataset-specific defaults when known id is provided", () => {
@@ -23,5 +27,32 @@ describe("datasetTrainingDefaults", () => {
     const defaults = getTrainingDefaults(null);
     expect(defaults.task).toBe("auto");
     expect(defaults.epochs).toBe(60);
+  });
+
+  it("exports customer churn as the shared default dataset id", () => {
+    expect(DEFAULT_ML_DATASET_ID).toBe("customer_churn_telco.csv");
+  });
+
+  it("resolves the default dataset with customer churn preference", () => {
+    expect(
+      resolveDefaultTrainingDatasetId({
+        selectedDatasetId: "existing.csv",
+        datasets: [{ id: DEFAULT_ML_DATASET_ID }],
+      })
+    ).toBe("existing.csv");
+
+    expect(
+      resolveDefaultTrainingDatasetId({
+        selectedDatasetId: null,
+        datasets: [{ id: "fraud.csv" }, { id: DEFAULT_ML_DATASET_ID }],
+      })
+    ).toBe(DEFAULT_ML_DATASET_ID);
+
+    expect(
+      resolveDefaultTrainingDatasetId({
+        selectedDatasetId: null,
+        datasets: [{ id: "fallback.csv" }],
+      })
+    ).toBe("fallback.csv");
   });
 });

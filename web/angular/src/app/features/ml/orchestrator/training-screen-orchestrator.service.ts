@@ -14,6 +14,7 @@ import {
   handleApplyOptimalParams,
   handleCopyTrainingRuns,
   handleFindOptimalParams,
+  resolveDefaultTrainingDatasetId,
   resolveDistilledModalPayload,
   resolveTeacherRunKey,
   splitColumnInput,
@@ -238,7 +239,11 @@ export class TrainingScreenOrchestrator {
       const { datasets } = await this.api.fetchManifest(this.baseUrl());
       const options = datasets.map((dataset) => ({ id: dataset.id, label: dataset.label ?? dataset.id }));
       this.datasetOptions.set(options);
-      if (options.length > 0) await this.onDatasetChange(options[0].id);
+      const resolved = resolveDefaultTrainingDatasetId({
+        selectedDatasetId: this.selectedDatasetId(),
+        datasets: options,
+      });
+      if (resolved && !this.selectedDatasetId()) await this.onDatasetChange(resolved);
     } catch (err) {
       this.datasetError.set(err instanceof Error ? err.message : 'Error');
     }
