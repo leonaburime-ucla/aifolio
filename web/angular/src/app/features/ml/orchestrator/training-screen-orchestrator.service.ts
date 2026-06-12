@@ -155,6 +155,7 @@ function fallbackDistilledRun(result: DistillResponse, payload: DistillPayload):
 export class TrainingScreenOrchestrator {
   private readonly api = inject(MlTrainingApiService);
   private configuredFramework: Framework | null = null;
+  private datasetLoadRequestId = 0;
   private readonly snapshotsByTeacher = signal<Record<string, unknown>>({});
 
   readonly baseUrl = signal('/api/ai');
@@ -269,16 +270,22 @@ export class TrainingScreenOrchestrator {
   }
 
   async loadDataset(id: string): Promise<void> {
+    const requestId = ++this.datasetLoadRequestId;
     this.datasetError.set(null);
+    this.tableRows.set([]);
+    this.tableColumns.set([]);
     try {
       const payload = await this.api.fetchDataset(this.baseUrl(), id);
+      if (requestId !== this.datasetLoadRequestId || id !== this.selectedDatasetId()) return;
       const rows = payload.rows ?? [];
+      const columns = payload.columns ?? (rows.length > 0 ? Object.keys(rows[0]) : []);
       this.tableRows.set(rows);
-      this.tableColumns.set(payload.columns ?? (rows.length > 0 ? Object.keys(rows[0]) : []));
-      if (!this.targetColumn() && this.tableColumns().length > 0) {
-        this.targetColumn.set(this.tableColumns()[this.tableColumns().length - 1]);
+      this.tableColumns.set(columns);
+      if (!this.targetColumn() && columns.length > 0) {
+        this.targetColumn.set(columns[columns.length - 1]);
       }
     } catch (err) {
+      if (requestId !== this.datasetLoadRequestId || id !== this.selectedDatasetId()) return;
       this.datasetError.set(err instanceof Error ? err.message : 'Error');
     }
   }

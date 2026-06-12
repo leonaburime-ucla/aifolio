@@ -7,6 +7,7 @@ import { AgenticResearchApiService } from '../api/agentic-research-api.service';
 @Injectable()
 export class AgenticResearchOrchestrator {
   private readonly api = inject(AgenticResearchApiService);
+  private datasetLoadRequestId = 0;
   readonly chartStore = inject(ChartStoreService);
 
   readonly baseUrl = signal('/api/ai');
@@ -57,19 +58,22 @@ export class AgenticResearchOrchestrator {
   }
 
   async loadDataset(id: string): Promise<void> {
+    const requestId = ++this.datasetLoadRequestId;
     this.isLoading.set(true);
     this.error.set(null);
     this.tableRows.set([]);
     this.tableColumns.set([]);
     try {
       const payload = await this.api.loadDataset(this.baseUrl(), id);
+      if (requestId !== this.datasetLoadRequestId || id !== this.selectedDatasetId()) return;
       const rows = payload.rows ?? [];
       this.tableRows.set(rows);
       this.tableColumns.set(payload.columns ?? (rows.length > 0 ? Object.keys(rows[0]) : []));
     } catch (err) {
+      if (requestId !== this.datasetLoadRequestId || id !== this.selectedDatasetId()) return;
       this.error.set(err instanceof Error ? err.message : 'Failed to load dataset.');
     } finally {
-      this.isLoading.set(false);
+      if (requestId === this.datasetLoadRequestId) this.isLoading.set(false);
     }
   }
 

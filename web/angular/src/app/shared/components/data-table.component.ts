@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, computed, signal } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 @Component({
@@ -33,7 +33,7 @@ import { FormsModule } from '@angular/forms';
             </tr>
           </thead>
           <tbody>
-            @for (row of pagedRows(); track rowIndex($index)) {
+            @for (row of pagedRows(); track rowKey(row, $index)) {
               <tr>
                 @for (column of columns; track column) {
                   <td>{{ formatCell(row[column]) }}</td>
@@ -51,17 +51,29 @@ import { FormsModule } from '@angular/forms';
     }
   `
 })
-export class DataTableComponent {
+export class DataTableComponent implements OnChanges {
   @Input() rows: Record<string, unknown>[] = [];
   @Input() columns: string[] = [];
 
+  private readonly inputVersion = signal(0);
   readonly search = signal('');
   readonly sortKey = signal<string | null>(null);
   readonly sortDirection = signal<'asc' | 'desc'>('asc');
   readonly page = signal(0);
   readonly pageSize = 25;
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['rows'] || changes['columns']) {
+      this.inputVersion.update((version) => version + 1);
+      this.search.set('');
+      this.sortKey.set(null);
+      this.sortDirection.set('asc');
+      this.page.set(0);
+    }
+  }
+
   readonly filteredRows = computed(() => {
+    this.inputVersion();
     const query = this.search().toLowerCase().trim();
     if (!query) return this.rows;
     return this.rows.filter((row) =>
@@ -103,7 +115,11 @@ export class DataTableComponent {
     return value == null ? '' : String(value);
   }
 
-  rowIndex(index: number): number {
-    return index;
+  rowKey(row: Record<string, unknown>, index: number): string {
+    const signature = this.columns
+      .slice(0, 3)
+      .map((column) => String(row[column] ?? ''))
+      .join('|');
+    return `${index}:${signature}`;
   }
 }

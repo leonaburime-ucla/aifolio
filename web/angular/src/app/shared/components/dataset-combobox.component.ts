@@ -79,6 +79,11 @@ export class DatasetComboboxComponent implements OnChanges {
   }
 
   closeSoon(): void {
-    window.setTimeout(() => this.isOpen.set(false), 150);
+    window.setTimeout(() => {
+      this.isOpen.set(false);
+      this.isSearching.set(false);
+      const match = this.options.find((option) => option.id === this.selectedId);
+      if (match) this.search.set(match.label);
+    }, 150);
   }
 }
