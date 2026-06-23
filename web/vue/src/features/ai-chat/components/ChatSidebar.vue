@@ -21,7 +21,7 @@ const {
   handleHistory,
 } = useChatSidebarOrchestrator({
   baseUrl: "/api/ai",
-  mode: props.mode,
+  getMode: () => props.mode,
   getDatasetId: () => props.datasetId,
 });
 </script>

@@ -14,7 +14,7 @@ import type { ChatApi } from "../api";
 
 export type UseChatSidebarOptions = {
   baseUrl: string;
-  mode: "direct" | "research";
+  getMode: () => "direct" | "research";
   getDatasetId: () => string | null;
   onChartSpec?: (spec: unknown) => void;
   api?: ChatApi;
@@ -78,7 +78,7 @@ export function useChatSidebar(options: UseChatSidebarOptions) {
       .map((m) => ({ role: m.role, content: m.content }));
 
     try {
-      const sender = options.mode === "research" ? sendChatMessage : sendChatMessageDirect;
+      const sender = options.getMode() === "research" ? sendChatMessage : sendChatMessageDirect;
       const datasetId = options.getDatasetId();
       const result = await sender(
         {

@@ -3,13 +3,17 @@ import { useChartStore } from "~/composables/useChartStore";
 import { useChatSidebar } from "../model/useChatSidebar";
 import type { UseChatSidebarOptions } from "../model/useChatSidebar";
 
-export type UseChatSidebarOrchestratorOptions = Omit<UseChatSidebarOptions, "onChartSpec">;
+export type UseChatSidebarOrchestratorOptions = Omit<UseChatSidebarOptions, "onChartSpec" | "mode"> & {
+  getMode: () => "direct" | "research";
+};
 
 export function useChatSidebarOrchestrator(options: UseChatSidebarOrchestratorOptions) {
   const chartStore = useChartStore();
 
+  const { getMode, ...rest } = options;
   const model = useChatSidebar({
-    ...options,
+    ...rest,
+    getMode,
     onChartSpec: (spec: any) => {
       const yKeys: string[] = spec.yKeys ?? (spec.yKey ? [spec.yKey] : []);
       chartStore.addChartSpec({
