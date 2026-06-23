@@ -48,7 +48,7 @@ describe("useChatSidebar", () => {
     api = createMockApi();
     chat = useChatSidebar({
       baseUrl: "/api/ai",
-      mode: "direct",
+      getMode: () => "direct",
       getDatasetId: () => null,
       api,
     });
@@ -68,7 +68,7 @@ describe("useChatSidebar", () => {
       });
       const c = useChatSidebar({
         baseUrl: "/api/ai",
-        mode: "direct",
+        getMode: () => "direct",
         getDatasetId: () => null,
         api: failApi,
       });
@@ -110,7 +110,7 @@ describe("useChatSidebar", () => {
       const { sendChatMessage } = await import("@aifolio/frontend-core/chat");
       const c = useChatSidebar({
         baseUrl: "/api/ai",
-        mode: "research",
+        getMode: () => "research",
         getDatasetId: () => "churn.csv",
         api,
       });
@@ -170,7 +170,7 @@ describe("useChatSidebar", () => {
       const chartSpy = vi.fn();
       const c = useChatSidebar({
         baseUrl: "/api/ai",
-        mode: "direct",
+        getMode: () => "direct",
         getDatasetId: () => null,
         onChartSpec: chartSpy,
         api,
@@ -196,7 +196,7 @@ describe("useChatSidebar", () => {
       const chartSpy = vi.fn();
       const c = useChatSidebar({
         baseUrl: "/api/ai",
-        mode: "direct",
+        getMode: () => "direct",
         getDatasetId: () => null,
         onChartSpec: chartSpy,
         api,
@@ -217,7 +217,7 @@ describe("useChatSidebar", () => {
       const chartSpy = vi.fn();
       const c = useChatSidebar({
         baseUrl: "/api/ai",
-        mode: "direct",
+        getMode: () => "direct",
         getDatasetId: () => null,
         onChartSpec: chartSpy,
         api,
@@ -274,7 +274,7 @@ describe("useChatSidebar", () => {
     it("uses createChatApi when no api option provided", async () => {
       const c = useChatSidebar({
         baseUrl: "/api/ai",
-        mode: "direct",
+        getMode: () => "direct",
         getDatasetId: () => null,
       });
       await c.loadModels();

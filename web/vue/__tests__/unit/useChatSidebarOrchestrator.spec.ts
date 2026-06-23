@@ -40,7 +40,7 @@ describe("useChatSidebarOrchestrator", () => {
     withSetup(() =>
       useChatSidebarOrchestrator({
         baseUrl: "/api/ai",
-        mode: "direct",
+        getMode: () => "direct",
         getDatasetId: () => null,
         api,
       })
@@ -55,7 +55,7 @@ describe("useChatSidebarOrchestrator", () => {
     const [result] = withSetup(() =>
       useChatSidebarOrchestrator({
         baseUrl: "/api/ai",
-        mode: "direct",
+        getMode: () => "direct",
         getDatasetId: () => null,
         api,
       })
@@ -68,7 +68,7 @@ describe("useChatSidebarOrchestrator", () => {
     const [result] = withSetup(() =>
       useChatSidebarOrchestrator({
         baseUrl: "/api/ai",
-        mode: "direct",
+        getMode: () => "direct",
         getDatasetId: () => null,
         api,
       })
