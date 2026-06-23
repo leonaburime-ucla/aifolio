@@ -1,5 +1,11 @@
 "use client";
 
+// Patch: @ag-ui/client's HttpAgent stores `fetch` without binding it to `window`,
+// causing "Illegal invocation" when CopilotKit calls it internally.
+if (typeof window !== "undefined" && typeof window.fetch === "function") {
+  window.fetch = window.fetch.bind(window);
+}
+
 import { CopilotKit } from "@copilotkit/react-core";
 import "@copilotkit/react-ui/styles.css";
 import type { CopilotChatProviderProps } from "@/features/ag-ui-chat/react/views/providers/CopilotChatProvider.types";
