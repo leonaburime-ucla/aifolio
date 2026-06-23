@@ -20,7 +20,6 @@ import { AgenticResearchOrchestrator } from '../orchestrator/agentic-research-or
             <ol style="margin: .75rem 0 1rem; padding-left: 1.25rem; display: flex; flex-direction: column; gap: .25rem;">
               <li>Run PCA analysis</li>
               <li>Run NMF Decomposition and PLSR</li>
-              <li>Change the dataset to fraud detection and run Random Forest</li>
             </ol>
           }
           @if (model.sklearnTools().length > 0) {
