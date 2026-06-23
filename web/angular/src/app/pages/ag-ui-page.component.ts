@@ -170,12 +170,19 @@ interface ToolDef {
       gap: .75rem;
     }
     .side-panel {
+      position: static;
       width: 420px;
+      height: 100%;
       flex-shrink: 0;
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      height: 100%;
+    }
+    .side-panel app-chat-sidebar {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
     }
     .ag-ui-details {
       border-radius: 1rem;
