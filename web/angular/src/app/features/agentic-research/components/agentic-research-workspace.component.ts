@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, OnInit, Output, inject } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
 import { DataTableComponent } from '../../../shared/components/data-table.component';
 import { DatasetComboboxComponent } from '../../../shared/components/dataset-combobox.component';
 import { ChartRendererComponent } from '../../recharts/components/chart-renderer.component';
@@ -12,14 +12,17 @@ import { AgenticResearchOrchestrator } from '../orchestrator/agentic-research-or
   template: `
     <div class="stack">
       <details class="details-card" open>
-        <summary>ML Algorithms + Sample Prompts</summary>
+        <summary>{{ showPrompts ? 'ML Algorithms + Sample Prompts' : 'ML Algorithms' }}</summary>
         <div style="margin-top: .75rem;">
-          <p class="strong-red">Results take 1-2min</p>
-          <p><strong>Sample Prompts</strong></p>
-          <ol>
-            <li>Run PCA analysis</li>
-            <li>Run NMF Decomposition and PLSR</li>
-          </ol>
+          @if (showPrompts) {
+            <p class="strong-red">Results take 1-2min</p>
+            <p><strong>Sample Prompts</strong></p>
+            <ol style="margin: .75rem 0 1rem; padding-left: 1.25rem; display: flex; flex-direction: column; gap: .25rem;">
+              <li>Run PCA analysis</li>
+              <li>Run NMF Decomposition and PLSR</li>
+              <li>Change the dataset to fraud detection and run Random Forest</li>
+            </ol>
+          }
           @if (model.sklearnTools().length > 0) {
             <div class="algo-groups">
               @for (group of model.toolGroups(); track group.name) {
@@ -81,6 +84,7 @@ import { AgenticResearchOrchestrator } from '../orchestrator/agentic-research-or
   `
 })
 export class AgenticResearchWorkspaceComponent implements OnInit {
+  @Input() showPrompts = true;
   @Output() datasetChange = new EventEmitter<string>();
   readonly model = inject(AgenticResearchOrchestrator);
   readonly emitDatasetChange = (id: string) => this.datasetChange.emit(id);

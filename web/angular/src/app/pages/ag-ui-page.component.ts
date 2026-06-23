@@ -106,7 +106,7 @@ interface ToolDef {
                   </ol>
                 </div>
               </details>
-              <app-agentic-research-workspace (datasetChange)="activeDatasetId.set($event)" />
+              <app-agentic-research-workspace [showPrompts]="false" (datasetChange)="activeDatasetId.set($event)" />
             }
             @case ('pytorch') {
               <details class="ag-ui-prompts" open>
