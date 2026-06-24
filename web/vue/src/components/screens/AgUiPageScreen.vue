@@ -119,7 +119,7 @@
               </ol>
             </div>
           </details>
-          <AgenticResearchWorkspace @dataset-change="onDatasetChange" />
+          <AgenticResearchWorkspace :active-dataset-id="activeDatasetId" @dataset-change="onDatasetChange" />
         </template>
 
         <template v-else-if="activeTab === 'pytorch'">
@@ -155,8 +155,15 @@
       </div>
     </main>
 
-    <div class="flex h-full w-[420px] shrink-0 flex-col overflow-hidden">
-      <ChatSidebar :mode="chatMode" :dataset-id="activeDatasetId" />
+    <div class="flex h-full w-[420px] shrink-0 flex-col overflow-hidden border-l border-zinc-200 bg-white">
+      <ClientOnly>
+        <CopilotAgUiChat
+          :active-tab="activeTab"
+          :active-dataset-id="activeDatasetId"
+          @switch-tab="(tab: string) => activeTab = tab as WorkspaceTab"
+          @dataset-change="(id: string) => activeDatasetId = id"
+        />
+      </ClientOnly>
     </div>
   </div>
 </template>
@@ -167,7 +174,7 @@ import ChartsWorkspace from "~/features/recharts/components/ChartsWorkspace.vue"
 import AgenticResearchWorkspace from "~/features/agentic-research/components/AgenticResearchWorkspace.vue";
 import PytorchTrainingScreen from "~/features/ml/components/PytorchTrainingScreen.vue";
 import TensorflowTrainingScreen from "~/features/ml/components/TensorflowTrainingScreen.vue";
-import ChatSidebar from "~/features/ai-chat/components/ChatSidebar.vue";
+import CopilotAgUiChat from "~/components/screens/CopilotAgUiChat.client.vue";
 
 type WorkspaceTab = "charts" | "agentic-research" | "pytorch" | "tensorflow";
 
@@ -184,38 +191,41 @@ const activeDatasetId = ref<string | null>(null);
 
 const activeTabLabel = computed(() => tabs.find((t) => t.id === activeTab.value)?.label ?? "");
 
-const chatMode = computed(() => activeTab.value === "agentic-research" ? "research" as const : "direct" as const);
-
 const toolsForTab = computed(() => {
   const base = [
     { name: "switch_ag_ui_tab", description: "Switch the active workspace tab" },
-    { name: "navigate_to_page", description: "Navigate to another page in the app" },
+    { name: "add_chart_spec", description: "Add chart specs to the workspace" },
+    { name: "clear_charts", description: "Clear all charts" },
   ];
   switch (activeTab.value) {
     case "charts":
-      return [
-        ...base,
-        { name: "add_chart_spec", description: "Add a chart to the workspace" },
-        { name: "clear_charts", description: "Remove all charts from the workspace" },
-      ];
+      return base;
     case "agentic-research":
       return [
         ...base,
-        { name: "add_chart_spec", description: "Add a chart to the research workspace" },
-        { name: "clear_charts", description: "Clear all research charts" },
         { name: "set_active_dataset", description: "Switch the active dataset" },
       ];
     case "pytorch":
       return [
         ...base,
         { name: "set_pytorch_form_fields", description: "Set PyTorch training form fields" },
-        { name: "train_pytorch_model", description: "Start a PyTorch training run" },
+        { name: "change_pytorch_target_column", description: "Change PyTorch target column" },
+        { name: "randomize_pytorch_form_fields", description: "Randomize PyTorch form fields" },
+        { name: "start_pytorch_training_runs", description: "Start PyTorch training runs" },
+        { name: "train_pytorch_model", description: "Direct backend PyTorch training" },
+        { name: "set_active_ml_form_fields", description: "Patch active ML tab form fields" },
+        { name: "start_active_ml_training_runs", description: "Start training on active ML tab" },
       ];
     case "tensorflow":
       return [
         ...base,
-        { name: "set_tensorflow_form_fields", description: "Set Tensorflow training form fields" },
-        { name: "train_tensorflow_model", description: "Start a Tensorflow training run" },
+        { name: "set_tensorflow_form_fields", description: "Set TensorFlow training form fields" },
+        { name: "change_tensorflow_target_column", description: "Change TensorFlow target column" },
+        { name: "randomize_tensorflow_form_fields", description: "Randomize TensorFlow form fields" },
+        { name: "start_tensorflow_training_runs", description: "Start TensorFlow training runs" },
+        { name: "train_tensorflow_model", description: "Direct backend TensorFlow training" },
+        { name: "set_active_ml_form_fields", description: "Patch active ML tab form fields" },
+        { name: "start_active_ml_training_runs", description: "Start training on active ML tab" },
       ];
     default:
       return base;

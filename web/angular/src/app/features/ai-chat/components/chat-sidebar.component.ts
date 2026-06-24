@@ -63,8 +63,9 @@ import { ChatSidebarOrchestrator } from '../orchestrator/chat-sidebar-orchestrat
   `
 })
 export class ChatSidebarComponent implements OnInit, OnChanges, AfterViewChecked {
-  @Input() mode: 'direct' | 'research' = 'direct';
+  @Input() mode: 'direct' | 'research' | 'agui' = 'direct';
   @Input() datasetId: string | null = null;
+  @Input() activeTab: string | null = null;
   @ViewChild('messagesEl') messagesEl?: ElementRef<HTMLElement>;
 
   readonly chat = inject(ChatSidebarOrchestrator);
@@ -84,6 +85,6 @@ export class ChatSidebarComponent implements OnInit, OnChanges, AfterViewChecked
   }
 
   private syncConfig(): void {
-    this.chat.configure({ mode: this.mode, datasetId: this.datasetId, baseUrl: '/api/ai' });
+    this.chat.configure({ mode: this.mode, datasetId: this.datasetId, activeTab: this.activeTab, baseUrl: '/api/ai' });
   }
 }

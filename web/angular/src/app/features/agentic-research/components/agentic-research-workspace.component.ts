@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, inject } from '@angular/core';
 import { DataTableComponent } from '../../../shared/components/data-table.component';
 import { DatasetComboboxComponent } from '../../../shared/components/dataset-combobox.component';
 import { ChartRendererComponent } from '../../recharts/components/chart-renderer.component';
@@ -82,13 +82,21 @@ import { AgenticResearchOrchestrator } from '../orchestrator/agentic-research-or
     </div>
   `
 })
-export class AgenticResearchWorkspaceComponent implements OnInit {
+export class AgenticResearchWorkspaceComponent implements OnInit, OnChanges {
   @Input() showPrompts = true;
+  @Input() activeDatasetId: string | null = null;
   @Output() datasetChange = new EventEmitter<string>();
   readonly model = inject(AgenticResearchOrchestrator);
   readonly emitDatasetChange = (id: string) => this.datasetChange.emit(id);
 
   ngOnInit(): void {
     void this.model.init(this.emitDatasetChange);
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    const ds = changes['activeDatasetId'];
+    if (ds && !ds.firstChange && ds.currentValue && ds.currentValue !== this.model.selectedDatasetId()) {
+      void this.model.onDatasetChange(ds.currentValue, this.emitDatasetChange);
+    }
   }
 }

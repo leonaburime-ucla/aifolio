@@ -35,7 +35,7 @@ export function useAgenticResearch(options: UseAgenticResearchOptions) {
   const isLoading = ref(false);
   const error = ref<string | null>(null);
 
-  let initialLoadDone = false;
+  let skipNextWatch = false;
   let datasetLoadRequestId = 0;
   const datasetCache = new Map<string, LoadedDataset>();
 
@@ -127,7 +127,7 @@ export function useAgenticResearch(options: UseAgenticResearchOptions) {
     await Promise.all([loadManifest(), loadTools()]);
     if (selectedDatasetId.value) {
       options.onDatasetChange?.(selectedDatasetId.value);
-      initialLoadDone = true;
+      skipNextWatch = true;
       await loadDataset(selectedDatasetId.value);
     }
   }
@@ -139,8 +139,8 @@ export function useAgenticResearch(options: UseAgenticResearchOptions) {
 
   async function onDatasetWatch(id: string | null) {
     if (!id) return;
-    if (initialLoadDone) {
-      initialLoadDone = false;
+    if (skipNextWatch) {
+      skipNextWatch = false;
       return;
     }
     await loadDataset(id);

@@ -1,9 +1,11 @@
 <script setup lang="ts">
+import { watch, toRef } from "vue";
 import { useAgenticResearchOrchestrator } from "~/features/agentic-research/orchestrator";
 import DatasetCombobox from "~/components/General/DatasetCombobox.vue";
 import DataTable from "~/components/Datatable/DataTable.vue";
 import ChartRenderer from "~/features/recharts/components/ChartRenderer.vue";
 
+const props = defineProps<{ activeDatasetId?: string | null }>();
 const emit = defineEmits<{ "dataset-change": [id: string] }>();
 
 
@@ -23,6 +25,12 @@ const {
 } = useAgenticResearchOrchestrator({
   baseUrl: "/api/ai",
   onDatasetChange: (id) => emit("dataset-change", id),
+});
+
+watch(toRef(props, "activeDatasetId"), (id) => {
+  if (id && id !== selectedDatasetId.value) {
+    onDatasetChange(id);
+  }
 });
 </script>
 

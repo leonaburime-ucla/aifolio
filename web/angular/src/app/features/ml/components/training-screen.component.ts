@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnChanges, SimpleChanges, inject } from '@angular/core';
+import { Component, Input, OnChanges, OnDestroy, SimpleChanges, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DataTableComponent } from '../../../shared/components/data-table.component';
 import { DatasetComboboxComponent } from '../../../shared/components/dataset-combobox.component';
+import { MlOrchestratorRegistryService } from '../../../shared/state/ml-orchestrator-registry.service';
 import type { Framework } from '../model/ml-training.types';
 import { TrainingScreenOrchestrator } from '../orchestrator/training-screen-orchestrator.service';
 import { DistillMetricsModalComponent } from './distill-metrics-modal.component';
@@ -233,9 +234,10 @@ import { TrainingRunsTableComponent } from './training-runs-table.component';
     </div>
   `
 })
-export class TrainingScreenComponent implements OnChanges {
+export class TrainingScreenComponent implements OnChanges, OnDestroy {
   @Input() framework: Framework = 'pytorch';
   readonly model = inject(TrainingScreenOrchestrator);
+  private readonly mlRegistry = inject(MlOrchestratorRegistryService);
 
   readonly closeModelPreview = () => this.model.isModelPreviewOpen.set(false);
   readonly closeOptimal = () => this.model.isOptimalModalOpen.set(false);
@@ -272,6 +274,11 @@ export class TrainingScreenComponent implements OnChanges {
       defaultTrainingMode: this.framework === 'pytorch' ? 'linear_glm_baseline' : 'wide_and_deep',
       defaultExcludeColumns: 'customerID',
     });
+    this.mlRegistry.register(this.framework, this.model);
+  }
+
+  ngOnDestroy(): void {
+    this.mlRegistry.unregister(this.framework);
   }
 
   validationText(validation: { ok: boolean; values?: unknown[]; error?: string }): string {

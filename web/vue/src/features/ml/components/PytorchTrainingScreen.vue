@@ -8,6 +8,7 @@ import ModelPreviewModal from "~/features/ml/components/ModelPreviewModal.vue";
 import OptimalParamsModal from "~/features/ml/components/OptimalParamsModal.vue";
 import DistillMetricsModal from "~/features/ml/components/DistillMetricsModal.vue";
 import { useTrainingScreenOrchestrator } from "~/features/ml/orchestrator";
+import { usePytorchFormBridge } from "~/features/ml/composables/useMlFormBridge";
 
 const {
   datasetOptions, selectedDatasetId, tableRows, tableColumns, targetColumn, datasetError,
@@ -30,6 +31,13 @@ const {
   framework: "pytorch",
   defaultTrainingMode: "linear_glm_baseline",
   defaultExcludeColumns: "customerID",
+});
+
+usePytorchFormBridge({
+  selectedDatasetId, trainingMode, targetColumn, task, sweepEnabled,
+  epochValues, batchSizes, learningRates, testSizes, hiddenDims,
+  numHiddenLayers, dropouts, excludeColumns, dateColumns, autoDistill,
+  onTrain, onDatasetChange,
 });
 
 const modeExplainer = computed(() => getPytorchModeExplainer(trainingMode.value));

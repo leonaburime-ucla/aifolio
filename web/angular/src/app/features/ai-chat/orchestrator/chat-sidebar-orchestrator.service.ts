@@ -4,17 +4,20 @@ import type { ChatHistoryDirection, ChatHistoryMessage, ChatMessage, ChatModelOp
 import type { ChartSpec } from '@aifolio/contracts/entities/chart';
 import { ChartStoreService } from '../../../shared/state/chart-store.service';
 import { ChatApiService } from '../api/chat-api.service';
+import { AgUiRuntimeService } from '../../ag-ui/services/ag-ui-runtime.service';
 
-type ChatMode = 'direct' | 'research';
+type ChatMode = 'direct' | 'research' | 'agui';
 
 @Injectable()
 export class ChatSidebarOrchestrator {
   private readonly api = inject(ChatApiService);
   private readonly chartStore = inject(ChartStoreService);
+  private readonly agUiRuntime = inject(AgUiRuntimeService);
 
   readonly baseUrl = signal('/api/ai');
   readonly mode = signal<ChatMode>('direct');
   readonly datasetId = signal<string | null>(null);
+  readonly activeTab = signal<string | null>(null);
   readonly messages = signal<ChatMessage[]>([]);
   readonly inputValue = signal('');
   readonly isSending = signal(false);
@@ -25,10 +28,11 @@ export class ChatSidebarOrchestrator {
   readonly screenFeedback = signal<ScreenFeedback | null>(null);
   readonly hasInput = computed(() => this.inputValue().trim().length > 0);
 
-  configure(input: { baseUrl?: string; mode?: ChatMode; datasetId?: string | null }): void {
+  configure(input: { baseUrl?: string; mode?: ChatMode; datasetId?: string | null; activeTab?: string | null }): void {
     if (input.baseUrl) this.baseUrl.set(input.baseUrl);
     if (input.mode) this.mode.set(input.mode);
     this.datasetId.set(input.datasetId ?? null);
+    if (input.activeTab !== undefined) this.activeTab.set(input.activeTab);
   }
 
   async loadModels(): Promise<void> {
@@ -58,6 +62,11 @@ export class ChatSidebarOrchestrator {
       .map((message) => ({ role: message.role, content: message.content }));
 
     try {
+      if (this.mode() === 'agui') {
+        await this.submitAgUi(text, history);
+        return;
+      }
+
       const sender = this.mode() === 'research' ? sendChatMessage : sendChatMessageDirect;
       const result = await sender(
         {
@@ -91,6 +100,64 @@ export class ChatSidebarOrchestrator {
         kind: 'error',
         code: 'CHAT_REQUEST_FAILED',
         message: err instanceof Error ? err.message : 'Request failed.',
+        retryable: true,
+      });
+    } finally {
+      this.isSending.set(false);
+    }
+  }
+
+  private async submitAgUi(text: string, history: ChatHistoryMessage[]): Promise<void> {
+    try {
+      const agUiMessages = history.map((msg, i) => ({
+        id: `msg_${i}`,
+        role: msg.role,
+        content: msg.content,
+      }));
+      agUiMessages.push({ id: `msg_${agUiMessages.length}`, role: 'user', content: text });
+
+      const context: { description: string; value: string }[] = [];
+      if (this.activeTab()) {
+        context.push({ description: 'ag_ui_active_tab', value: this.activeTab()! });
+      }
+      if (this.datasetId()) {
+        context.push({ description: 'ag_ui_active_dataset_id', value: this.datasetId()! });
+      }
+      if (this.selectedModelId()) {
+        context.push({ description: 'ag_ui_selected_model_id', value: this.selectedModelId()! });
+      }
+
+      const result = await this.agUiRuntime.run(
+        { messages: agUiMessages, context, userMessage: text },
+        this.baseUrl()
+      );
+
+      let content = result.message;
+      let chartSpec: ChartSpec | null = null;
+      try {
+        const parsed = JSON.parse(content);
+        if (parsed && typeof parsed === 'object' && parsed.message) {
+          content = parsed.message;
+          chartSpec = parsed.chartSpec ?? null;
+        }
+      } catch { /* plain text response */ }
+
+      this.messages.update((messages) => [
+        ...messages,
+        { id: this.generateId(), role: 'assistant' as const, content, createdAt: Date.now(), chartSpec },
+      ]);
+
+      if (chartSpec) {
+        const specs = Array.isArray(chartSpec) ? chartSpec : [chartSpec];
+        for (const spec of specs) {
+          if (spec?.data) this.addChartSpec(spec as ChartSpec);
+        }
+      }
+    } catch (err) {
+      this.screenFeedback.set({
+        kind: 'error',
+        code: 'AGUI_RUN_FAILED',
+        message: err instanceof Error ? err.message : 'AG-UI run failed.',
         retryable: true,
       });
     } finally {
