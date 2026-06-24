@@ -1,4 +1,33 @@
 <template>
+  <div class="flex h-[calc(100dvh-64px)] items-center justify-center bg-zinc-50 p-8">
+    <div class="max-w-md rounded-2xl border border-zinc-200 bg-white p-12 text-center shadow-sm">
+      <div class="mb-4 text-5xl">🚧</div>
+      <h1 class="mb-3 text-2xl font-bold text-zinc-900">Under Construction</h1>
+      <p class="mb-6 text-sm text-zinc-600">
+        The AG-UI workspace is being rebuilt. Check back soon.
+      </p>
+      <div class="text-xs text-zinc-500">
+        <a href="https://github.com/ag-ui-protocol/ag-ui" target="_blank" rel="noreferrer"
+          class="text-blue-500 underline underline-offset-2">AG-UI Protocol</a>
+        <span class="mx-2">|</span>
+        <a href="https://github.com/CopilotKit/CopilotKit" target="_blank" rel="noreferrer"
+          class="text-blue-500 underline underline-offset-2">CopilotKit</a>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+// import { ref, computed } from "vue";
+// import ChartsWorkspace from "~/features/recharts/components/ChartsWorkspace.vue";
+// import AgenticResearchWorkspace from "~/features/agentic-research/components/AgenticResearchWorkspace.vue";
+// import PytorchTrainingScreen from "~/features/ml/components/PytorchTrainingScreen.vue";
+// import TensorflowTrainingScreen from "~/features/ml/components/TensorflowTrainingScreen.vue";
+// import CopilotAgUiChat from "~/components/screens/CopilotAgUiChat.client.vue";
+</script>
+
+<!-- ORIGINAL TEMPLATE AND SCRIPT (commented out for Under Construction)
+<template>
   <div class="flex h-[calc(100dvh-64px)] flex-row overflow-hidden bg-zinc-50 text-zinc-900">
     <main class="min-w-0 flex-1 overflow-y-auto py-2">
       <div class="mx-auto flex max-w-5xl flex-col gap-3 px-6">
@@ -63,7 +92,6 @@
           </button>
         </div>
 
-        <!-- Tools Modal -->
         <Teleport to="body">
           <div
             v-if="showTools"
@@ -102,7 +130,6 @@
           </div>
         </Teleport>
 
-        <!-- Tab surfaces -->
         <template v-if="activeTab === 'charts'">
           <ChartsWorkspace />
         </template>
@@ -236,3 +263,4 @@ function onDatasetChange(id: string) {
   activeDatasetId.value = id;
 }
 </script>
+END ORIGINAL TEMPLATE AND SCRIPT -->
